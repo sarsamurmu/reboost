@@ -12,7 +12,9 @@ let filesData: {
     uid: string;
     /** If the file is pure. File is pure if it has no dependency or source map */
     pure?: boolean;
+    /** Hash of the file */
     hash: string;
+    /** Address used in the file */
     address: string;
   }>;
   dependents: Record<string, string[]>;
