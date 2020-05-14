@@ -157,6 +157,11 @@ module.exports = {
 }
 ```
 
+### How is it faster?
+- No bundling
+- Transforms only the file which is requested or changed
+- Caches transformed files, so it can serve fast if the file hasn't changed
+
 ### Inspired from
 Reboost is highly inspired by these awesome projects
 - [Vite](https://github.com/vuejs/vite)
