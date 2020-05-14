@@ -157,7 +157,7 @@ module.exports = {
 }
 ```
 
-### How is it faster?
+### How it is fast?
 - No bundling
 - Transforms only the file which is requested or changed
 - Caches transformed files, so it can serve fast if the file hasn't changed
