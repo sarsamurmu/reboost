@@ -72,7 +72,7 @@ npx reboost
 ```
 Now open the address in which the content server is started. You can see your code is working without any problem.
 
-#### What if I want to any other server?
+#### What if I want to use any other server?
 If you want to use any other server you can do that, you've to just serve the generated
 scripts which are in your output directory. Reboost will handle the rest.
 
