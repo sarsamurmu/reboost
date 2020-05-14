@@ -1,0 +1,17 @@
+{
+  "name": "draft",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "browser-sync start --server --files \"public/**/*.(html|js)\"",
+    "start": "nodemon start"
+  },
+  "dependencies": {
+    "browser-sync": "^2.26.7",
+    "htm": "^3.0.4",
+    "reboost": "../"
+  },
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT"
+}
