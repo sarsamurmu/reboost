@@ -97,7 +97,7 @@ module.exports = {
     ['./src/index.ts', './public/dist/bundle.js']
   ],
   resolve: {
-    // For resolving TypeScript files without typing extensions every time
+    // For resolving TypeScript files without typing extension every time
     extensions: ['.ts', '.js']
   },
   plugins: [
@@ -120,7 +120,7 @@ module.exports = {
     ['./src/index.js', './public/dist/bundle.js']
   ],
   resolve: {
-    // For resolving TypeScript files without typing extensions every time
+    // For resolving JSX files without typing extension every time
     extensions: ['.jsx', '.js']
   },
   plugins: [
@@ -144,10 +144,6 @@ module.exports = {
     // This is just an example
     ['./src/index.js', './public/dist/bundle.js']
   ],
-  resolve: {
-    // For resolving TypeScript files without typing extensions every time
-    extensions: ['.jsx', '.js']
-  },
   plugins: [
     plugins.esbuild({
       loaders: ['js'],
