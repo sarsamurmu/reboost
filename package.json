@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Reboost your web development workflow",
   "main": "./dist/index.js",
   "types": "./types",
