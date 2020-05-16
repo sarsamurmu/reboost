@@ -12,7 +12,7 @@ are supported natively by browsers. If you can connect (or you can say serve) th
 up correctly, it will work on browsers without the need for bundling. Here, Reboost
 does that for you - the serving part. So you can develop your app faster.
 
-**NOTE:** Reboost is only for use while developing, for production you've to
+**NOTE:** Reboost only serves your scripts while developing, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 
 ## Quickstart
@@ -57,7 +57,7 @@ and HTML content (`public/index.html`)
 </html>
 ```
 
-then create a file named `reboost.js`. Here's the file content
+then create a file named `reboost.js`
 ```js
 const { start } = require('reboost');
 
@@ -71,7 +71,7 @@ start({
   }
 })
 ```
-after that run the script using node, open your terminal in that directory and use the command
+after that run the script using `node`, open your terminal in that directory and use the command
 ```shell
 node reboost
 ```
@@ -107,7 +107,7 @@ start({
 })
 ```
 
-Here is the list of all options -
+List of all options
 
 #### `cacheDir`
 Type: `string`
@@ -170,8 +170,7 @@ In browser
 ```js
 window.coolLib // Module { add: (...), subtract: (...) }
 ```
-As you expected, exports are available through the `window` object if we access it with the library
-name passed
+As you expected, exports are available through the `window` object
 
 #### `rootDir`
 Type: `string`
@@ -201,7 +200,9 @@ start({
   }
 })
 ```
-Instead of using relative paths you can use alias. Some deeply nested file
+Instead of using relative paths you can use alias.
+
+Some deeply nested file -
 ```js
 import ProgressBar from '../../../components/progressbar';
 ```
@@ -213,7 +214,7 @@ import ProgressBar from 'Components/progressbar';
 ##### `resolve.extensions`
 Type: `string[]`
 
-Resolves extensions if no extensions are present in imported path. Defaults to `['.mjs', '.js', '.json']`.
+Extensions to be used for resolving files. Defaults to `['.mjs', '.js', '.json']`.
 So that you can write
 ```js
 import mod from './mod';
