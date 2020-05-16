@@ -99,8 +99,8 @@ the proxy server then it returns the transformed file and saves the transformed 
 to cache. Step 3 repeats again for other files and this step continues.
 
 
-## Options
-There are a few options that you can use to customize Reboost. You would use options when starting
+## Configurations
+There are a few configuration options that you can use to customize Reboost. You would use options when starting
 Reboost, like so
 ```js
 const { start } = require('reboost');
