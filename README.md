@@ -12,8 +12,10 @@ are supported natively by browsers. If you can connect (or you can say serve) th
 up correctly, it will work on browsers without the need for bundling. Here, Reboost
 does that for you - the serving part. So you can develop your app faster.
 
-**NOTE:** Reboost only serves your scripts while developing, for production you've to
+**NOTE:**
+1. Reboost only serves your scripts while developing, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
+2. For now, only ES modules are supported.
 
 ## Quickstart
 First, install it using npm as devDependency
