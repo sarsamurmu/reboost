@@ -289,7 +289,7 @@ There are several built-in plugins from Reboost.
 
 ---
 
-### Inspired from
+### Inspired by
 Reboost is highly inspired by these awesome projects
 - [Vite](https://github.com/vuejs/vite)
 - [Snowpack](https://github.com/pikapkg/snowpack)
