@@ -12,8 +12,10 @@ are supported natively by browsers. If you can connect (or you can say serve) th
 up correctly, it will work on browsers without the need for bundling. Here, Reboost
 does that for you - the serving part. So you can develop your app faster.
 
-**NOTE:** Reboost only serves your scripts while developing, for production you've to
+**NOTE:**
+1. Reboost only serves your scripts while developing, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
+2. For now, only ES modules are supported.
 
 ## Quickstart
 First, install it using npm as devDependency
@@ -322,7 +324,7 @@ start({
 Type: `(config: ReboostConfig) => void`
 
 Called when Reboost starts, called only one time. You can start your
-services or do the initial setup in this hook. The first argument is
+services or do the initial setup in this function. The first argument is
 the options object which is passed when starting Reboost.
 
 #### `resolve`
@@ -347,7 +349,7 @@ improves source map support if the original content is transformed before
 the AST is generated.
 
 #### `transform`
-Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse, types: BabelTypes }, filePath: string)`
+Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse, types: BabelTypes }, filePath: string) => void`
 
 Used to transform the AST. The first argument is an object with property `ast` -
 the AST of the code. The second argument is an object which includes two functions -
