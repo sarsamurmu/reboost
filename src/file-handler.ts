@@ -3,6 +3,7 @@ import { RouterParamContext } from '@koa/router';
 import hash from 'md5-file';
 import anymatch from 'anymatch';
 import { FSWatcher } from 'chokidar';
+import chalk from 'chalk';
 
 import fs from 'fs';
 import path from 'path';
@@ -43,11 +44,12 @@ let gitignoreCreated = false;
 
 const watcher = new FSWatcher();
 watcher.on('change', (filePath) => {
+  console.log(chalk.magenta(`[reboost] Changed: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
   messageClient(filePath);
 });
 watcher.on('unlink', (filePath) => {
   removeDeletedFile(filePath);
-  // TODO: Message client that the file is deleted
+  messageClient(filePath);
 });
 const watchedFiles = new Set<string>();
 const watchFile = (filePath: string) => {
@@ -67,7 +69,6 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
   }
 
   const filePath = ctx.query.q;
-  if (filePath === 'null') return;
   const fileHash = await hash(filePath);
   let transformedCode: string;
 
@@ -85,7 +86,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
 
     if (fileData.hash !== fileHash) {
       let pure = true;
-      const { code, dependencies, map } = await transformFile(filePath);
+      const { code, map, dependencies, hasUnresolvedDeps } = await transformFile(filePath);
       transformedCode = code;
       if (map) {
         // Remove other source maps
@@ -93,13 +94,15 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
         fs.promises.writeFile(`${outputFilePath}.map`, map);
       }
-      fs.promises.writeFile(outputFilePath, transformedCode);
-      if (map || dependencies.length) pure = undefined;
-      fileData.hash = fileHash;
-      fileData.address = getAddress();
-      fileData.pure = pure;
-      addToDependents(dependencies);
-      saveFilesData();
+      if (!hasUnresolvedDeps) {
+        fs.promises.writeFile(outputFilePath, transformedCode);
+        if (map || dependencies.length) pure = undefined;
+        fileData.hash = fileHash;
+        fileData.address = getAddress();
+        fileData.pure = pure;
+        addToDependents(dependencies);
+        saveFilesData();
+      }
     } else {
       const currentAddress = getAddress();
       transformedCode = fs.readFileSync(outputFilePath).toString();
@@ -119,7 +122,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
     let pure = true;
     const uid = uniqueID();
     const outputFilePath = path.join(filesDir, uid);
-    const { code, dependencies, map } = await transformFile(filePath);
+    const { code, map, dependencies, hasUnresolvedDeps } = await transformFile(filePath);
     transformedCode = code;
     if (map) {
       // Remove other source maps
@@ -127,16 +130,18 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
       transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
       fs.promises.writeFile(`${outputFilePath}.map`, map);
     }
-    fs.promises.writeFile(outputFilePath, transformedCode);
-    if (map || dependencies.length) pure = undefined;
-    getFilesData().files[filePath] = {
-      uid,
-      pure,
-      hash: fileHash,
-      address: getAddress()
+    if (!hasUnresolvedDeps) {
+      fs.promises.writeFile(outputFilePath, transformedCode);
+      if (map || dependencies.length) pure = undefined;
+      getFilesData().files[filePath] = {
+        uid,
+        pure,
+        hash: fileHash,
+        address: getAddress()
+      }
+      addToDependents(dependencies);
+      saveFilesData();
     }
-    addToDependents(dependencies);
-    saveFilesData();
   }
 
   if (

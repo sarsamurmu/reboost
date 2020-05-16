@@ -80,8 +80,10 @@ node reboost
 Now open the address in which the content server is started. You can see your code is working without any problem.
 
 ### What if I want to use any other server?
-Reboost's content server is basically static, it just serves the file. If you want to use any other server (like browser-sync or your own http server) you can do that, you've to just serve the generated
-scripts which are in your output directory. Reboost will handle the rest.
+Reboost's content server is basically static, it just serves the file. If you want
+to use any other server (like browser-sync or your own http server) you can do that,
+you've to just serve the generated scripts which are in your output directory.
+Reboost will handle the rest.
 
 ## Features
 - No bundling. So the server start time is fast.
@@ -165,7 +167,7 @@ const { start } = require('reboost');
 start({
   entries: [
     ['./src/index.js', './dist/library.js', 'coolLib']
-    //                                       ^^^ This is the extra string as our library name
+    //                                       ^^^ This is our library name
   ]
 })
 ```
@@ -217,7 +219,7 @@ import ProgressBar from 'Components/progressbar';
 ##### `resolve.extensions`
 Type: `string[]`
 
-Extensions to be used for resolving files. Defaults to `['.mjs', '.js', '.json']`.
+Extensions to use for resolving files. Defaults to `['.mjs', '.js', '.json']`.
 So that you can write
 ```js
 import mod from './mod';
@@ -227,7 +229,7 @@ instead of
 import mod from './mod.js';
 ```
 
-It returns the first file with the first matched extension, so ordering matters.
+It returns the first file with the first matched extension, so extension ordering matters.
 
 ##### `resolve.mainFiles`
 Type: `string[]`
@@ -282,7 +284,7 @@ Files to exclude from source map generation. Can be any of [anymatch](https://ww
 patterns. Defaults to `/node_modules/`, all files which are in `node_modules` are excluded.
 
 #### `plugins`
-Type: `Plugin[]`
+Type: `ReboostPlugin[]`
 
 An array of plugins to be used by Reboost.
 
@@ -313,6 +315,9 @@ const { start } = require('reboost');
 const samplePlugin = require('./sample-plugin.js');
 
 start({
+  entries: [
+    ['./src/index.js', './public/dist/bundle.js']
+  ],
   plugins: [
     samplePlugin()
   ]
@@ -352,10 +357,12 @@ the AST is generated.
 Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse; types: BabelTypes; }, filePath: string) => void`
 
 Used to transform the AST. The first argument is an object with property `ast` -
-the AST of the code. The second argument is an object which includes two functions -
+the AST of the code. The second argument is an object which includes two properties -
 `traverse` - Babel's [traverse function](https://babeljs.io/docs/en/babel-traverse)
 and `types` - Babel's [types](https://babeljs.io/docs/en/babel-types). The third
 argument is the absolute path to the file from which the AST is generated.
+
+All of these functions can be `async` as well.
 
 ---
 

@@ -39,6 +39,7 @@ export const transformFile = async (filePath: string) => {
   let inputSourceMap: RawSourceMap;
   let originalCode: string;
   let dependencies: string[] = [];
+  let hasUnresolvedDeps = false;
 
   for (const hook of loadHooks) {
     let result = await hook(filePath);
@@ -68,10 +69,13 @@ export const transformFile = async (filePath: string) => {
             dependencies.push(resolvedPath);
             break;
           } else {
+            hasUnresolvedDeps = true;
             console.log(chalk.red(`[reboost] Unable to resolve import "${source}" of "${filePath}"`));
           }
         }
-        (astPath.node as any).source.value = `${getAddress()}/transformed?q=${encodeURI(finalPath)}`;
+        (astPath.node as any).source.value = finalPath
+                                              ? `${getAddress()}/transformed?q=${encodeURI(finalPath)}`
+                                              : `${getAddress()}/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
       }
     }
 
@@ -118,6 +122,7 @@ export const transformFile = async (filePath: string) => {
   return {
     code,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
-    dependencies
+    dependencies,
+    hasUnresolvedDeps
   }
 }

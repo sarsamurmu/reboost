@@ -3,6 +3,7 @@
 - Fixed scoped package resolving
 - Fixed TypeScript types
 - Updated Docs
+- Better error messages
 
 ## 0.0.1
 - First release

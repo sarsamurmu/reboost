@@ -2,8 +2,8 @@
 All built-in plugins of Reboost.
 
 ## esbuild
-[esbuild](https://github.com/evanw/esbuild) is a powerful and fast transformer, which you can use
-to transform TypeScript, JSX, newer ECMAScript features.
+[esbuild](https://github.com/evanw/esbuild) is a powerful and fast transformer,
+which you can use to transform TypeScript, JSX or newer ECMAScript features.
 
 ### Usage
 First import plugins from Reboost.

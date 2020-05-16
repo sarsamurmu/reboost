@@ -198,6 +198,14 @@ export const start = async (config: ReboostConfig = {} as any) => {
     if (fs.existsSync(filePath)) ctx.body = fs.readFileSync(filePath);
   });
 
+  router.get('/unresolved', async (ctx) => {
+    const { query } = ctx;
+    ctx.type = 'text/javascript';
+    ctx.body = `
+      console.error('[reboost] Unable to resolve import ${JSON.stringify(query.import)} of ${JSON.stringify(query.importer)}')
+    `.trim();
+  });
+
   app
     .use(cors({ origin: '*' }))
     .use(router.routes())
