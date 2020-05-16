@@ -96,7 +96,7 @@ scripts which are in your output directory. Reboost will handle the rest.
 if the requested file is available in the cache, it returns the cached file,
 if not available it transforms the file so that all imports of the file are served from
 the proxy server then it returns the transformed file and saves the transformed file
-to cache. Step 3 repeats again for other files and this step continues.
+to cache. Step 3 repeats again for other files.
 
 
 ## Configurations
