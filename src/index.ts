@@ -39,15 +39,15 @@ export interface LoadedModuleData {
 
 export interface ReboostPlugin {
   start?: (config: ReboostConfig) => void | Promise<void>;
-  resolve?: (source: string, importer: string) => string | Promise<string>;
-  load?: (importPath: string) => LoadedModuleData | Promise<LoadedModuleData>;
+  resolve?: (importPath: string, importer: string) => string | Promise<string>;
+  load?: (filePath: string) => LoadedModuleData | Promise<LoadedModuleData>;
   transform?: (
     moduleData: ModuleData,
     babel: {
       traverse: typeof babelTraverse;
       types: typeof babelTypes;
     },
-    importPath: string
+    filePath: string
   ) => ModuleData | void | Promise<ModuleData | void>;
 }
 

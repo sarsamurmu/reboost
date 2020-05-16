@@ -81,10 +81,11 @@ Now open the address in which the content server is started. You can see your co
 Reboost's content server is basically static, it just serves the file. If you want to use any other server (like browser-sync or your own http server) you can do that, you've to just serve the generated
 scripts which are in your output directory. Reboost will handle the rest.
 
-## What's the difference?
-- No bundling
-- Transforms only the file which is requested or changed
-- Caches transformed files, so it can serve fast if the file hasn't changed
+## Features
+- No bundling. So the server start time is fast.
+- Transforms only the file which is requested or changed.
+- Caches transformed files, so it can serve fast if the file hasn't changed.
+- Support for source maps for better debugging.
 
 ## How it works?
 1. Reboost starts a proxy server
@@ -283,9 +284,76 @@ Type: `Plugin[]`
 
 An array of plugins to be used by Reboost.
 
-### Plugins
+## Plugins
 There are several built-in plugins from Reboost.
 [Read more about built-in plugins](https://github.com/sarsamurmu/reboost/blob/master/plugins.md).
+
+## Writing your own plugin
+Reboost plugins are objects with function as properties.
+A plugin object can contain four properties - `start`, `resolve`, `load`, `transform`.
+Your plugin package should export a function that returns the Reboost plugin compatible object.
+
+### Sample Plugin
+Here's an example of a sample plugin, which logs when it starts
+
+```js
+// sample-plugin.js
+module.exports = function samplePlugin() {
+  return {
+    start() {
+      console.log(`Sample plugin is starting`);
+    }
+  }
+}
+
+// reboost.js
+const { start } = require('reboost');
+const samplePlugin = require('./sample-plugin.js');
+
+start({
+  plugins: [
+    samplePlugin()
+  ]
+});
+```
+
+### All plugin properties
+#### `start`
+Type: `(config: ReboostConfig) => void`
+
+Called when Reboost starts, called only one time. You can start your
+services or do the initial setup in this hook. The first argument is
+the options object which is passed when starting Reboost.
+
+#### `resolve`
+Type: `(importPath: string, importer: string) => string`
+
+Used to resolve an import path. If your plugin is a resolver or needs
+to resolve specific paths, use this hook. The first argument is the path
+being used to import a file, the second argument is the absolute path to
+the file which is using the import path. This function should return an
+absolute path to the file being imported.
+
+#### `load`
+Type: `(filePath: string) => { code: string; ast: ASTNode; map?: string }`
+
+Used to load code and AST of a file. The first argument is the absolute path
+to file which is being loaded. This function should return an object with
+two required properties and one optional property. Required properties are
+`code` and `ast`, `code` is the original code content of the file, and
+`ast` is the AST of the file, AST format should be JavaScript. The optional
+property is `map`, `map` should be the source map of the original file,
+improves source map support if the original content is transformed before
+the AST is generated.
+
+#### `transform`
+Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse, types: BabelTypes }, filePath: string)`
+
+Used to transform the AST. The first argument is an object with property `ast` -
+the AST of the code. The second argument is an object which includes two functions -
+`traverse` - Babel's [traverse function](https://babeljs.io/docs/en/babel-traverse)
+and `types` - Babel's [types](https://babeljs.io/docs/en/babel-types). The third
+argument is the absolute path to the file from which the AST is generated.
 
 ---
 

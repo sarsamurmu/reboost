@@ -29,10 +29,10 @@ const esbuildPlugin = (options: esbuildOptions): ReboostPlugin => {
     async start() {
       esbuildService = await esbuild.startService();
     },
-    async load(importPath) {
-      const match = importPath.match(matcher);
+    async load(filePath) {
+      const match = filePath.match(matcher);
       if (match) {
-        const code = fs.readFileSync(importPath).toString();
+        const code = fs.readFileSync(filePath).toString();
         const { js, jsSourceMap } = await esbuildService.transform(code, {
           sourcemap: true,
           loader: match[0].substring(1) as any,
