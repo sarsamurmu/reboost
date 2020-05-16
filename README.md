@@ -109,13 +109,13 @@ start({
 
 Here is the list of all options -
 
-##### `cacheDir`
+#### `cacheDir`
 Type: `string`
 
 Path of the directory to use for storing cached files. Defaults to `./.reboost_cache`.
 
 
-##### `entries`
+#### `entries`
 Type: `([string, string] | [string, string, string])[]`
 
 File entries which will be served by Reboost. Value is an array of an array containing input
@@ -173,13 +173,12 @@ window.coolLib // Module { add: (...), subtract: (...) }
 As you expected, exports are available through the `window` object if we access it with the library
 name passed
 
-##### `rootDir`
+#### `rootDir`
 Type: `string`
 
-Path of the directory to use as the root directory. Used to resolve relative paths. The
-directory should contain your `node_modules`.
+Path of the directory to use as the root directory. Used to resolve relative paths.
 
-##### `resolve`
+#### `resolve`
 Type: `object`
 
 Configurations for module and file resolving
@@ -244,7 +243,7 @@ Type: `string[]`
 
 Directories to use while resolving modules. Defaults to `['node_modules']`.
 
-##### `watchOptions`
+#### `watchOptions`
 Type: `object`
 
 Options to use for watching files
@@ -261,7 +260,7 @@ Type: `Matcher`
 Files to exclude from watch-list. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
 patterns. Defaults to `/node_modules/`, all files which are in `node_modules` are excluded.
 
-##### `sourceMaps`
+#### `sourceMaps`
 Type: `object`
 
 Options to use when generating source maps.
@@ -278,7 +277,7 @@ Type: `Matcher`
 Files to exclude from source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
 patterns. Defaults to `/node_modules/`, all files which are in `node_modules` are excluded.
 
-##### `plugins`
+#### `plugins`
 Type: `Plugin[]`
 
 An array of plugins to be used by Reboost.
