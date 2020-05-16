@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Reboost your web development workflow",
   "main": "./dist/index.js",
   "types": "./types/index.d.ts",
@@ -10,6 +10,7 @@
   ],
   "bin": "./dist/cli.js",
   "scripts": {
+    "prepublishOnly": "tsc",
     "build": "tsc",
     "watch": "tsc -w"
   },
