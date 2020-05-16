@@ -10,7 +10,7 @@
   ],
   "bin": "./dist/cli.js",
   "scripts": {
-    "prepublishOnly": "tsc",
+    "prepublishOnly": "node prepublish && tsc",
     "build": "tsc",
     "watch": "tsc -w"
   },
