@@ -1,6 +1,6 @@
-const { plugins } = require('reboost');
+const { start, plugins } = require('reboost');
 
-module.exports = {
+start({
   entries: [
     ['./src/index.js', './public/dist/main.js', 'coolLib']
   ],
@@ -16,6 +16,6 @@ module.exports = {
       jsxFactory: 'h'
     })
   ],
-  dumpCache: true,
+  // dumpCache: true,
   debugMode: true,
-}
+});

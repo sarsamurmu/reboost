@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "Reboost your web development workflow",
   "main": "./dist/index.js",
-  "types": "./types",
+  "types": "./types/index.d.ts",
   "files": [
     "dist",
     "types"
@@ -13,6 +13,7 @@
     "build": "tsc",
     "watch": "tsc -w"
   },
+  "repository": "github:sarsamurmu/reboost",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "dependencies": {

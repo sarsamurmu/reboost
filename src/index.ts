@@ -18,7 +18,6 @@ import setupFunc from './client';
 import { merge, ensureDir, rmDir } from './utils';
 import { setAddress, setConfig, setWebSocket } from './shared';
 import { fileRequestHandler, verifyFiles } from './file-handler';
-import { RawSourceMap } from 'source-map';
 
 export * as plugins from './plugins';
 
@@ -61,9 +60,13 @@ export interface ReboostConfig {
   rootDir?: string;
   /** Resolve options to use when resolving files */
   resolve?: {
+    /** Aliases to use while resolving */
     alias?: Record<string, string>;
+    /** Extensions to use while resolving */
     extensions?: string[];
+    /** File names to use while resolving directory */
     mainFiles?: string[];
+    /** Module directories to use while resolving modules */
     modules?: string[];
   };
   watchOptions?: {
@@ -119,7 +122,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
   }
 
-  if (config.dumpCache) rmDir(config.cacheDir);
+  if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
 
   if (fs.existsSync(config.cacheDir)) {
     console.log(chalk.green('[reboost] Refreshing cache...'));
@@ -127,7 +130,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     console.log(chalk.green('[reboost] Refresh cache complete'));
   }
 
-  console.log(chalk.green('[reboost] Starting server...'));
+  console.log(chalk.green('[reboost] Starting proxy server...'));
   
   let host: string;
   let port: number;
@@ -163,6 +166,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
       ${libName ? `window['${libName}'] = _$lib$_;`: ''}
       `
     ));
+    console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
   }
 
   const app = withWebSocket(new Koa());
@@ -199,7 +203,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     .use(router.routes())
     .use(router.allowedMethods())
     .listen(port, host, async () => {
-      console.log(chalk.green('[reboost] Server started'));
+      console.log(chalk.green('[reboost] Proxy server started'));
 
       if (config.contentServer) {
         const contentServer = new Koa();
@@ -215,8 +219,6 @@ export const start = async (config: ReboostConfig = {} as any) => {
           localPort,
           () => startedAt(`localhost:${localPort}`)
         );
-
-        console.log(port, localPort);
 
         if (host !== 'localhost') {
           const ipPort = await portFinder.getPortPromise({ host });

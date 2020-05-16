@@ -2,13 +2,14 @@ import traverse, { NodePath } from '@babel/traverse';
 import generate from '@babel/generator';
 import * as babelTypes from '@babel/types';
 import anymatch from 'anymatch';
+import { RawSourceMap } from 'source-map';
+import chalk from 'chalk';
 
 import path from 'path';
 
 import { ReboostPlugin } from './index';
 import { getConfig, getAddress } from './shared';
-import { defaultPlugin } from './plugins';
-import { RawSourceMap } from 'source-map';
+import { defaultPlugin } from './plugins/default';
 import { mergeSourceMaps } from './utils';
 
 let pluginsInitiated = false;
@@ -25,9 +26,12 @@ export const transformFile = async (filePath: string) => {
     loadHooks = plugins.map((plugin) => plugin.load).filter(def);
     transformHooks = plugins.map((plugin) => plugin.transform).filter(def);
 
+    const promises = [];
     for (const { start } of plugins) {
-      if (typeof start === 'function') await start(getConfig());
+      if (typeof start === 'function') promises.push(start(getConfig()));
     }
+    await Promise.all(promises);
+    
     pluginsInitiated = true;
   }
 
@@ -63,6 +67,8 @@ export const transformFile = async (filePath: string) => {
             finalPath = resolvedPath;
             dependencies.push(resolvedPath);
             break;
+          } else {
+            console.log(chalk.red(`[reboost] Unable to resolve import "${source}" of "${filePath}"`));
           }
         }
         (astPath.node as any).source.value = `${getAddress()}/transformed?q=${encodeURI(finalPath)}`;
