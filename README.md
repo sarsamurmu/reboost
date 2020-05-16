@@ -337,7 +337,7 @@ the file which is using the import path. This function should return an
 absolute path to the file being imported.
 
 #### `load`
-Type: `(filePath: string) => { code: string; ast: ASTNode; map?: string }`
+Type: `(filePath: string) => { code: string; ast: ASTNode; map?: string; }`
 
 Used to load code and AST of a file. The first argument is the absolute path
 to file which is being loaded. This function should return an object with
@@ -349,7 +349,7 @@ improves source map support if the original content is transformed before
 the AST is generated.
 
 #### `transform`
-Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse, types: BabelTypes }, filePath: string) => void`
+Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse; types: BabelTypes; }, filePath: string) => void`
 
 Used to transform the AST. The first argument is an object with property `ast` -
 the AST of the code. The second argument is an object which includes two functions -
