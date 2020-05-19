@@ -10,7 +10,7 @@ import path from 'path';
 
 import { ReboostPlugin } from './index';
 import { getConfig, getAddress } from './shared';
-import { defaultPlugin } from './plugins/default';
+import { defaultPlugins } from './plugins/default';
 import { mergeSourceMaps } from './utils';
 
 let pluginsInitiated = false;
@@ -21,7 +21,7 @@ let transformASTHooks: ReboostPlugin['transformAST'][];
 
 export const transformFile = async (filePath: string) => {
   if (!pluginsInitiated) {
-    getConfig().plugins.push(defaultPlugin);
+    getConfig().plugins.push(...defaultPlugins);
     const def = (a: any) => !!a;
     const plugins = getConfig().plugins.filter(def);
     resolveHooks = plugins.map((plugin) => plugin.resolve).filter(def);
@@ -51,6 +51,7 @@ export const transformFile = async (filePath: string) => {
       code = result.code;
       originalCode = result.original || code;
       if (result.map) sourceMap = JSON.parse(result.map);
+      break;
     }
   }
 
@@ -62,9 +63,14 @@ export const transformFile = async (filePath: string) => {
     }
   }
 
-  ast = parse(code, {
-    sourceType: 'module'
-  });
+  try {
+    ast = parse(code, {
+      sourceType: 'module'
+    });
+  } catch (e) {
+    console.log(`Error while parsing "${filePath}"`);
+    console.log(e);
+  }
 
   for (const hook of transformASTHooks) await hook(ast, { traverse, types: babelTypes }, filePath);
 
