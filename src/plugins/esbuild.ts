@@ -32,18 +32,22 @@ const esbuildPlugin = (options: esbuildOptions): ReboostPlugin => {
     async transformContent(code, filePath) {
       const match = filePath.match(matcher);
       if (match) {
-        const { js, jsSourceMap } = await esbuildService.transform(code, {
-          sourcemap: true,
-          loader: match[0].substring(1) as any,
-          jsxFactory: options.jsxFactory,
-          jsxFragment: options.jsxFragment,
-          target: options.target
-        });
-        
-        return {
-          code: js,
-          map: jsSourceMap
-        } as TransformedContent;
+        try {
+          const { js, jsSourceMap } = await esbuildService.transform(code, {
+            sourcemap: true,
+            loader: match[0].substring(1) as any,
+            jsxFactory: options.jsxFactory,
+            jsxFragment: options.jsxFragment,
+            target: options.target
+          });
+
+          return {
+            code: js,
+            map: jsSourceMap
+          } as TransformedContent;
+        } catch (e) {
+          console.log('esbuild error', e);
+        }
       }
       return null;
     }
