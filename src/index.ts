@@ -119,7 +119,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
   if (config.rootDir.startsWith('.')) config.rootDir = path.resolve(config.rootDir);
   if (config.cacheDir.startsWith('.')) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);
   if (!config.watchOptions.include) {
-    config.watchOptions.include = config.resolve.extensions.map((ext) => new RegExp(ext + '$'));
+    config.watchOptions.include = /.*/;
   }
   if (config.contentServer && config.contentServer.root.startsWith('.')) {
     config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
@@ -205,7 +205,8 @@ export const start = async (config: ReboostConfig = {} as any) => {
     const { query } = ctx;
     ctx.type = 'text/javascript';
     ctx.body = `
-      console.error('[reboost] Unable to resolve import ${JSON.stringify(query.import)} of ${JSON.stringify(query.importer)}')
+      console.error('[reboost] Unable to resolve import ${JSON.stringify(query.import)} of ${JSON.stringify(query.importer)}');
+      export default undefined;
     `.trim();
   });
 
