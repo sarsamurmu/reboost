@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Reboost your web development workflow",
   "main": "./dist/index.js",
   "types": "./types/index.d.ts",
@@ -36,6 +36,7 @@
     "koa": "^2.12.0",
     "koa-static": "^5.0.0",
     "koa-websocket": "^6.0.0",
+    "magic-string": "^0.25.7",
     "md5-file": "^5.0.0",
     "portfinder": "^1.0.26",
     "source-map": "^0.7.3",
