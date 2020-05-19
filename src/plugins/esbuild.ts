@@ -3,7 +3,7 @@ import { parse } from '@babel/parser';
 
 import fs from 'fs';
 
-import { ReboostPlugin } from '../index';
+import { ReboostPlugin, TransformedContent } from '../index';
 
 interface esbuildOptions {
   /** File types which esbuild should handle */
@@ -26,13 +26,12 @@ let esbuildService: esbuild.Service;
 const esbuildPlugin = (options: esbuildOptions): ReboostPlugin => {
   const matcher = new RegExp(`(${options.loaders.map((ext) => `\\.${ext}`).join('|')})$`);
   return {
-    async start() {
+    async setup() {
       esbuildService = await esbuild.startService();
     },
-    async load(filePath) {
+    async transformContent(code, filePath) {
       const match = filePath.match(matcher);
       if (match) {
-        const code = fs.readFileSync(filePath).toString();
         const { js, jsSourceMap } = await esbuildService.transform(code, {
           sourcemap: true,
           loader: match[0].substring(1) as any,
@@ -40,13 +39,11 @@ const esbuildPlugin = (options: esbuildOptions): ReboostPlugin => {
           jsxFragment: options.jsxFragment,
           target: options.target
         });
+        
         return {
-          code,
-          ast: parse(js, {
-            sourceType: 'module',
-          }),
+          code: js,
           map: jsSourceMap
-        }
+        } as TransformedContent;
       }
       return null;
     }

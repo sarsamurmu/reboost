@@ -23,32 +23,30 @@ export * as plugins from './plugins';
 
 const trim = (string: string) => string.split('\n').map((part) => part.trim()).join('\n');
 
-export interface ModuleData {
-  ast: babelTypes.Node;
-  // map?: string;
-}
-
-export interface LoadedModuleData {
-  /** Original source code of the module */
+export interface LoadedData {
   code: string;
-  /** Generated AST of the module */
-  ast: babelTypes.Node;
-  /** Generated map of module if has any */
+  original?: string;
   map?: string;
 }
 
+export interface TransformedContent {
+  code: string;
+  map: string;
+}
+
 export interface ReboostPlugin {
-  start?: (config: ReboostConfig) => void | Promise<void>;
+  setup?: (config: ReboostConfig) => void | Promise<void>;
   resolve?: (importPath: string, importer: string) => string | Promise<string>;
-  load?: (filePath: string) => LoadedModuleData | Promise<LoadedModuleData>;
-  transform?: (
-    moduleData: ModuleData,
+  load?: (filePath: string) => LoadedData | Promise<LoadedData>;
+  transformContent?: (code: string, filePath: string) => TransformedContent | Promise<TransformedContent>;
+  transformAST?: (
+    ast: babelTypes.Node,
     babel: {
       traverse: typeof babelTraverse;
       types: typeof babelTypes;
     },
     filePath: string
-  ) => ModuleData | void | Promise<ModuleData | void>;
+  ) => void | Promise<void>;
 }
 
 export interface ReboostConfig {
@@ -112,6 +110,11 @@ export const start = async (config: ReboostConfig = {} as any) => {
     },
     plugins: [],
   }, config));
+
+  if (!config.entries) {
+    console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
+    process.exit(1);
+  }
 
   if (config.rootDir.startsWith('.')) config.rootDir = path.resolve(config.rootDir);
   if (config.cacheDir.startsWith('.')) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);

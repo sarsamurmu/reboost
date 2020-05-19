@@ -78,15 +78,11 @@ export const resolvePath = (basePath: string, pathToResolve: string) => {
 
 export const defaultPlugin: ReboostPlugin = {
   load(importPath) {
-    const code = fs.readFileSync(importPath).toString();
     return {
-      code,
-      ast: parse(code, {
-        sourceType: 'module'
-      })
+      code: fs.readFileSync(importPath).toString()
     }
   },
-  resolve(source, importer) {
-    return resolvePath(importer, source);
+  resolve(importPath, importer) {
+    return resolvePath(importer, importPath);
   }
 }
