@@ -32,8 +32,8 @@
     "anymatch": "^3.1.1",
     "chalk": "^4.0.0",
     "chokidar": "^3.4.0",
-    "esbuild": "^0.2.11",
-    "koa": "^2.11.0",
+    "esbuild": "^0.3.5",
+    "koa": "^2.12.0",
     "koa-static": "^5.0.0",
     "koa-websocket": "^6.0.0",
     "md5-file": "^5.0.0",
@@ -42,11 +42,11 @@
     "yargs": "^15.3.1"
   },
   "devDependencies": {
+    "@types/koa-websocket": "^5.0.4",
     "@types/koa__cors": "^3.0.1",
     "@types/koa__router": "^8.0.2",
-    "@types/koa-websocket": "^5.0.4",
     "@types/yargs": "^15.0.4",
     "glob": "^7.1.6",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   }
 }
