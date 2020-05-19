@@ -12,10 +12,9 @@ start({
   },
   plugins: [
     plugins.esbuild({
-      loaders: ['jsx', 'tsx', 'ts'],
-      jsxFactory: 'h'
+      loaders: ['jsx', 'tsx', 'ts']
     })
   ],
-  // dumpCache: true,
+  //dumpCache: true,
   // debugMode: true,
 });

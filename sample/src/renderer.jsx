@@ -1,8 +1,9 @@
-import { html, render, h } from 'htm/preact/standalone.module';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 const app = document.createElement('div');
 document.body.appendChild(app);
 
 const jsx = <div></div>;
 
-render(<div>This is working as intended</div>, app);
+ReactDOM.render(<div>This is working as intended</div>, app);
