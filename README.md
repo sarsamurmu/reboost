@@ -2,7 +2,7 @@
 Reboost your web development workflow.
 
 > ### Experimental.
-> Reboost is still in the alpha stage. Some things might not work.
+> Reboost is still in the alpha stage. Some things might not work. API can change any time.
 
 ## Motivation
 When developing a web app, as your number of modules increases,
@@ -15,7 +15,7 @@ does that for you - the serving part. So you can develop your app faster.
 **NOTE:**
 1. Reboost only serves your scripts while developing, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
-2. For now, only ES modules are supported.
+2. ~~For now, only ES modules are supported.~~ Reboost now supports CommonJS modules!
 
 ## Quickstart
 First, install it using npm as devDependency
@@ -85,11 +85,32 @@ to use any other server (like browser-sync or your own http server) you can do t
 you've to just serve the generated scripts which are in your output directory.
 Reboost will handle the rest.
 
+### Supporting old browsers while using `script type="module"`
+You may know that `script` with `module` type is only supported by modern browsers
+that support ES modules. Old browsers don't know what `script type="module"` is,
+so they will just ignore it and break your web app. So how can we fix that?
+
+What you've to do is, generate two bundles from the same scripts. One bundle will
+target ES2015, let's name it `bundle.js` and the other one will target old browsers with
+polyfills and other stuff, let's name is `bundle.fallback.js`. In your HTML add them like
+```html
+<script type="module" src="path/to/bundle.js">
+<script nomodule src="path/to/bundle.fallback.js">
+```
+What does it do? Modern browsers know what `script` with attribute `nomodule` means,
+so modern browsers won't load `path/to/bundle.fallback.js` but cause old browsers
+don't know what it means, they will just load it as regular scripts. In this way
+you can support both old and modern browsers while using `script type="module"`.
+
+*Plus point: In this way, modern browsers will load less code as the code is not 
+bloated with polyfills and the page load will be faster for modern browsers.*
+
 ## Features
 - No bundling. So the server start time is fast.
-- Transforms only the file which is requested or changed.
+- Incremental Builds, transforms only the file which is requested or changed.
 - Caches transformed files, so it can serve fast if the file hasn't changed.
-- Support for source maps for better debugging.
+- Source maps support for better debugging.
+- Supports CommonJS modules.
 
 ## How it works?
 1. Reboost starts a proxy server
@@ -178,7 +199,8 @@ window.coolLib // Module { add: (...), subtract: (...) }
 As you expected, exports are available through the `window` object
 
 #### `rootDir`
-Type: `string`
+Type: `string`\
+Default: `.`
 
 Path of the directory to use as the root directory. Used to resolve relative paths.
 
@@ -188,7 +210,8 @@ Type: `object`
 Configurations for module and file resolving
 
 ##### `resolve.alias`
-Type: `{ [aliasName: string]: string }`
+Type: `{ [aliasName: string]: string }`\
+Default: `{}`
 
 Paths to use when resolving aliases, create your own alias to ease importing.
 
@@ -217,37 +240,38 @@ import ProgressBar from 'Components/progressbar';
 ```
 
 ##### `resolve.extensions`
-Type: `string[]`
+Type: `string[]`\
+Default: `['.mjs', '.js', '.json']`
 
-Extensions to use for resolving files. Defaults to `['.mjs', '.js', '.json']`.
-So that you can write
+Extensions to use for resolving files.
+
 ```js
+// If you use `['.js']`
 import mod from './mod';
-```
-instead of
-```js
+// resolves to
 import mod from './mod.js';
 ```
 
 It returns the first file with the first matched extension, so extension ordering matters.
 
 ##### `resolve.mainFiles`
-Type: `string[]`
+Type: `string[]`\
+Default: `['index']`
 
-File names to use while resolving directories. Defaults to `['index']`.
-So that you can write
+File names to use while resolving directories.
+
 ```js
+// If you use `['index']`
 import main from './subdir';
-```
-instead of
-```js
+// resolves to
 import main from './subdir/index';
 ```
 
 ##### `resolve.modules`
-Type: `string[]`
+Type: `string[]`\
+Default: `['node_modules']`
 
-Directories to use while resolving modules. Defaults to `['node_modules']`.
+Directories to use while resolving modules.
 
 #### `watchOptions`
 Type: `object`
@@ -255,16 +279,18 @@ Type: `object`
 Options to use for watching files
 
 ##### `watchOptions.include`
-Type: `Matcher`
+Type: `Matcher`\
+Default: `/.*/`
 
 Files to include in the watch-list. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
-patterns. By default, all files with resolved extensions are watched.
+patterns. By default, all files are watched except for excluded files.
 
 ##### `watchOptions.exclude`
-Type: `Matcher`
+Type: `Matcher`\
+Default: `/node_modules/`
 
 Files to exclude from watch-list. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
-patterns. Defaults to `/node_modules/`, all files which are in `node_modules` are excluded.
+patterns. By default, all files which are in `node_modules` are excluded.
 
 #### `sourceMaps`
 Type: `object`
@@ -272,16 +298,18 @@ Type: `object`
 Options to use when generating source maps.
 
 ##### `sourceMaps.include`
-Type: `Matcher`
+Type: `Matcher`\
+Default: `/.*/`
 
 Files to include in source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
-patterns. Defaults to `/.*/`, source map is generated for all files.
+patterns. By default, source maps are generated for all files.
 
 ##### `sourceMaps.exclude`
-Type: `Matcher`
+Type: `Matcher`\
+Default: `/node_modules/`
 
 Files to exclude from source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
-patterns. Defaults to `/node_modules/`, all files which are in `node_modules` are excluded.
+patterns. By default, all files which are in `node_modules` are excluded.
 
 #### `plugins`
 Type: `ReboostPlugin[]`
@@ -292,9 +320,10 @@ An array of plugins to be used by Reboost.
 There are several built-in plugins from Reboost.
 [Read more about built-in plugins](https://github.com/sarsamurmu/reboost/blob/master/plugins.md).
 
-## Writing your own plugin
+## Plugin API
 Reboost plugins are objects with function as properties.
-A plugin object can contain four properties - `start`, `resolve`, `load`, `transform`.
+A plugin object can contain five properties - `setup`, `resolve`,
+`load`, `transformContent`, `transformAST`.
 Your plugin package should export a function that returns the Reboost plugin compatible object.
 
 ### Sample Plugin
@@ -304,7 +333,7 @@ Here's an example of a sample plugin, which logs when it starts
 // sample-plugin.js
 module.exports = function samplePlugin() {
   return {
-    start() {
+    setup() {
       console.log(`Sample plugin is starting`);
     }
   }
@@ -325,12 +354,12 @@ start({
 ```
 
 ### All plugin properties
-#### `start`
+#### `setup`
 Type: `(config: ReboostConfig) => void`
 
-Called when Reboost starts, called only one time. You can start your
+Called once when Reboost starts. You can start your
 services or do the initial setup in this function. The first argument is
-the options object which is passed when starting Reboost.
+the configuration options object which is passed when starting Reboost.
 
 #### `resolve`
 Type: `(importPath: string, importer: string) => string`
@@ -342,22 +371,32 @@ the file which is using the import path. This function should return an
 absolute path to the file being imported.
 
 #### `load`
-Type: `(filePath: string) => { code: string; ast: ASTNode; map?: string; }`
+Type: `(filePath: string) => { code: string; original?: string; map?: string; }`
 
-Used to load code and AST of a file. The first argument is the absolute path
-to file which is being loaded. This function should return an object with
-two required properties and one optional property. Required properties are
-`code` and `ast`, `code` is the original code content of the file, and
-`ast` is the AST of the file, AST format should be JavaScript. The optional
-property is `map`, `map` should be the source map of the original file,
-improves source map support if the original content is transformed before
-the AST is generated.
+Used to load the code of a file. The first argument is the absolute path
+to the file which should be loaded. This function should return an object with
+one required property and two optional properties. The required property is
+`code`, `code` should be a string of JavaScript code, most of the time
+made by transforming the original code. The optional properties are `original` and `map`,
+if your loaded `code` is transformed, you should set `original` property to the
+original source string of the file and `map` to the source map string which maps the
+transformations made to the file.
 
-#### `transform`
-Type: `(moduleData: { ast: ASTNode; }, babel: { traverse: BabelTraverse; types: BabelTypes; }, filePath: string) => void`
+#### `transformContent`
+Type: `(sourceCode, filePath) => { code: string; map: string; }`
 
-Used to transform the AST. The first argument is an object with property `ast` -
-the AST of the code. The second argument is an object which includes two properties -
+Used to transform the code as a string. The first argument is the source code of
+a file and the second argument is the absolute path to the file from which the source code
+is generated. You should do your transformation in this function and return an object with
+two properties - `code` and `map`. `code` should be the code which is generated after
+your transformations and `map` should be a string of source map which maps all the
+transformations made.
+
+#### `transformAST`
+Type: `(ast: ASTNode, babel: { traverse: BabelTraverse; types: BabelTypes; }, filePath: string) => void`
+
+Used to transform the AST. The first argument is the AST of the code.
+The second argument is an object which includes two properties -
 `traverse` - Babel's [traverse function](https://babeljs.io/docs/en/babel-traverse)
 and `types` - Babel's [types](https://babeljs.io/docs/en/babel-types). The third
 argument is the absolute path to the file from which the AST is generated.

@@ -38,7 +38,7 @@ export interface ReboostPlugin {
   setup?: (config: ReboostConfig) => void | Promise<void>;
   resolve?: (importPath: string, importer: string) => string | Promise<string>;
   load?: (filePath: string) => LoadedData | Promise<LoadedData>;
-  transformContent?: (code: string, filePath: string) => TransformedContent | Promise<TransformedContent>;
+  transformContent?: (sourceCode: string, filePath: string) => TransformedContent | Promise<TransformedContent>;
   transformAST?: (
     ast: babelTypes.Node,
     babel: {
