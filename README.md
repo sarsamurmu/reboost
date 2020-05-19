@@ -111,6 +111,7 @@ bloated with polyfills and the page load will be faster for modern browsers.*
 - Caches transformed files, so it can serve fast if the file hasn't changed.
 - Source maps support for better debugging.
 - Supports CommonJS modules.
+- Plugin support.
 
 ## How it works?
 1. Reboost starts a proxy server
