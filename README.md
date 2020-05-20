@@ -140,7 +140,7 @@ List of all options
 Type: `string`\
 Default: `./.reboost_cache`
 
-Path of the directory to use for storing cached files.
+Directory to use for storing cached files.
 
 
 #### `entries`
@@ -204,7 +204,7 @@ As you expected, exports are available through the `window` object
 Type: `string`\
 Default: `.`
 
-Path of the directory to use as the root directory. Used to resolve relative paths.
+Directory to use as the root directory. Used to resolve relative paths.
 
 #### `resolve`
 Type: `object`
