@@ -29,6 +29,11 @@ export const setConfig = (aConfig: ReboostConfig) => config = aConfig;
 
 export const getFilesDir = () => path.join(getConfig().cacheDir, 'files');
 
+export const getVersion = () => {
+  const pkgJSON = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json')).toString());
+  return parseInt(pkgJSON.version.replace(/\./g, ''));
+}
+
 const filesDataPath = () => path.join(getConfig().cacheDir, 'files_data.json');
 export const getFilesData = () => {
   const filePath = filesDataPath();
@@ -36,9 +41,8 @@ export const getFilesData = () => {
     if (fs.existsSync(filePath)) {
       filesData = JSON.parse(fs.readFileSync(filePath).toString());
     } else {
-      const pkgJSON = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json')).toString());
       filesData = {
-        version: parseInt(pkgJSON.version.replace(/\./g, '')),
+        version: getVersion(),
         files: {},
         dependents: {}
       };

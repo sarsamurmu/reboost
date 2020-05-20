@@ -9,8 +9,7 @@ import chalk from 'chalk';
 import path from 'path';
 
 import { ReboostPlugin } from './index';
-import { getConfig, getAddress } from './shared';
-import { defaultPlugins } from './plugins/default';
+import { getConfig } from './shared';
 import { mergeSourceMaps } from './utils';
 
 let pluginsInitiated = false;
@@ -21,19 +20,12 @@ let transformASTHooks: ReboostPlugin['transformAST'][];
 
 export const transformFile = async (filePath: string) => {
   if (!pluginsInitiated) {
-    getConfig().plugins.push(...defaultPlugins);
     const def = (a: any) => !!a;
     const plugins = getConfig().plugins.filter(def);
     resolveHooks = plugins.map((plugin) => plugin.resolve).filter(def);
     loadHooks = plugins.map((plugin) => plugin.load).filter(def);
     transformContentHooks = plugins.map((plugin) => plugin.transformContent).filter(def);
     transformASTHooks = plugins.map((plugin) => plugin.transformAST).filter(def);
-
-    const promises = [];
-    for (const { setup } of plugins) {
-      if (typeof setup === 'function') promises.push(setup(getConfig()));
-    }
-    await Promise.all(promises);
     
     pluginsInitiated = true;
   }
@@ -59,7 +51,7 @@ export const transformFile = async (filePath: string) => {
     const transformed = await hook(code, filePath);
     if (transformed) {
       code = transformed.code;
-      sourceMap = sourceMap ? mergeSourceMaps(sourceMap, JSON.parse(transformed.map)) : JSON.parse(transformed.map);
+      sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, JSON.parse(transformed.map)) : JSON.parse(transformed.map);
     }
   }
 
@@ -77,21 +69,34 @@ export const transformFile = async (filePath: string) => {
   const resolveDeps = async (astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>) => {
     if ((astPath.node as any).source) {
       let finalPath = null;
-      const source = (astPath.node as any).source.value;
-      for (const hook of resolveHooks) {
-        const resolvedPath = await hook(source, filePath);
-        if (resolvedPath) {
-          finalPath = resolvedPath;
-          dependencies.push(resolvedPath);
-          break;
-        } else {
-          hasUnresolvedDeps = true;
-          console.log(chalk.red(`[reboost] Unable to resolve import "${source}" of "${filePath}"`));
+      let routed = false;
+      const source: string = (astPath.node as any).source.value;
+      if (source.startsWith('#/')) {
+        finalPath = source.replace(/^#/, '');
+        routed = true;
+      } else {
+        for (const hook of resolveHooks) {
+          const resolvedPath = await hook(source, filePath);
+          if (resolvedPath) {
+            if (resolvedPath.startsWith('#/')) {
+              finalPath = resolvedPath.replace(/^#/, '');
+              routed = true;
+            } else {
+              finalPath = resolvedPath;
+              dependencies.push(resolvedPath);
+            }
+            break;
+          } else {
+            hasUnresolvedDeps = true;
+            console.log(chalk.red(`[reboost] Unable to resolve import "${source}" of "${filePath}"`));
+          }
         }
       }
-      (astPath.node as any).source.value = finalPath
-        ? `${getAddress()}/transformed?q=${encodeURI(finalPath)}`
-        : `${getAddress()}/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
+      (astPath.node as any).source.value = routed
+          ? encodeURI(finalPath)
+          : finalPath
+            ? `/transformed?q=${encodeURI(finalPath)}`
+            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
     }
   }
 

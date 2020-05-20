@@ -14,10 +14,11 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
-import setupFunc from './client';
+import clientFunc from './client';
 import { merge, ensureDir, rmDir } from './utils';
-import { setAddress, setConfig, setWebSocket } from './shared';
+import { setAddress, setConfig, setWebSocket, getVersion } from './shared';
 import { fileRequestHandler, verifyFiles } from './file-handler';
+import { defaultPlugins } from './plugins/default';
 
 export * as plugins from './plugins';
 
@@ -35,7 +36,7 @@ export interface TransformedContent {
 }
 
 export interface ReboostPlugin {
-  setup?: (config: ReboostConfig) => void | Promise<void>;
+  setup?: (config: ReboostConfig, app: Koa, router: Router) => void | Promise<void>;
   resolve?: (importPath: string, importer: string) => string | Promise<string>;
   load?: (filePath: string) => LoadedData | Promise<LoadedData>;
   transformContent?: (sourceCode: string, filePath: string) => TransformedContent | Promise<TransformedContent>;
@@ -90,6 +91,8 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
+const INCOMPATIBLE_BELOW = 6;
+
 export const start = async (config: ReboostConfig = {} as any) => {
   config = setConfig(merge<ReboostConfig>({
     cacheDir: './.reboost_cache',
@@ -124,13 +127,20 @@ export const start = async (config: ReboostConfig = {} as any) => {
   if (config.contentServer && config.contentServer.root.startsWith('.')) {
     config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
   }
+  config.plugins.push(...defaultPlugins);
 
   if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
 
+  if (getVersion() < INCOMPATIBLE_BELOW) {
+    console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
+    rmDir(config.cacheDir);
+    console.log(chalk.cyan('[reboost] Clear cache complete'));
+  }
+
   if (fs.existsSync(config.cacheDir)) {
-    console.log(chalk.green('[reboost] Refreshing cache...'));
+    console.log(chalk.cyan('[reboost] Refreshing cache...'));
     verifyFiles();
-    console.log(chalk.green('[reboost] Refresh cache complete'));
+    console.log(chalk.cyan('[reboost] Refresh cache complete'));
   }
 
   console.log(chalk.green('[reboost] Starting proxy server...'));
@@ -193,7 +203,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
 
   router.get('/client', async (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `(${setupFunc.toString()})('${host}:${port}')`;
+    ctx.body = `(${clientFunc.toString()})('${host}:${port}')`;
   });
 
   router.get('/raw', async (ctx) => {
@@ -209,6 +219,12 @@ export const start = async (config: ReboostConfig = {} as any) => {
       export default undefined;
     `.trim();
   });
+
+  const setupPromises = [];
+  for (const plugin of config.plugins) {
+    if (plugin.setup) setupPromises.push(plugin.setup(config, app, router));
+  }
+  await Promise.all(setupPromises);
 
   app
     .use(cors({ origin: '*' }))
