@@ -12,7 +12,7 @@ First import plugins from Reboost
 ```js
 const { start, plugins } = require('reboost');
 ```
-then add `esbuild` plugin it to `plugins`
+then add `esbuild` plugin to `plugins`
 ```js
 const { start, plugins } = require('reboost');
 
@@ -149,7 +149,7 @@ First import plugins from Reboost
 ```js
 const { start, plugins } = require('reboost');
 ```
-then add `replace` plugin it to `plugins`
+then add `replace` plugin to `plugins`
 ```js
 const { start, plugins } = require('reboost');
 
@@ -162,8 +162,7 @@ start({
 })
 ```
 
-Example\
-If you want to replace `process.env.NODE_ENV` with `production`
+Example - If you want to replace `process.env.NODE_ENV` with `production`
 ```js
 const { start, plugins } = require('reboost');
 
