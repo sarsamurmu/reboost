@@ -13,8 +13,13 @@ start({
   plugins: [
     plugins.esbuild({
       loaders: ['jsx', 'tsx', 'ts']
+    }),
+    plugins.replace({
+      ADJECTIVE: JSON.stringify('cool')
     })
   ],
-  //dumpCache: true,
-  // debugMode: true,
+
+  // Don't use these options, these are only for debugging
+  dumpCache: true,
+  debugMode: true,
 });
