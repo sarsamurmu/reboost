@@ -16,7 +16,7 @@ import http from 'http';
 
 import clientFunc from './client';
 import { merge, ensureDir, rmDir } from './utils';
-import { setAddress, setConfig, setWebSocket, getVersion } from './shared';
+import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { fileRequestHandler, verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/default';
 
@@ -131,7 +131,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
 
   if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
 
-  if (getVersion() < INCOMPATIBLE_BELOW) {
+  if (getFilesData().version < INCOMPATIBLE_BELOW) {
     console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
     rmDir(config.cacheDir);
     console.log(chalk.cyan('[reboost] Clear cache complete'));

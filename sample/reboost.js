@@ -20,6 +20,6 @@ start({
   ],
 
   // Don't use these options, these are only for debugging
-  dumpCache: true,
-  debugMode: true,
+  // dumpCache: true,
+  // debugMode: true,
 });

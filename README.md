@@ -357,11 +357,13 @@ start({
 
 ### All plugin properties
 #### `setup`
-Type: `(config: ReboostConfig) => void`
+Type: `(config: ReboostConfig, app: Koa, router: Router) => void`
 
-Called once when Reboost starts. You can start your
-services or do the initial setup in this function. The first argument is
-the configuration options object which is passed when starting Reboost.
+Called once when Reboost starts. You can start your services,
+add server functionality, or do the initial setup in this function.
+The first argument is the configuration options object which is passed
+when starting Reboost. The second argument is the [Koa](https://koajs.com/)
+app instance used by Reboost. The third argument is a [koa-router](https://github.com/koajs/router) instance used by koa.
 
 #### `resolve`
 Type: `(importPath: string, importer: string) => string`

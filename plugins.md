@@ -1,16 +1,18 @@
 # Plugins
 All built-in plugins of Reboost.
+- [esbuild](#esbuild)
+- [replace](#replace)
 
 ## esbuild
-[esbuild](https://github.com/evanw/esbuild) is a powerful and fast transformer,
-which you can use to transform TypeScript, JSX or newer ECMAScript features.
+[esbuild](https://github.com/evanw/esbuild) is a fast and powerful transformer,
+which you can use to transform TypeScript, JSX, or newer ECMAScript features.
 
 ### Usage
-First import plugins from Reboost.
+First import plugins from Reboost
 ```js
 const { start, plugins } = require('reboost');
 ```
-then use it add it to `plugins`
+then add `esbuild` plugin it to `plugins`
 ```js
 const { start, plugins } = require('reboost');
 
@@ -134,6 +136,41 @@ start({
     plugins.esbuild({
       loaders: ['js'],
       target: 'es2018' // Supported by most browsers
+    })
+  ]
+})
+```
+
+## replace
+A plugin that you can use to replace strings in your code.
+
+### Usage
+First import plugins from Reboost
+```js
+const { start, plugins } = require('reboost');
+```
+then add `replace` plugin it to `plugins`
+```js
+const { start, plugins } = require('reboost');
+
+start({
+  plugins: [
+    plugins.replace({
+      'to-replace': 'replacement'
+    })
+  ]
+})
+```
+
+Example\
+If you want to replace `process.env.NODE_ENV` with `production`
+```js
+const { start, plugins } = require('reboost');
+
+start({
+  plugins: [
+    plugins.replace({
+      'process.env.NODE_ENV': JSON.stringify('production')
     })
   ]
 })
