@@ -18,7 +18,7 @@ import clientFunc from './client';
 import { merge, ensureDir, rmDir } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { fileRequestHandler, verifyFiles } from './file-handler';
-import { defaultPlugins } from './plugins/default';
+import { defaultPlugins } from './plugins/defaults';
 
 export * as plugins from './plugins';
 

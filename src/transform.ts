@@ -66,6 +66,21 @@ export const transformFile = async (filePath: string) => {
 
   for (const hook of transformASTHooks) await hook(ast, { traverse, types: babelTypes }, filePath);
 
+  const resolvedPathMap = {} as Record<string, any>;
+  const resolvePath = async (source: string, filePath: string) => {
+    const keyStr = `${filePath}||${source}`;
+    if (resolvedPathMap[keyStr]) return resolvedPathMap[keyStr];
+    for (const hook of resolveHooks) {
+      const resolvedPath = await hook(source, filePath);
+      if (resolvedPath) {
+        resolvedPathMap[keyStr] = resolvedPath;
+        return resolvedPath
+      }
+    }
+    console.log(chalk.red(`[reboost] Unable to resolve path "${source}" of "${filePath}"`));
+    return null;
+  }
+
   const resolveDeps = async (astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>) => {
     if ((astPath.node as any).source) {
       let finalPath = null;
@@ -75,23 +90,20 @@ export const transformFile = async (filePath: string) => {
         finalPath = source.replace(/^#/, '');
         routed = true;
       } else {
-        for (const hook of resolveHooks) {
-          const resolvedPath = await hook(source, filePath);
-          if (resolvedPath) {
-            if (resolvedPath.startsWith('#/')) {
-              finalPath = resolvedPath.replace(/^#/, '');
-              routed = true;
-            } else {
-              finalPath = resolvedPath;
-              dependencies.push(resolvedPath);
-            }
-            break;
+        const resolvedPath = await resolvePath(source, filePath);
+        if (resolvedPath) {
+          if (resolvedPath.startsWith('#/')) {
+            finalPath = resolvedPath.replace(/^#/, '');
+            routed = true;
           } else {
-            hasUnresolvedDeps = true;
-            console.log(chalk.red(`[reboost] Unable to resolve import "${source}" of "${filePath}"`));
+            finalPath = resolvedPath;
+            dependencies.push(resolvedPath);
           }
+        } else {
+          hasUnresolvedDeps = true;
         }
       }
+
       (astPath.node as any).source.value = routed
           ? encodeURI(finalPath)
           : finalPath
@@ -100,20 +112,36 @@ export const transformFile = async (filePath: string) => {
     }
   }
 
-  const astPathsToResolve: Parameters<typeof resolveDeps>[0][] = [];
+  const promiseFunctions: (() => Promise<void>)[] = [];
 
   traverse(ast, {
     ImportDeclaration(astPath) {
-      astPathsToResolve.push(astPath);
+      promiseFunctions.push(async () => {
+        await resolveDeps(astPath);
+      });
       return false;
     },
     ExportDeclaration(astPath) {
-      astPathsToResolve.push(astPath);
+      promiseFunctions.push(async () => {
+        await resolveDeps(astPath);
+      });
       return false;
+    },
+    CallExpression(astPath) {
+      const t = babelTypes;
+      if (t.isIdentifier(astPath.node.callee, { name: '__reboost_resolve' })) {
+        promiseFunctions.push(async () => {
+          astPath.replaceWith(
+            t.stringLiteral(
+              await resolvePath((astPath.node.arguments[0] as babelTypes.StringLiteral).value, filePath)
+            )
+          );
+        });
+      }
     }
   });
 
-  for (const astPath of astPathsToResolve) await resolveDeps(astPath);
+  for (const execute of promiseFunctions) await execute();
 
   let generatorOptions = {
     sourceMaps: true,
