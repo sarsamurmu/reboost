@@ -30,7 +30,7 @@ export const setConfig = (aConfig: ReboostConfig) => config = aConfig;
 export const getFilesDir = () => path.join(getConfig().cacheDir, 'files');
 
 export const getVersion = () => {
-  const pkgJSON = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json')).toString());
+  const pkgJSON = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json')).toString());
   return parseInt(pkgJSON.version.replace(/\./g, ''));
 }
 

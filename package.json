@@ -2,17 +2,16 @@
   "name": "reboost",
   "version": "0.0.6",
   "description": "Reboost your web development workflow",
-  "main": "./dist/index.js",
+  "main": "./dist/node/index.js",
   "types": "./types/index.d.ts",
   "files": [
     "dist",
     "types"
   ],
-  "bin": "./dist/cli.js",
   "scripts": {
-    "prepublishOnly": "node prepublish && tsc",
-    "build": "tsc",
-    "watch": "tsc -w"
+    "prepublishOnly": "node prepublish && npm run build",
+    "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
+    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
   },
   "repository": "github:sarsamurmu/reboost",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
@@ -39,14 +38,14 @@
     "magic-string": "^0.25.7",
     "md5-file": "^5.0.0",
     "portfinder": "^1.0.26",
-    "source-map": "^0.7.3",
-    "yargs": "^15.3.1"
+    "source-map": "^0.7.3"
   },
   "devDependencies": {
     "@types/koa-websocket": "^5.0.4",
     "@types/koa__cors": "^3.0.1",
     "@types/koa__router": "^8.0.2",
     "@types/yargs": "^15.0.5",
+    "concurrently": "^5.2.0",
     "glob": "^7.1.6",
     "typescript": "^3.9.3"
   }

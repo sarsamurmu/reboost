@@ -60,7 +60,8 @@ export const transformFile = async (filePath: string) => {
       sourceType: 'module'
     });
   } catch (e) {
-    console.log(`Error while parsing "${filePath}"`);
+    console.log(chalk.red(`Error while parsing "${filePath}"`));
+    console.log(chalk.red('You may need proper loader to handle this kind of files.'));
     console.log(e);
   }
 
@@ -83,32 +84,37 @@ export const transformFile = async (filePath: string) => {
 
   const resolveDeps = async (astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>) => {
     if ((astPath.node as any).source) {
-      let finalPath = null;
-      let routed = false;
       const source: string = (astPath.node as any).source.value;
-      if (source.startsWith('#/')) {
-        finalPath = source.replace(/^#/, '');
-        routed = true;
+      
+      if (source === 'reboost/hmr') {
+        (astPath.node as any).source.value = `/hmr?q=${encodeURI(filePath)}`;
       } else {
-        const resolvedPath = await resolvePath(source, filePath);
-        if (resolvedPath) {
-          if (resolvedPath.startsWith('#/')) {
-            finalPath = resolvedPath.replace(/^#/, '');
-            routed = true;
-          } else {
-            finalPath = resolvedPath;
-            dependencies.push(resolvedPath);
-          }
+        let finalPath = null;
+        let routed = false;
+        if (source.startsWith('#/')) {
+          finalPath = source.replace(/^#/, '');
+          routed = true;
         } else {
-          hasUnresolvedDeps = true;
+          const resolvedPath = await resolvePath(source, filePath);
+          if (resolvedPath) {
+            if (resolvedPath.startsWith('#/')) {
+              finalPath = resolvedPath.replace(/^#/, '');
+              routed = true;
+            } else {
+              finalPath = resolvedPath;
+              dependencies.push(resolvedPath);
+            }
+          } else {
+            hasUnresolvedDeps = true;
+          }
         }
-      }
 
-      (astPath.node as any).source.value = routed
+        (astPath.node as any).source.value = routed
           ? encodeURI(finalPath)
           : finalPath
             ? `/transformed?q=${encodeURI(finalPath)}`
             : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
+      }
     }
   }
 

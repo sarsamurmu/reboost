@@ -8,13 +8,13 @@ import portFinder from 'portfinder';
 import { Matcher } from 'anymatch';
 import babelTraverse from '@babel/traverse';
 import * as babelTypes from '@babel/types';
+import { WatchOptions } from 'chokidar';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
-import clientFunc from './client';
 import { merge, ensureDir, rmDir } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { fileRequestHandler, verifyFiles } from './file-handler';
@@ -37,7 +37,7 @@ export interface TransformedContent {
 
 export interface ReboostPlugin {
   setup?: (config: ReboostConfig, app: Koa, router: Router) => void | Promise<void>;
-  resolve?: (importPath: string, importer: string) => string | Promise<string>;
+  resolve?: (pathToResolve: string, relativeTo: string) => string | Promise<string>;
   load?: (filePath: string) => LoadedData | Promise<LoadedData>;
   transformContent?: (sourceCode: string, filePath: string) => TransformedContent | Promise<TransformedContent>;
   transformAST?: (
@@ -51,7 +51,7 @@ export interface ReboostPlugin {
 }
 
 export interface ReboostConfig {
-  /** Path of the directory to be used by reboost to cache files */
+  /** Directory to use for storing cached files */
   cacheDir?: string;
   /** File entries */
   entries: ([string, string] | [string, string, string])[];
@@ -71,6 +71,7 @@ export interface ReboostConfig {
   watchOptions?: {
     include?: Matcher;
     exclude?: Matcher;
+    chokidar?: WatchOptions;
   };
   /** Options for sourceMaps */
   sourceMaps?: {
@@ -91,7 +92,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = 6;
+const INCOMPATIBLE_BELOW = 7;
 
 export const start = async (config: ReboostConfig = {} as any) => {
   config = setConfig(merge<ReboostConfig>({
@@ -105,7 +106,12 @@ export const start = async (config: ReboostConfig = {} as any) => {
       modules: ['node_modules']
     },
     watchOptions: {
-      exclude: /node_modules/
+      exclude: /node_modules/,
+      chokidar: {
+        awaitWriteFinish: {
+          stabilityThreshold: 250
+        }
+      }
     },
     sourceMaps: {
       include: /.*/,
@@ -127,6 +133,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
   if (config.contentServer && config.contentServer.root.startsWith('.')) {
     config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
   }
+
   config.plugins.push(...defaultPlugins);
 
   if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
@@ -174,7 +181,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     const outputPath = path.resolve(config.rootDir, output);
     ensureDir(path.dirname(outputPath));
     fs.writeFileSync(outputPath, trim(
-      `import '${fullAddress}/client';
+      `import '${fullAddress}/setup';
       import ${libName ? '* as _$lib$_ from' : ''} '${fullAddress}/transformed?q=${encodeURI(path.resolve(config.rootDir, input))}';
       ${libName ? `window['${libName}'] = _$lib$_;`: ''}
       `
@@ -201,14 +208,23 @@ export const start = async (config: ReboostConfig = {} as any) => {
 
   router.get('/transformed', fileRequestHandler);
 
-  router.get('/client', async (ctx) => {
+  const setupCode = fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString();
+  router.get('/setup', async (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `(${clientFunc.toString()})('${host}:${port}')`;
+    ctx.body = `const address = "${host}:${port}";\n\n${setupCode}`;
   });
 
   router.get('/raw', async (ctx) => {
     const filePath = ctx.query.q;
     if (fs.existsSync(filePath)) ctx.body = fs.readFileSync(filePath);
+  });
+
+  const hmrCode = fs.readFileSync(path.resolve(__dirname, '../browser/hmr.js')).toString();
+  router.get('/hmr', async (ctx) => {
+    ctx.type = 'text/javascript';
+    ctx.body = `const address = "${host}:${port}";\n`;
+    ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
+    ctx.body += hmrCode;
   });
 
   router.get('/unresolved', async (ctx) => {
@@ -218,6 +234,27 @@ export const start = async (config: ReboostConfig = {} as any) => {
       console.error('[reboost] Unable to resolve import ${JSON.stringify(query.import)} of ${JSON.stringify(query.importer)}');
       export default undefined;
     `.trim();
+  });
+
+  router.get('/resolve', async (ctx) => {
+    const relativeTo = ctx.query.from;
+    const pathToResolve = ctx.query.to;
+    let finalPath = null;
+
+    for (const plugin of config.plugins) {
+      if (plugin.resolve) {
+        const resolvedPath = plugin.resolve(pathToResolve, relativeTo);
+        if (pathToResolve) {
+          finalPath = resolvedPath;
+          break;
+        }
+      }
+    }
+
+    if (finalPath) {
+      ctx.type = 'text/plain';
+      ctx.body = finalPath;
+    }
   });
 
   const setupPromises = [];

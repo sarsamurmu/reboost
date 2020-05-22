@@ -42,17 +42,25 @@ export const verifyFiles = () => {
 
 let gitignoreCreated = false;
 
-const watcher = new FSWatcher();
-watcher.on('change', (filePath) => {
-  console.log(chalk.magenta(`[reboost] Changed: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
-  messageClient(filePath);
-});
-watcher.on('unlink', (filePath) => {
-  removeDeletedFile(filePath);
-  messageClient(filePath);
-});
+let watcher: FSWatcher;
 const watchedFiles = new Set<string>();
 const watchFile = (filePath: string) => {
+  if (!watcher) {
+    watcher = new FSWatcher(getConfig().watchOptions.chokidar);
+    watcher.on('change', (filePath) => {
+      console.log(chalk.magenta(`[reboost] Changed: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
+      messageClient({
+        type: 'change',
+        file: filePath
+      });
+    }).on('unlink', (filePath) => {
+      removeDeletedFile(filePath);
+      messageClient({
+        type: 'unlink',
+        file: filePath
+      });
+    });
+  }
   if (watchedFiles.has(filePath)) return;
   watcher.add(filePath);
   watchedFiles.add(filePath);

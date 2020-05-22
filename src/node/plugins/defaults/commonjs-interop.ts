@@ -7,7 +7,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
   setup(_, __, router) {
     const importerFunc = () => ({
       Default(mod: any, filePath: string, sourcePath: string) {
-        const message = `The requested module "${sourcePath}" does not provide an export named "default". Module Imported in "${filePath}"`;
+        const message = `The requested module "${sourcePath}" does not provide an export named "default". Module imported by "${filePath}"`;
 
         if (mod.__cjsModule && mod.default.__esModule) {
           if (!('default' in mod.default)) throw new SyntaxError(message);
@@ -17,7 +17,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
         return mod.default;
       },
       Member(mod: any, member: string, filePath: string, sourcePath: string) {
-        const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module Imported in "${filePath}"`;
+        const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module imported by "${filePath}"`;
 
         if (mod.__cjsModule) {
           if (!(member in mod.default)) throw new SyntaxError(message);

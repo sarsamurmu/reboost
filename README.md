@@ -15,7 +15,6 @@ does that for you - the serving part. So you can develop your app faster.
 **NOTE:**
 1. Reboost only serves your scripts while developing, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
-2. ~~For now, only ES modules are supported.~~ Reboost now supports CommonJS modules!
 
 ## Quickstart
 First, install it using npm as devDependency
@@ -111,17 +110,60 @@ bloated with polyfills and the page load will be faster for modern browsers.*
 - Caches transformed files, so it can serve fast if the file hasn't changed.
 - Source maps support for better debugging.
 - Supports CommonJS modules.
-- Plugin support.
+- Support for Plugins.
+- Import resolving.
+- Hot Module Replacement.
+<!-- - Works with [Electron](https://www.electronjs.org/). -->
 
-## How it works?
-1. Reboost starts a proxy server
-2. It rewrites scripts so that all imports are served from the proxy server
-3. When files are requested from the proxy server, the server checks
-if the requested file is available in the cache, it returns the cached file,
-if not available it transforms the file so that all imports of the file are served from
-the proxy server then it returns the transformed file and saves the transformed file
-to cache. Step 3 repeats again for other files.
+### Compatibility
+Reboost works with both CommonJS and ES modules, so you can try it even
+if you're not using ES modules, though using ES modules is recommended.
 
+## HMR API
+HMR API is pretty straight forward.
+- For self-accepting modules
+```js
+import { hot } from 'reboost/hmr';
+
+export let someExport = 10;
+
+if (hot) { // Code will be stripped out when bundled using bundler
+  hot.selfAccept((updatedMod) => {
+    // Called when this module updates
+    // `updatedMod` is the updated instance of the module
+    // Do some updates
+    someExport = updatedMod.someExport;
+  });
+
+  hot.selfDispose(() => {
+    // Called before hot.selfAccept
+    // You can do cleanups here
+  });
+}
+```
+- Accepting other modules
+```js
+import { name } from './some-module'; // Actual code may differ, this is just an example
+import { setName, resetName } from './another-module';
+import { hot } from 'reboost/hmr';
+
+setName(name);
+
+if (hot) {
+  hot.accept('./some-module', (updatedMod) => {
+    // Called when `./some-module` updates
+    // `updatedMod` is the updated instance of the module
+    // Do some updates
+    setName(updatedMod.name);
+  });
+
+  hot.dispose('./some-module', () => {
+    // Called before `hot.accept` function
+    // You can do cleanups here, like so
+    resetName();
+  });
+}
+```
 
 ## Configurations
 There are a few configuration options that you can use to customize Reboost. You would use options when starting
@@ -294,6 +336,12 @@ Default: `/node_modules/`
 Files to exclude from watch-list. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
 patterns. By default, all files which are in `node_modules` are excluded.
 
+##### `watchOptions.chokidar`
+Type: `chokidar.WatchOptions`\
+Default: `{ awaitWriteFinish: { stabilityThreshold: 250 } }`
+
+Options to use when initializing [chokidar](https://www.npmjs.com/package/chokidar).
+
 #### `sourceMaps`
 Type: `object`
 
@@ -359,7 +407,7 @@ start({
 #### `setup`
 Type: `(config: ReboostConfig, app: Koa, router: Router) => void`
 
-Called once when Reboost starts. You can start your services,
+Executes when Reboost starts. You can start your services,
 add server functionality, or do the initial setup in this function.
 The first argument is the configuration options object which is passed
 when starting Reboost. The second argument is the [Koa](https://koajs.com/)
