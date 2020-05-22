@@ -1,9 +1,9 @@
 {
   "name": "reboost",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Reboost your web development workflow",
   "main": "./dist/node/index.js",
-  "types": "./types/index.d.ts",
+  "types": "./types/node/index.d.ts",
   "files": [
     "dist",
     "types"

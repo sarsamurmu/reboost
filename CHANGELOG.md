@@ -1,3 +1,8 @@
+## 0.0.7
+- Added support for HMR
+- Improved plugins
+- Minor fixes
+
 ## 0.0.6
 - Added replace plugin
 - Improved API
