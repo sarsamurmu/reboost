@@ -25,7 +25,7 @@ const getAcceptor = (acceptedFile: string, acceptorFile: string) => {
 }
 
 const resolveDependency = async (dependency: string) => {
-  const response = await(fetch(`http://${address}/resolve?from=${filePath}&to=${dependency}`));
+  const response = await(fetch(`${address}/resolve?from=${filePath}&to=${dependency}`));
   if (!response.ok) {
     console.error(`[reboost] Unable to resolve dependency "${dependency}" of "${filePath}" while using hot.accept()`);
     return 'UNRESOLVED';

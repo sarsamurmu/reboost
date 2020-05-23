@@ -10,13 +10,13 @@ aWindow.process = {
   }
 }
 
-const socket = new WebSocket(`ws://${address}`);
+const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
 if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
 const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
 
 let importer: any;
 const loadImporter = new Promise((resolve) => {
-  import(`http://${address}/importer`).then((mod) => {
+  import(`${address}/importer`).then((mod) => {
     importer = mod.default;
     resolve();
   })
@@ -28,8 +28,6 @@ socket.addEventListener('open', () => {
 });
 
 socket.addEventListener('message', async ({ data }) => {
-  // TODO: Add support for HMR
-  // location.reload();
   const { type, file: acceptedFile } = JSON.parse(data);
 
   if (type === 'change') {
@@ -37,7 +35,7 @@ socket.addEventListener('message', async ({ data }) => {
       await loadImporter;
 
       // Dynamically import with query `t` as random stuff or browser will get file from cache
-      import(`http://${address}/transformed?q=${encodeURI(acceptedFile)}&t=${encodeURI(new Date().toISOString())}`).then((mod) => {
+      import(`${address}/transformed?q=${encodeURI(acceptedFile)}&t=${Date.now()}`).then((mod) => {
         for (const { accept, dispose } of HMR_MAP.get(acceptedFile).values()) {
           if (dispose) dispose();
           if (accept && (accept(importer.All(mod)) === false)) {

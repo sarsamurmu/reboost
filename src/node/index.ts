@@ -15,14 +15,14 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
+import { createRouter } from './router';
 import { merge, ensureDir, rmDir } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
-import { fileRequestHandler, verifyFiles } from './file-handler';
+import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
+import { esbuild as esbuildPlugin, esbuildPluginName } from './plugins/esbuild';
 
 export * as plugins from './plugins';
-
-const trim = (string: string) => string.split('\n').map((part) => part.trim()).join('\n');
 
 export interface LoadedData {
   code: string;
@@ -108,11 +108,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     },
     watchOptions: {
       exclude: /node_modules/,
-      chokidar: {
-        awaitWriteFinish: {
-          stabilityThreshold: 250
-        }
-      }
+      chokidar: {}
     },
     sourceMaps: {
       include: /.*/,
@@ -136,6 +132,11 @@ export const start = async (config: ReboostConfig = {} as any) => {
   }
 
   config.plugins.push(...defaultPlugins);
+  const pluginNames = config.plugins.map(({ name }) => name);
+
+  if (!pluginNames.includes(esbuildPluginName)) {
+    config.plugins.push(esbuildPlugin());
+  }
 
   if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
 
@@ -153,18 +154,18 @@ export const start = async (config: ReboostConfig = {} as any) => {
 
   console.log(chalk.green('[reboost] Starting proxy server...'));
   
+  const app = withWebSocket(new Koa());
+  const router = createRouter();
+  const interfaces = networkInterfaces();
   let host: string;
   let port: number;
   let fullAddress: string;
-  const interfaces = networkInterfaces();
 
   interfaceLoop: for (const dev in interfaces) {
     for (const details of interfaces[dev]) {
       if (details.family === 'IPv4' && details.internal === false) {
         host = details.address;
         port = await portFinder.getPortPromise({ host });
-        fullAddress = `http://${host}:${port}`;
-        setAddress(fullAddress);
         break interfaceLoop;
       }
     }
@@ -181,81 +182,29 @@ export const start = async (config: ReboostConfig = {} as any) => {
   for (const [input, output, libName] of config.entries) {
     const outputPath = path.resolve(config.rootDir, output);
     ensureDir(path.dirname(outputPath));
-    fs.writeFileSync(outputPath, trim(
-      `import '${fullAddress}/setup';
-      import ${libName ? '* as _$lib$_ from' : ''} '${fullAddress}/transformed?q=${encodeURI(path.resolve(config.rootDir, input))}';
-      ${libName ? `window['${libName}'] = _$lib$_;`: ''}
-      `
-    ));
+
+    let fileContent = `import '${fullAddress}/setup';\n`;
+    fileContent += 'import';
+    if (libName) fileContent += ' * as _$lib$_ from';
+    fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.resolve(config.rootDir, input))}';\n`;
+    if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
+
+    fs.writeFileSync(outputPath, fileContent);
     console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
   }
 
-  const app = withWebSocket(new Koa());
-  const router = new Router();
-
   if (config.debugMode) {
-    let idx = 0;
-    app.use(async (ctx, next) => {
-      const current = idx++;
-      console.time(chalk.cyan(`[reboost] Response time ${current}`));
-      await next();
-      console.timeEnd(chalk.cyan(`[reboost] Response time ${current}`));
-    });
+    // let idx = 0;
+    // app.use(async (ctx, next) => {
+    //   const current = idx++;
+    //   console.time(chalk.cyan(`[reboost] Response time ${current}`));
+    //   await next();
+    //   console.timeEnd(chalk.cyan(`[reboost] Response time ${current}`));
+    // });
   }
 
   app.ws.use((ctx) => {
     setWebSocket(ctx.websocket);
-  });
-
-  router.get('/transformed', fileRequestHandler);
-
-  const setupCode = fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString();
-  router.get('/setup', async (ctx) => {
-    ctx.type = 'text/javascript';
-    ctx.body = `const address = "${host}:${port}";\n\n${setupCode}`;
-  });
-
-  router.get('/raw', async (ctx) => {
-    const filePath = ctx.query.q;
-    if (fs.existsSync(filePath)) ctx.body = fs.readFileSync(filePath);
-  });
-
-  const hmrCode = fs.readFileSync(path.resolve(__dirname, '../browser/hmr.js')).toString();
-  router.get('/hmr', async (ctx) => {
-    ctx.type = 'text/javascript';
-    ctx.body = `const address = "${host}:${port}";\n`;
-    ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
-    ctx.body += hmrCode;
-  });
-
-  router.get('/unresolved', async (ctx) => {
-    const { query } = ctx;
-    ctx.type = 'text/javascript';
-    ctx.body = `
-      console.error('[reboost] Unable to resolve import ${JSON.stringify(query.import)} of ${JSON.stringify(query.importer)}');
-      export default undefined;
-    `.trim();
-  });
-
-  router.get('/resolve', async (ctx) => {
-    const relativeTo = ctx.query.from;
-    const pathToResolve = ctx.query.to;
-    let finalPath = null;
-
-    for (const plugin of config.plugins) {
-      if (plugin.resolve) {
-        const resolvedPath = plugin.resolve(pathToResolve, relativeTo);
-        if (pathToResolve) {
-          finalPath = resolvedPath;
-          break;
-        }
-      }
-    }
-
-    if (finalPath) {
-      ctx.type = 'text/plain';
-      ctx.body = finalPath;
-    }
   });
 
   const setupPromises = [];
