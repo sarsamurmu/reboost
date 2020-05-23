@@ -7,6 +7,7 @@ import { ReboostPlugin } from '../../index';
 import { uniqueID } from '../../utils';
 
 export const CommonJSPlugin: ReboostPlugin = {
+  name: 'core-commonjs-plugin',
   transformAST(ast, { traverse }) {
     let program: NodePath<t.Program>;
     let cjsModule = false;

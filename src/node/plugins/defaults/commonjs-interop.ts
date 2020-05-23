@@ -4,6 +4,7 @@ import { NodePath } from '@babel/traverse';
 import { ReboostPlugin } from '../../index';
 
 export const CommonJSInteropPlugin: ReboostPlugin = {
+  name: 'core-commonjs-interop-plugin',
   setup(_, __, router) {
     const importerFunc = () => ({
       Default(mod: any, filePath: string, sourcePath: string) {

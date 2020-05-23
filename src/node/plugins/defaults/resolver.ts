@@ -79,6 +79,7 @@ export const resolvePath = (basePath: string, pathToResolve: string) => {
 }
 
 export const ResolverPlugin: ReboostPlugin = {
+  name: 'core-resolver-plugin',
   resolve(importPath, importer) {
     if (importPath.startsWith('#/')) return importPath;
     return resolvePath(importer, importPath);

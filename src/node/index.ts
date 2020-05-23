@@ -36,6 +36,7 @@ export interface TransformedContent {
 }
 
 export interface ReboostPlugin {
+  name: string;
   setup?: (config: ReboostConfig, app: Koa, router: Router) => void | Promise<void>;
   resolve?: (pathToResolve: string, relativeTo: string) => string | Promise<string>;
   load?: (filePath: string) => LoadedData | Promise<LoadedData>;

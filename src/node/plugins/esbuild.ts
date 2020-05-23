@@ -23,9 +23,10 @@ interface esbuildOptions {
 }
 
 let esbuildService: esbuild.Service;
-const esbuildPlugin = (options: esbuildOptions): ReboostPlugin => {
-  const matcher = new RegExp(`(${options.loaders.map((ext) => `\\.${ext}`).join('|')})$`);
+export const esbuildPluginName = 'core-esbuild-plugin';
+const esbuildPlugin = (options?: esbuildOptions): ReboostPlugin => {
   return {
+    name: esbuildPluginName,
     async setup() {
       esbuildService = await esbuild.startService();
     },

@@ -4,6 +4,7 @@ import { ReboostPlugin } from '../index';
 
 export const replace = (replacements: Record<string, string>): ReboostPlugin => {
   return {
+    name: 'core-replace-plugin',
     transformContent(sourceCode) {
       if (Object.keys(replacements).some((string) => sourceCode.indexOf(string) !== -1)) {
         const magicString = new MagicString(sourceCode);
