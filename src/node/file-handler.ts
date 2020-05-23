@@ -48,7 +48,7 @@ const watchFile = (filePath: string) => {
   if (!watcher) {
     watcher = new FSWatcher(getConfig().watchOptions.chokidar);
     watcher.on('change', (filePath) => {
-      console.log(chalk.magenta(`[reboost] Changed: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
+      console.log(chalk.green(`[reboost] Changed: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
       messageClient({
         type: 'change',
         file: filePath

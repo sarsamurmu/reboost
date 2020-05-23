@@ -1,6 +1,8 @@
 import * as t from '@babel/types';
 import { NodePath } from '@babel/traverse';
 
+import { builtinModules } from 'module';
+
 import { ReboostPlugin } from '../../index';
 import { uniqueID } from '../../utils';
 
@@ -23,6 +25,9 @@ export const CommonJSPlugin: ReboostPlugin = {
         ) {
           const importPath = path.node.arguments[0].value;
           const importIdentifier = importIdentifierMap[importPath] || path.scope.generateUidIdentifier(`$imported_${uid}`);
+
+          // Don't resolve built-in modules like path, fs, etc.
+          if (builtinModules.includes(importPath)) return;
 
           if (!(importPath in importIdentifierMap)) {
             importIdentifierMap[importPath] = importIdentifier;
