@@ -1,2 +1,2 @@
-export { esbuild } from './esbuild';
-export { replace } from './replace';
+export { esbuildPlugin } from './esbuild';
+export { ReplacePlugin } from './replace';

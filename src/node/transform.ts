@@ -16,15 +16,18 @@ let pluginsInitiated = false;
 let resolveHooks: ReboostPlugin['resolve'][];
 let loadHooks: ReboostPlugin['load'][];
 let transformContentHooks: ReboostPlugin['transformContent'][];
+let transformIntoJSHooks: ReboostPlugin['transformIntoJS'][];
 let transformASTHooks: ReboostPlugin['transformAST'][];
 
 export const transformFile = async (filePath: string) => {
   if (!pluginsInitiated) {
     const def = (a: any) => !!a;
     const plugins = getConfig().plugins.filter(def);
+
     resolveHooks = plugins.map((plugin) => plugin.resolve).filter(def);
     loadHooks = plugins.map((plugin) => plugin.load).filter(def);
     transformContentHooks = plugins.map((plugin) => plugin.transformContent).filter(def);
+    transformIntoJSHooks = plugins.map((plugin) => plugin.transformIntoJS).filter(def);
     transformASTHooks = plugins.map((plugin) => plugin.transformAST).filter(def);
     
     pluginsInitiated = true;
@@ -33,26 +36,50 @@ export const transformFile = async (filePath: string) => {
   let code: string;
   let originalCode: string;
   let sourceMap: RawSourceMap;
+  let inputSourceMap: RawSourceMap;
   let ast: babelTypes.Node;
+  let type: string;
   let dependencies: string[] = [];
   let hasUnresolvedDeps = false;
 
   for (const hook of loadHooks) {
     let result = await hook(filePath);
     if (result) {
-      code = result.code;
+      ({ code } = result);
       originalCode = result.original || code;
+      ({ type } = result);
       if (result.map) sourceMap = JSON.parse(result.map);
       break;
     }
   }
 
   for (const hook of transformContentHooks) {
-    const transformed = await hook(code, filePath);
+    const transformed = await hook({ code, type }, filePath);
     if (transformed) {
-      code = transformed.code;
+      ({ code } = transformed);
       sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, JSON.parse(transformed.map)) : JSON.parse(transformed.map);
+      if (transformed.type) ({ type } = transformed);
     }
+  }
+
+  for (const hook of transformIntoJSHooks) {
+    const transformed = await hook({
+      code,
+      type,
+      map: JSON.stringify(sourceMap),
+      original: originalCode
+    }, filePath);
+
+    if (transformed) {
+      ({ code } = transformed);
+      if (transformed.inputMap) inputSourceMap = JSON.parse(transformed.inputMap);
+      type = 'js';
+      break;
+    }
+  }
+
+  if (type !== 'js') {
+    console.log(chalk.red(`File with type "${type}" is not supported. You may need proper loader to transform this kind of files to JS.`));
   }
 
   try {
@@ -160,14 +187,10 @@ export const transformFile = async (filePath: string) => {
   const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
   let map;
 
-  if (sourceMapsEnabled) {
-    if (sourceMap) {
-      map = await mergeSourceMaps(sourceMap, generatedMap);
-      map.sources = [generatorOptions.sourceFileName];
-      map.sourceRoot = generatorOptions.sourceRoot;
-    } else {
-      map = generatedMap;
-    }
+  if (inputSourceMap && sourceMapsEnabled) {
+    map = await mergeSourceMaps(inputSourceMap, generatedMap);
+    map.sources = [generatorOptions.sourceFileName];
+    map.sourceRoot = generatorOptions.sourceRoot;
     map.sourcesContent = [originalCode];
   }
 

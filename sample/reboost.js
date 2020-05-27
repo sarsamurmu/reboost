@@ -1,4 +1,4 @@
-const { start, plugins } = require('reboost');
+const { start, ReplacePlugin } = require('reboost');
 
 start({
   entries: [
@@ -11,10 +11,7 @@ start({
     extensions: ['.js', '.ts']
   },
   plugins: [
-    plugins.esbuild({
-      loaders: ['jsx', 'tsx', 'ts']
-    }),
-    plugins.replace({
+    ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
     })
   ],

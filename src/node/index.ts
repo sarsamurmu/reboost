@@ -20,12 +20,13 @@ import { merge, ensureDir, rmDir } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
-import { esbuild as esbuildPlugin, esbuildPluginName } from './plugins/esbuild';
+import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 
-export * as plugins from './plugins';
+export * from './plugins';
 
 export interface LoadedData {
   code: string;
+  type: string;
   original?: string;
   map?: string;
 }
@@ -33,14 +34,41 @@ export interface LoadedData {
 export interface TransformedContent {
   code: string;
   map: string;
+  type?: string;
+}
+
+export interface JSContent {
+  code: string;
+  inputMap?: string;
 }
 
 export interface ReboostPlugin {
   name: string;
-  setup?: (config: ReboostConfig, app: Koa, router: Router) => void | Promise<void>;
+  setup?: (
+    data: {
+      config: ReboostConfig;
+      app: Koa;
+      router: Router
+    }
+  ) => void | Promise<void>;
   resolve?: (pathToResolve: string, relativeTo: string) => string | Promise<string>;
   load?: (filePath: string) => LoadedData | Promise<LoadedData>;
-  transformContent?: (sourceCode: string, filePath: string) => TransformedContent | Promise<TransformedContent>;
+  transformContent?: (
+    data: {
+      code: string;
+      type: string;
+    },
+    filePath: string
+  ) => TransformedContent | Promise<TransformedContent>;
+  transformIntoJS?: (
+    data: {
+      code: string;
+      type: string;
+      map: string;
+      original: string;
+    },
+    filePath: string
+  ) => JSContent | Promise<JSContent>;
   transformAST?: (
     ast: babelTypes.Node,
     babel: {
@@ -102,7 +130,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     rootDir: '.',
     resolve: {
       alias: {},
-      extensions: ['.mjs', '.js', '.json'],
+      extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
       mainFiles: ['index'],
       modules: ['node_modules']
     },
@@ -209,7 +237,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
 
   const setupPromises = [];
   for (const plugin of config.plugins) {
-    if (plugin.setup) setupPromises.push(plugin.setup(config, app, router));
+    if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router }));
   }
   await Promise.all(setupPromises);
 

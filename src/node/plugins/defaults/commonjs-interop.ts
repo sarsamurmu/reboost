@@ -5,7 +5,7 @@ import { ReboostPlugin } from '../../index';
 
 export const CommonJSInteropPlugin: ReboostPlugin = {
   name: 'core-commonjs-interop-plugin',
-  setup(_, __, router) {
+  setup({ router }) {
     const importerFunc = () => ({
       Default(mod: any, filePath: string, sourcePath: string) {
         const message = `The requested module "${sourcePath}" does not provide an export named "default". Module imported by "${filePath}"`;

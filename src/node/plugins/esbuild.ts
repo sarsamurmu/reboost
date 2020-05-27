@@ -5,9 +5,6 @@ import { ReboostPlugin, TransformedContent } from '../index';
 type Loaders = 'js' | 'jsx' | 'ts' | 'tsx';
 
 interface esbuildOptions {
-  /** File types which esbuild should handle */
-  loaders?: Loaders[] | Record<string, Loaders>;
-
   /**
    * Factory function to use with JSX
    * @default React.createElement
@@ -23,40 +20,20 @@ interface esbuildOptions {
 }
 
 let esbuildService: esbuild.Service;
-export const esbuildPluginName = 'core-esbuild-plugin';
-const esbuildPlugin = (options?: esbuildOptions): ReboostPlugin => {
-  let loaderMap = {} as Record<string, Loaders>;
 
-  if (Array.isArray(options.loaders)) {
-    options.loaders.forEach((loader) => {
-      loaderMap[`.${loader}`] = loader;
-    });
-  } else if (typeof options.loaders === 'object') {
-    loaderMap = options.loaders;
-  } else {
-    loaderMap = {
-      '.js': 'jsx',
-      '.jsx': 'jsx',
-      '.ts': 'tsx',
-      '.tsx': 'tsx'
-    }
-  }
-
-  const matcher = new RegExp(`(${Object.keys(loaderMap).map((ext) => ext.replace(/\./g, '\\.')).join('|')})$`);
-
+export const PluginName = 'core-esbuild-plugin';
+export const esbuildPlugin = (options: esbuildOptions = {}): ReboostPlugin => {
   return {
-    name: esbuildPluginName,
+    name: PluginName,
     async setup() {
       esbuildService = await esbuild.startService();
     },
-    async transformContent(code, filePath) {
-      const match = filePath.match(matcher);
-
-      if (match) {
+    async transformIntoJS(data) {
+      if (['ts', 'tsx', 'js', 'jsx'].includes(data.type)) {
         try {
-          const { js, jsSourceMap } = await esbuildService.transform(code, {
+          const { js, jsSourceMap } = await esbuildService.transform(data.code, {
             sourcemap: true,
-            loader: loaderMap[match[0]],
+            loader: data.type.includes('x') ? data.type : data.type + 'x' as any,
             jsxFactory: options.jsxFactory,
             jsxFragment: options.jsxFragment,
             target: options.target
@@ -64,15 +41,14 @@ const esbuildPlugin = (options?: esbuildOptions): ReboostPlugin => {
 
           return {
             code: js,
-            map: jsSourceMap
-          } as TransformedContent;
+            inputMap: jsSourceMap
+          }
         } catch (e) {
           console.log('esbuild error', e);
         }
       }
+
       return null;
     }
   }
 }
-
-export { esbuildPlugin as esbuild }

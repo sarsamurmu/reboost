@@ -1,11 +1,11 @@
-import { JSONLoaderPlugin } from './json-loader';
+import { JSONPlugin } from './json';
 import { LoaderPlugin } from './loader';
 import { ResolverPlugin } from './resolver';
 import { CommonJSPlugin } from './commonjs';
 import { CommonJSInteropPlugin } from './commonjs-interop';
 
 export const defaultPlugins = [
-  JSONLoaderPlugin,
+  JSONPlugin,
   LoaderPlugin,
   ResolverPlugin,
   CommonJSPlugin,
