@@ -1,13 +1,14 @@
 export interface HMR {
+  data: undefined | Record<string, any>;
   selfAccept(callback: (module: any) => void | false): void;
-  selfDispose(callback: () => void): void;
+  selfDispose(callback: (data: Record<string, any>) => void): void;
   accept(dependency: string, callback: (module: any) => void | false): void;
-  dispose(dependency: string, callback: () => void): void;
+  dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
 }
 
 export type HMRMapType = Map<string, Map<string, {
   accept?: (module: any) => void | false;
-  dispose?: () => void;
+  dispose?: (data: Record<string, any>) => void;
 }>>;
 
 declare const address: string;
@@ -15,7 +16,9 @@ declare const filePath: string;
 
 const aWindow = window as any;
 if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
+if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
 const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
+const HMR_DATA_MAP = aWindow.$_HMR_DATA_MAP_;
 
 const getAcceptor = (acceptedFile: string, acceptorFile: string) => {
   if (!HMR_MAP.has(acceptedFile)) HMR_MAP.set(acceptedFile, new Map());
@@ -34,6 +37,9 @@ const resolveDependency = async (dependency: string) => {
 }
 
 export const hot: HMR = {
+  get data() {
+    return HMR_DATA_MAP.get(filePath);
+  },
   selfAccept(callback) {
     const acceptorFileData = getAcceptor(filePath, filePath);
     if (!acceptorFileData.accept) acceptorFileData.accept = callback;
