@@ -10,7 +10,7 @@ import path from 'path';
 
 import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir, messageClient } from './shared';
 import { ensureDir, uniqueID } from './utils';
-import { transformFile } from './transform';
+import { transformFile } from './transformer';
 
 const removeDeletedFile = (filePath: string) => {
   const filesData = getFilesData();
