@@ -8,9 +8,33 @@ import chalk from 'chalk';
 
 import path from 'path';
 
-import { ReboostPlugin } from './index';
-import { getConfig } from './shared';
+import { ReboostPlugin, PluginContext } from './index';
+import { getConfig, getAddress } from './shared';
 import { mergeSourceMaps } from './utils';
+
+const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
+
+const getPluginContext = (filePath: string): PluginContext => ({
+  address: getAddress(),
+  config: getConfig(),
+  makeCompatibleSourceMap(map) {
+    const sourceMap = JSON.parse(map);
+
+    const sources = sourceMap.sources;
+    if (sources) sourceMap.sources = sources.map((sourcePath: string) => {
+      if (path.isAbsolute(sourcePath)) sourcePath = path.relative(getConfig().rootDir, sourcePath);
+      return `reboost:///${fixPath(sourcePath)}`;
+    });
+
+    if (path.isAbsolute(sourceMap.file)) sourceMap.file = path.relative(getConfig().rootDir, sourceMap.file);
+    sourceMap.file = `reboost:///${fixPath(sourceMap.file)}`;
+
+    return JSON.stringify(sourceMap);
+  },
+  mergeSourceMaps
+})
+
+const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>): OmitThisParameter<T> => func.bind(bindTo);
 
 let pluginsInitiated = false;
 let resolveHooks: ReboostPlugin['resolve'][];
@@ -33,6 +57,7 @@ export const transformFile = async (filePath: string) => {
     pluginsInitiated = true;
   }
 
+  const pluginContext = getPluginContext(filePath);
   let code: string;
   let originalCode: string;
   let sourceMap: RawSourceMap;
@@ -43,7 +68,7 @@ export const transformFile = async (filePath: string) => {
   let hasUnresolvedDeps = false;
 
   for (const hook of loadHooks) {
-    let result = await hook(filePath);
+    let result = await bind(hook, pluginContext)(filePath);
     if (result) {
       ({ code } = result);
       originalCode = result.original || code;
@@ -54,7 +79,7 @@ export const transformFile = async (filePath: string) => {
   }
 
   for (const hook of transformContentHooks) {
-    const transformed = await hook({ code, type }, filePath);
+    const transformed = await bind(hook, pluginContext)({ code, type }, filePath);
     if (transformed) {
       ({ code } = transformed);
       sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, JSON.parse(transformed.map)) : JSON.parse(transformed.map);
@@ -63,7 +88,7 @@ export const transformFile = async (filePath: string) => {
   }
 
   for (const hook of transformIntoJSHooks) {
-    const transformed = await hook({
+    const transformed = await bind(hook, pluginContext)({
       code,
       type,
       map: JSON.stringify(sourceMap),
@@ -92,7 +117,7 @@ export const transformFile = async (filePath: string) => {
     console.log(e);
   }
 
-  for (const hook of transformASTHooks) await hook(ast, { traverse, types: babelTypes }, filePath);
+  for (const hook of transformASTHooks) await bind(hook, pluginContext)(ast, { traverse, types: babelTypes }, filePath);
 
   const resolvedPathMap = {} as Record<string, any>;
   const resolvePath = async (source: string, filePath: string) => {
@@ -179,7 +204,7 @@ export const transformFile = async (filePath: string) => {
   let generatorOptions = {
     sourceMaps: true,
     sourceFileName: path.basename(filePath),
-    sourceRoot: 'reboost:///' + path.relative(getConfig().rootDir, path.dirname(filePath)).replace(/\\/g, '/')
+    sourceRoot: 'reboost:///' + fixPath(path.relative(getConfig().rootDir, path.dirname(filePath)))
   };
   const sourceMapsConfig = getConfig().sourceMaps;
   const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);

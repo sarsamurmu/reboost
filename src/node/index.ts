@@ -16,7 +16,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir } from './utils';
+import { merge, ensureDir, rmDir, mergeSourceMaps } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
@@ -42,6 +42,13 @@ export interface JSContent {
   inputMap?: string;
 }
 
+export interface PluginContext {
+  address: string;
+  config: ReboostConfig;
+  makeCompatibleSourceMap: (map: string) => string;
+  mergeSourceMaps: typeof mergeSourceMaps;
+}
+
 export interface ReboostPlugin {
   name: string;
   setup?: (
@@ -52,8 +59,9 @@ export interface ReboostPlugin {
     }
   ) => void | Promise<void>;
   resolve?: (pathToResolve: string, relativeTo: string) => string | Promise<string>;
-  load?: (filePath: string) => LoadedData | Promise<LoadedData>;
+  load?: (this: PluginContext, filePath: string) => LoadedData | Promise<LoadedData>;
   transformContent?: (
+    this: PluginContext,
     data: {
       code: string;
       type: string;
@@ -61,6 +69,7 @@ export interface ReboostPlugin {
     filePath: string
   ) => TransformedContent | Promise<TransformedContent>;
   transformIntoJS?: (
+    this: PluginContext,
     data: {
       code: string;
       type: string;
@@ -70,6 +79,7 @@ export interface ReboostPlugin {
     filePath: string
   ) => JSContent | Promise<JSContent>;
   transformAST?: (
+    this: PluginContext,
     ast: babelTypes.Node,
     babel: {
       traverse: typeof babelTraverse;
