@@ -5,24 +5,31 @@ import { bind } from '../utils';
 
 interface UsePluginOptions {
   test: Matcher;
-  use: ReboostPlugin[];
+  use: ReboostPlugin | ReboostPlugin[];
 }
 
 export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> => {
   const test = (string: string) => anymatch(options.test, string);
   const def = (a: any) => !!a;
+  const plugins = Array.isArray(options.use) ? options.use : [options.use];
   const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
-    return options.use.map( (plugin) => plugin[hookName] ).filter(def);
+    return plugins.map((plugin) => plugin[hookName]).filter(def);
   }
+  const setupHooks = getHooks('setup');
+  const resolveHooks = getHooks('resolve');
+  const loadHooks = getHooks('load');
+  const transformContentHooks = getHooks('transformContent');
+  const transformIntoJSHooks = getHooks('transformIntoJS');
+  const transformASTHooks = getHooks('transformAST');
 
   return {
     name: 'core-use-plugin',
     async setup(data) {
-      for (const hook of getHooks('setup')) await hook(data);
+      for (const hook of setupHooks) await hook(data);
     },
     async resolve(pathToResolve, relativeTo) {
       if (test(relativeTo)) {
-        for (const hook of getHooks('resolve')) {
+        for (const hook of resolveHooks) {
           const result = await hook(pathToResolve, relativeTo);
           if (result) return result;
         }
@@ -32,7 +39,7 @@ export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> =>
     },
     async load(filePath) {
       if (test(filePath)) {
-        for (const hook of getHooks('load')) {
+        for (const hook of loadHooks) {
           const result = await bind(hook, this)(filePath);
           if (result) return result;
         }
@@ -42,7 +49,7 @@ export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> =>
     },
     async transformContent(data, filePath) {
       if (test(filePath)) {
-        for (const hook of getHooks('transformContent')) {
+        for (const hook of transformContentHooks) {
           const result = await bind(hook, this)(data, filePath);
           if (result) return result;
         }
@@ -52,7 +59,7 @@ export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> =>
     },
     async transformIntoJS(data, filePath) {
       if (test(filePath)) {
-        for (const hook of getHooks('transformIntoJS')) {
+        for (const hook of transformIntoJSHooks) {
           const result = await bind(hook, this)(data, filePath);
           if (result) return result;
         }
@@ -62,7 +69,7 @@ export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> =>
     },
     async transformAST(ast, babel, filePath) {
       if (test(filePath)) {
-        for (const hook of getHooks('transformAST')) {
+        for (const hook of transformASTHooks) {
           bind(hook, this)(ast, babel, filePath);
         }
       }

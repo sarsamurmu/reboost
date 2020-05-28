@@ -1,4 +1,9 @@
-const { start, ReplacePlugin } = require('reboost');
+const {
+  start,
+  ReplacePlugin,
+  FilePlugin,
+  UsePlugin
+} = require('reboost');
 
 start({
   entries: [
@@ -11,6 +16,10 @@ start({
     extensions: ['.js', '.ts']
   },
   plugins: [
+    UsePlugin({
+      test: /.png$/,
+      use: FilePlugin()
+    }),
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
     })
