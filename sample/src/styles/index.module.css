@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca&display=swap');
+
+@value primary-transition: 0.3s;
+
+body {
+  font-family: 'Lexend Deca', sans-serif;
+}
+
+.card {
+  composes: base from "./mixins.module.css";
+  composes: base from "./all-mixins.module.css";
+  color: white;
+  transition: primary-transition;
+  background-color: dodgerblue;
+  text-align: center;
+  border-radius: 10px;
+  animation-name: card-animation;
+  animation-duration: 2s;
+}
+
+.card h3 {
+  font-weight: normal;
+  font-size: 2rem;
+}
+
+.card * {
+  animation-name: card-content-animation;
+  animation-duration: 0.2s;
+  animation-delay: 1.2s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes card-content-animation {
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes card-animation {
+  0% {
+    transform: scaleX(0) scaleY(0.05);
+  }
+
+  25% {
+    transform: scaleX(1) scaleY(0.05);
+  }
+
+  50% {
+    transform: scaleX(1) scaleY(1);
+  }
+
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
+}
+
+.built-with {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.built-with img {
+  height: 30px;
+  margin-left: 10px;
+}
+
+.container-big {
+  padding: 100px;
+}
+
+:global(.global-class) {
+  color: red;
+}

@@ -1,9 +1,25 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import styles from './styles/index.module.css';
+import JSLogo from './assets/js-logo.png';
 
 const app = document.createElement('div');
 document.body.appendChild(app);
 
-const jsx = <div></div>;
+console.log(styles);
 
-ReactDOM.render(<div>This is working as intended</div>, app);
+ReactDOM.render(
+  <div>
+    <div className={styles.card}>
+      <h3>Reboost</h3>
+      <p>Making web development fast</p>
+    </div>
+    <br />
+    <br />
+    <p className={styles.builtWith}>
+      Built with
+      <img src={JSLogo} />
+    </p>
+  </div>,
+  app
+);

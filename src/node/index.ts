@@ -21,6 +21,7 @@ import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
+import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
 
 export * from './plugins';
 
@@ -174,6 +175,9 @@ export const start = async (config: ReboostConfig = {} as any) => {
 
   if (!pluginNames.includes(esbuildPluginName)) {
     config.plugins.push(esbuildPlugin());
+  }
+  if (!pluginNames.includes(CSSPluginName)) {
+    config.plugins.unshift(CSSPlugin());
   }
 
   if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
