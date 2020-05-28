@@ -16,7 +16,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, mergeSourceMaps } from './utils';
+import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
@@ -250,6 +250,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
     if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router }));
   }
   await Promise.all(setupPromises);
+  deepFreeze(config);
 
   app
     .use(cors({ origin: '*' }))

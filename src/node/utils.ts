@@ -34,6 +34,15 @@ export const rmDir = (dirPath: string) => {
   fs.rmdirSync(dirPath);
 }
 
+export const deepFreeze = (obj: any) => {
+  for (const key in obj) {
+    if (isObject(obj[key]) || Array.isArray(obj[key])) {
+      deepFreeze(obj[key]);
+    }
+  }
+  return Object.freeze(obj);
+}
+
 /**
  * Forked version of merge-source-map
  * Original author KATO Kei
@@ -71,15 +80,15 @@ export const mergeSourceMaps = async (oldMap: RawSourceMap, newMap: RawSourceMap
     });
   });
 
-  // const consumers = [newMapConsumer, oldMapConsumer];
-  // consumers.forEach((consumer) => {
-  //   consumer.sources.forEach((sourceFile) => {
-  //     const sourceContent = consumer.sourceContentFor(sourceFile);
-  //     if (sourceContent != null) {
-  //       mergedMapGenerator.setSourceContent(sourceFile, sourceContent);
-  //     }
-  //   });
-  // });
+  const consumers = [newMapConsumer, oldMapConsumer];
+  consumers.forEach((consumer) => {
+    consumer.sources.forEach((sourceFile) => {
+      const sourceContent = consumer.sourceContentFor(sourceFile);
+      if (sourceContent != null) {
+        mergedMapGenerator.setSourceContent(sourceFile, sourceContent);
+      }
+    });
+  });
 
   return JSON.parse(mergedMapGenerator.toString()) as RawSourceMap;
 }
