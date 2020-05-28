@@ -10,7 +10,7 @@ import path from 'path';
 
 import { ReboostPlugin, PluginContext } from './index';
 import { getConfig, getAddress } from './shared';
-import { mergeSourceMaps } from './utils';
+import { mergeSourceMaps, bind } from './utils';
 
 const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
 
@@ -33,8 +33,6 @@ const getPluginContext = (filePath: string): PluginContext => ({
   },
   mergeSourceMaps
 })
-
-const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>): OmitThisParameter<T> => func.bind(bindTo);
 
 let pluginsInitiated = false;
 let resolveHooks: ReboostPlugin['resolve'][];

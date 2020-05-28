@@ -43,6 +43,8 @@ export const deepFreeze = (obj: any) => {
   return Object.freeze(obj);
 }
 
+export const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>): OmitThisParameter<T> => func.bind(bindTo);
+
 /**
  * Forked version of merge-source-map
  * Original author KATO Kei
