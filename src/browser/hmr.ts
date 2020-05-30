@@ -1,7 +1,9 @@
 export interface HMR {
   data: undefined | Record<string, any>;
-  selfAccept(callback: (module: any) => void | false): void;
-  selfDispose(callback: (data: Record<string, any>) => void): void;
+  self: {
+    accept(callback: (module: any) => void | false): void;
+    dispose(callback: (data: Record<string, any>) => void): void;
+  };
   accept(dependency: string, callback: (module: any) => void | false): void;
   dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
 }
@@ -36,17 +38,19 @@ const resolveDependency = async (dependency: string) => {
   return response.text();
 }
 
-export const hot: HMR = {
+const hot: HMR = {
   get data() {
     return HMR_DATA_MAP.get(filePath);
   },
-  selfAccept(callback) {
-    const acceptorFileData = getAcceptor(filePath, filePath);
-    if (!acceptorFileData.accept) acceptorFileData.accept = callback;
-  },
-  selfDispose(callback) {
-    const acceptorFileData = getAcceptor(filePath, filePath);
-    if (!acceptorFileData.dispose) acceptorFileData.dispose = callback;
+  self: {
+    accept(callback) {
+      const acceptorFileData = getAcceptor(filePath, filePath);
+      if (!acceptorFileData.accept) acceptorFileData.accept = callback;
+    },
+    dispose(callback) {
+      const acceptorFileData = getAcceptor(filePath, filePath);
+      if (!acceptorFileData.dispose) acceptorFileData.dispose = callback;
+    }
   },
   async accept(dependency, callback) {
     const acceptorFileData = getAcceptor(await resolveDependency(dependency), filePath);
@@ -56,4 +60,9 @@ export const hot: HMR = {
     const acceptorFileData = getAcceptor(await resolveDependency(dependency), filePath);
     if (!acceptorFileData.dispose) acceptorFileData.dispose = callback;
   }
-}
+};
+
+(hot as any).selfAccept = hot.self.accept;
+(hot as any).selfDispose = hot.self.dispose;
+
+export { hot }

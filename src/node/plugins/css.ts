@@ -129,7 +129,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 __styleTag = styleTag;
               }
 
-              hot.selfAccept((updatedMod) => {
+              hot.self.accept((updatedMod) => {
                 styleTag.replaceWith(updatedMod.__styleTag);
                 styleTag = updatedMod.__styleTag;
               });
