@@ -1,4 +1,5 @@
 import { HMRMapType } from './hmr';
+import { Importer } from '../node/plugins/defaults/commonjs-interop';
 
 declare const address: string;
 
@@ -18,7 +19,7 @@ const HMR_DATA_MAP = aWindow.$_HMR_DATA_MAP_;
 
 const lastUpdatedData = {} as Record<string, number>;
 
-let importer: any;
+let importer: Importer;
 const loadImporter = new Promise((resolve) => {
   import(`${address}/importer`).then((mod) => {
     importer = mod.default;

@@ -17,19 +17,17 @@ const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
 const getPluginContext = (filePath: string): PluginContext => ({
   address: getAddress(),
   config: getConfig(),
-  makeCompatibleSourceMap(map) {
-    const sourceMap = JSON.parse(map);
-
-    const sources = sourceMap.sources;
-    if (sources) sourceMap.sources = sources.map((sourcePath: string) => {
+  getCompatibleSourceMap(map) {
+    const sources = map.sources;
+    if (sources) map.sources = sources.map((sourcePath: string) => {
       if (path.isAbsolute(sourcePath)) sourcePath = path.relative(getConfig().rootDir, sourcePath);
       return `reboost:///${fixPath(sourcePath)}`;
     });
 
-    if (path.isAbsolute(sourceMap.file)) sourceMap.file = path.relative(getConfig().rootDir, sourceMap.file);
-    sourceMap.file = `reboost:///${fixPath(sourceMap.file)}`;
+    if (path.isAbsolute(map.file)) map.file = path.relative(getConfig().rootDir, map.file);
+    map.file = `reboost:///${fixPath(map.file)}`;
 
-    return JSON.stringify(sourceMap);
+    return map;
   },
   mergeSourceMaps
 })

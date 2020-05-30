@@ -9,6 +9,7 @@ import { Matcher } from 'anymatch';
 import babelTraverse from '@babel/traverse';
 import * as babelTypes from '@babel/types';
 import { WatchOptions } from 'chokidar';
+import { RawSourceMap } from 'source-map';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
@@ -46,7 +47,7 @@ export interface JSContent {
 export interface PluginContext {
   address: string;
   config: ReboostConfig;
-  makeCompatibleSourceMap: (map: string) => string;
+  getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
   mergeSourceMaps: typeof mergeSourceMaps;
 }
 

@@ -3,11 +3,17 @@ import { NodePath } from '@babel/traverse';
 
 import { ReboostPlugin } from '../../index';
 
+export interface Importer {
+  Default(mod: any, filePath: string, sourcePath: string): any;
+  Member(mod: any, member: string, filePath: string, sourcePath: string): any;
+  All(mod: any): any;
+}
+
 export const CommonJSInteropPlugin: ReboostPlugin = {
   name: 'core-commonjs-interop-plugin',
   setup({ router }) {
-    const importerFunc = () => ({
-      Default(mod: any, filePath: string, sourcePath: string) {
+    const importerFunc = (): Importer => ({
+      Default(mod, filePath, sourcePath) {
         const message = `The requested module "${sourcePath}" does not provide an export named "default". Module imported by "${filePath}"`;
 
         if (mod.__cjsModule && mod.default.__esModule) {
@@ -17,7 +23,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
         if (!('default' in mod)) throw new SyntaxError(message);
         return mod.default;
       },
-      Member(mod: any, member: string, filePath: string, sourcePath: string) {
+      Member(mod, member, filePath, sourcePath) {
         const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module imported by "${filePath}"`;
 
         if (mod.__cjsModule) {
@@ -27,7 +33,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
         if (!(member in mod)) throw new SyntaxError(message);
         return mod[member];
       },
-      All(mod: any) {
+      All(mod) {
         if (mod.__cjsModule) return mod.default;
         return mod;
       }

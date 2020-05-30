@@ -105,12 +105,13 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
               }
             }
 
-            let cssString = `\n/* From: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')} */\n`;
+            let cssString = `\n/* ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')} */\n\n`;
             cssString += result.css;
             if (sourceMapEnabled) {
-              const generatedMap = JSON.stringify(await this.mergeSourceMaps(!!map && JSON.parse(map) as any, result.map.toJSON() as any));
+              const generatedMap = result.map.toJSON() as any;
+              const sourceMap = map ? await this.mergeSourceMaps(JSON.parse(map), generatedMap) : generatedMap;
               cssString += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
-              cssString += Buffer.from(this.makeCompatibleSourceMap(generatedMap)).toString('base64');
+              cssString += Buffer.from(this.getCompatibleSourceMap(sourceMap)).toString('base64');
               cssString += ' */';
             }
 
