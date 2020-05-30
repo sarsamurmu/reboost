@@ -160,12 +160,12 @@ export const start = async (config: ReboostConfig = {} as any) => {
     process.exit(1);
   }
 
-  if (config.rootDir.startsWith('.')) config.rootDir = path.resolve(config.rootDir);
-  if (config.cacheDir.startsWith('.')) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);
+  if (!path.isAbsolute(config.rootDir)) config.rootDir = path.resolve(config.rootDir);
+  if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);
   if (!config.watchOptions.include) {
     config.watchOptions.include = /.*/;
   }
-  if (config.contentServer && config.contentServer.root.startsWith('.')) {
+  if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
     config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
   }
 
