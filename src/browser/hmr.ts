@@ -1,5 +1,6 @@
 export interface HMR {
-  data: undefined | Record<string, any>;
+  data: Record<string, any>;
+  id: string;
   self: {
     accept(callback: (module: any) => void | false): void;
     dispose(callback: (data: Record<string, any>) => void): void;
@@ -42,6 +43,7 @@ const hot: HMR = {
   get data() {
     return HMR_DATA_MAP.get(filePath);
   },
+  id: filePath,
   self: {
     accept(callback) {
       const acceptorFileData = getAcceptor(filePath, filePath);
