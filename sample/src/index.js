@@ -6,6 +6,7 @@ import json from './jsonFile.json';
 import * as cMod from './common';
 import './self-hmr';
 import './hmr';
+import './styles/base.css';
 
 console.log('Add', add(5, 5));
 console.log('Subtract', subtract(5, 5));

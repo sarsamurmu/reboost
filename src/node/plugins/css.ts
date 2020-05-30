@@ -117,38 +117,40 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
             }
 
             script += `
-            import { hot } from 'reboost/hmr';
+              import { hot } from 'reboost/hmr';
 
-            let styleTag = document.createElement('style');
-            let __styleTag;
-            styleTag.innerHTML = ${JSON.stringify(cssString)};
+              let styleTag = document.createElement('style');
+              let __styleTag;
+              styleTag.innerHTML = ${JSON.stringify(cssString)};
 
-            if (!hot.data) {
-              document.head.appendChild(styleTag);
-            } else {
-              __styleTag = styleTag;
+              if (!hot.data) {
+                document.head.appendChild(styleTag);
+              } else {
+                __styleTag = styleTag;
+              }
+
+              hot.selfAccept((updatedMod) => {
+                styleTag.replaceWith(updatedMod.__styleTag);
+                styleTag = updatedMod.__styleTag;
+              });
+
+              export { __styleTag }
+            `;
+
+            if (isModule) {
+              script += 'export default ' + JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (match, p1: string, p2: string, offset, string) => {
+                const transformed = p2.split(' ').map((className) => {
+                  const classNameData = importedClassMap[className];
+                  if (classNameData) {
+                    return `\${${localNameMap[classNameData.from]}[${JSON.stringify(classNameData.name)}]}`;
+                  }
+
+                  return className;
+                }).join(' ');
+
+                return `"${p1}": \`${transformed}\``;
+              });
             }
-
-            hot.selfAccept((updatedMod) => {
-              styleTag.replaceWith(updatedMod.__styleTag);
-              styleTag = updatedMod.__styleTag;
-            });
-
-            export { __styleTag }
-          `;
-
-            script += 'export default ' + JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (match, p1: string, p2: string, offset, string) => {
-              const transformed = p2.split(' ').map((className) => {
-                const classNameData = importedClassMap[className];
-                if (classNameData) {
-                  return `\${${localNameMap[classNameData.from]}[${JSON.stringify(classNameData.name)}]}`;
-                }
-
-                return className;
-              }).join(' ');
-
-              return `"${p1}": \`${transformed}\``;
-            });
 
             resolve({
               code: script
