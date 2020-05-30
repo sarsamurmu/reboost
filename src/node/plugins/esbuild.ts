@@ -28,7 +28,7 @@ export const esbuildPlugin = (options: esbuildOptions = {}): ReboostPlugin => {
     async setup() {
       esbuildService = await esbuild.startService();
     },
-    async transformIntoJS(data) {
+    async transformIntoJS(data, filePath) {
       if (['ts', 'tsx', 'js', 'jsx'].includes(data.type)) {
         try {
           const { js, jsSourceMap } = await esbuildService.transform(data.code, {
@@ -39,9 +39,12 @@ export const esbuildPlugin = (options: esbuildOptions = {}): ReboostPlugin => {
             target: options.target
           });
 
+          const generatedMap = JSON.parse(jsSourceMap);
+          generatedMap.sources = [filePath];
+
           return {
             code: js,
-            inputMap: jsSourceMap
+            inputMap: data.map ? await this.mergeSourceMaps(data.map, generatedMap) : generatedMap
           }
         } catch (e) {
           console.log('esbuild error', e);

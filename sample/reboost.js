@@ -12,9 +12,6 @@ start({
   contentServer: {
     root: './public'
   },
-  resolve: {
-    extensions: ['.js', '.ts']
-  },
   plugins: [
     UsePlugin({
       test: /.png$/,

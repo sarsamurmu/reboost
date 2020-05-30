@@ -1,11 +1,12 @@
 import { parse } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
-import generate from '@babel/generator';
+import generate, { GeneratorOptions } from '@babel/generator';
 import * as babelTypes from '@babel/types';
 import anymatch from 'anymatch';
 import { RawSourceMap } from 'source-map';
 import chalk from 'chalk';
 
+import fs from 'fs';
 import path from 'path';
 
 import { ReboostPlugin, PluginContext } from './index';
@@ -14,21 +15,36 @@ import { mergeSourceMaps, bind } from './utils';
 
 const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
 
+const getCompatibleSourceMap = (map: RawSourceMap) => {
+  const config = getConfig();
+
+  map.sourceRoot = 'reboost:///';
+
+  map.sources = map.sources.map((sourcePath: string) => {
+    if (path.isAbsolute(sourcePath)) return fixPath(path.relative(config.rootDir, sourcePath));
+    return sourcePath;
+  });
+
+  map.sourcesContent = [];
+  map.sources.forEach((sourcePath) => {
+    const absolutePath = path.resolve(config.rootDir, sourcePath);
+    if (fs.existsSync(absolutePath)) {
+      map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
+    } else {
+      console.log(chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
+      map.sourcesContent.push(`Unable to find file in "${absolutePath}".`);
+    }
+  });
+
+  map.file = undefined;
+
+  return map;
+}
+
 const getPluginContext = (filePath: string): PluginContext => ({
   address: getAddress(),
   config: getConfig(),
-  getCompatibleSourceMap(map) {
-    const sources = map.sources;
-    if (sources) map.sources = sources.map((sourcePath: string) => {
-      if (path.isAbsolute(sourcePath)) sourcePath = path.relative(getConfig().rootDir, sourcePath);
-      return `reboost:///${fixPath(sourcePath)}`;
-    });
-
-    if (path.isAbsolute(map.file)) map.file = path.relative(getConfig().rootDir, map.file);
-    map.file = `reboost:///${fixPath(map.file)}`;
-
-    return map;
-  },
+  getCompatibleSourceMap,
   mergeSourceMaps
 })
 
@@ -55,7 +71,6 @@ export const transformFile = async (filePath: string) => {
 
   const pluginContext = getPluginContext(filePath);
   let code: string;
-  let originalCode: string;
   let sourceMap: RawSourceMap;
   let inputSourceMap: RawSourceMap;
   let ast: babelTypes.Node;
@@ -67,9 +82,8 @@ export const transformFile = async (filePath: string) => {
     let result = await bind(hook, pluginContext)(filePath);
     if (result) {
       ({ code } = result);
-      originalCode = result.original || code;
       ({ type } = result);
-      if (result.map) sourceMap = JSON.parse(result.map);
+      if (result.map) sourceMap = result.map;
       break;
     }
   }
@@ -78,7 +92,9 @@ export const transformFile = async (filePath: string) => {
     const transformed = await bind(hook, pluginContext)({ code, type }, filePath);
     if (transformed) {
       ({ code } = transformed);
-      sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, JSON.parse(transformed.map)) : JSON.parse(transformed.map);
+      // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
+      transformed.map.sources = transformed.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
+      sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, transformed.map) : transformed.map;
       if (transformed.type) ({ type } = transformed);
     }
   }
@@ -87,13 +103,12 @@ export const transformFile = async (filePath: string) => {
     const transformed = await bind(hook, pluginContext)({
       code,
       type,
-      map: JSON.stringify(sourceMap),
-      original: originalCode
+      map: sourceMap
     }, filePath);
 
     if (transformed) {
       ({ code } = transformed);
-      if (transformed.inputMap) inputSourceMap = JSON.parse(transformed.inputMap);
+      if (transformed.inputMap) inputSourceMap = transformed.inputMap;
       type = 'js';
       break;
     }
@@ -157,11 +172,11 @@ export const transformFile = async (filePath: string) => {
           }
         }
 
-        (astPath.node as any).source.value = routed
+        (astPath.node as any).source.value = getAddress() + (routed
           ? encodeURI(finalPath)
           : finalPath
             ? `/transformed?q=${encodeURI(finalPath)}`
-            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
+            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`);
       }
     }
   }
@@ -197,22 +212,24 @@ export const transformFile = async (filePath: string) => {
 
   for (const execute of promiseFunctions) await execute();
 
-  let generatorOptions = {
-    sourceMaps: true,
-    sourceFileName: path.basename(filePath),
-    sourceRoot: 'reboost:///' + fixPath(path.relative(getConfig().rootDir, path.dirname(filePath)))
-  };
   const sourceMapsConfig = getConfig().sourceMaps;
   const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);
+  const { debugMode } = getConfig();
+  let generatorOptions: GeneratorOptions = {
+    sourceMaps: true,
+    sourceFileName: fixPath(path.relative(getConfig().rootDir, filePath)),
+    sourceRoot: 'reboost:///',
+    concise: debugMode,
+    compact: debugMode,
+    minified: !debugMode
+  }
 
   const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
   let map;
 
   if (inputSourceMap && sourceMapsEnabled) {
-    map = await mergeSourceMaps(inputSourceMap, generatedMap);
-    map.sources = [generatorOptions.sourceFileName];
-    map.sourceRoot = generatorOptions.sourceRoot;
-    map.sourcesContent = [originalCode];
+    const merged = await mergeSourceMaps(inputSourceMap, generatedMap);
+    map = getCompatibleSourceMap(merged);
   }
 
   return {

@@ -22,7 +22,7 @@ export const ReplacePlugin = (replacements: Record<string, string>): ReboostPlug
 
         return {
           code: magicString.toString(),
-          map: magicString.generateMap().toString()
+          map: magicString.generateMap()
         }
       }
     }

@@ -109,9 +109,10 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
             cssString += result.css;
             if (sourceMapEnabled) {
               const generatedMap = result.map.toJSON() as any;
-              const sourceMap = map ? await this.mergeSourceMaps(JSON.parse(map), generatedMap) : generatedMap;
+              const sourceMap = map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap;
+              const sourceMapStr = JSON.stringify(this.getCompatibleSourceMap(sourceMap));
               cssString += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
-              cssString += Buffer.from(this.getCompatibleSourceMap(sourceMap)).toString('base64');
+              cssString += Buffer.from(sourceMapStr).toString('base64');
               cssString += ' */';
             }
 

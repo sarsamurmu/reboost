@@ -29,19 +29,18 @@ export * from './plugins';
 export interface LoadedData {
   code: string;
   type: string;
-  original?: string;
-  map?: string;
+  map?: RawSourceMap;
 }
 
 export interface TransformedContent {
   code: string;
-  map: string;
+  map: RawSourceMap;
   type?: string;
 }
 
 export interface JSContent {
   code: string;
-  inputMap?: string;
+  inputMap?: RawSourceMap;
 }
 
 export interface PluginContext {
@@ -75,8 +74,7 @@ export interface ReboostPlugin {
     data: {
       code: string;
       type: string;
-      map: string;
-      original: string;
+      map: RawSourceMap;
     },
     filePath: string
   ) => JSContent | Promise<JSContent>;
