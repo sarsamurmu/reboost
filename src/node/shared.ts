@@ -16,6 +16,8 @@ let filesData: {
     hash: string;
     /** Address used in the file */
     address: string;
+    /** Dependencies of the file */
+    dependencies: string[];
   }>;
   dependents: Record<string, string[]>;
 };

@@ -45,6 +45,11 @@ export const deepFreeze = (obj: any) => {
 
 export const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>): OmitThisParameter<T> => func.bind(bindTo);
 
+export const diff = <T>(oldA: T[], newA: T[]) => ({
+  added: newA.filter((a) => !oldA.includes(a)),
+  removed: oldA.filter((a) => !newA.includes(a))
+})
+
 /**
  * Forked version of merge-source-map
  * Original author KATO Kei

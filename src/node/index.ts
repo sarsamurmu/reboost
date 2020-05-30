@@ -131,7 +131,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = 7;
+const INCOMPATIBLE_BELOW = 8;
 
 export const start = async (config: ReboostConfig = {} as any) => {
   config = setConfig(merge<ReboostConfig>({

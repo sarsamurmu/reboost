@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir, messageClient } from './shared';
-import { ensureDir, uniqueID } from './utils';
+import { ensureDir, uniqueID, diff } from './utils';
 import { transformFile } from './transformer';
 
 const removeDeletedFile = (filePath: string) => {
@@ -80,12 +80,25 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
   const fileHash = await hash(filePath);
   let transformedCode: string;
 
-  const addToDependents = (dependencies: string[]) => {
-    dependencies.forEach((dependency) => {
-      let dependents = getFilesData().dependents[dependency];
-      if (!dependents) dependents = getFilesData().dependents[dependency] = [];
-      if (!dependents.includes(filePath)) dependents.push(filePath);
+  const updateDependencies = (dependencies: string[], firstTime = false) => {
+    let added = dependencies;
+    let removed: string[] = [];
+    if (!firstTime) {
+      const deps = getFilesData().files[filePath].dependencies;
+      ({ added, removed } = diff(deps, dependencies));
+    }
+    added.forEach((dependency) => {
+      let dependents = new Set(getFilesData().dependents[dependency] || []);
+      dependents.add(filePath);
+      getFilesData().dependents[dependency] = [...dependents];
     });
+    removed.forEach((dependency) => {
+      let dependents = new Set(getFilesData().dependents[dependency]);
+      dependents.delete(filePath);
+      getFilesData().dependents[dependency] = [...dependents];
+      if (dependents.size === 0) getFilesData().dependents[dependency] = undefined;
+    });
+    getFilesData().files[filePath].dependencies = dependencies;
   }
 
   if (getFilesData().files[filePath]) {
@@ -108,7 +121,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         fileData.hash = fileHash;
         fileData.address = getAddress();
         fileData.pure = pure;
-        addToDependents(dependencies);
+        updateDependencies(dependencies);
         saveFilesData();
       }
     } else {
@@ -145,9 +158,10 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         uid,
         pure,
         hash: fileHash,
-        address: getAddress()
+        address: getAddress(),
+        dependencies
       }
-      addToDependents(dependencies);
+      updateDependencies(dependencies, true);
       saveFilesData();
     }
   }
