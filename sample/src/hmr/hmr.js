@@ -1,11 +1,11 @@
-import * as common from './common';
+import * as imported from './imported';
 import { hot } from 'reboost/hmr';
 
 if (hot) {
-  hot.accept('./common', (mod) => {
+  hot.accept('./imported.js', (mod) => {
     console.log(`New module's state is`, mod.state);
   });
-  hot.dispose('./common', (data) => {
+  hot.dispose('./imported.js', (data) => {
     console.log('Disposing hot');
     data.value = 'some value';
   });

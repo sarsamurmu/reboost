@@ -1,10 +1,8 @@
 import { add } from './add';
 import { subtract } from './subtract';
-import './sub';
 import './renderer.jsx';
 import json from './jsonFile.json';
 import * as cMod from './common';
-import './self-hmr';
 import './hmr';
 import './styles/base.css';
 
