@@ -18,7 +18,7 @@ const aWindow = window as any;
 if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
 if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
 const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
-const HMR_DATA_MAP = aWindow.$_HMR_DATA_MAP_;
+const HMR_DATA_MAP: Map<string, {}> = aWindow.$_HMR_DATA_MAP_;
 
 const getAcceptor = (acceptedFile: string, acceptorFile: string) => {
   if (!HMR_MAP.has(acceptedFile)) HMR_MAP.set(acceptedFile, new Map());
@@ -28,7 +28,7 @@ const getAcceptor = (acceptedFile: string, acceptorFile: string) => {
 }
 
 const resolveDependency = async (dependency: string) => {
-  const response = await(fetch(`${address}/resolve?from=${filePath}&to=${dependency}`));
+  const response = await fetch(`${address}/resolve?from=${filePath}&to=${dependency}`);
   if (!response.ok) {
     console.error(`[reboost] Unable to resolve dependency "${dependency}" of "${filePath}" while using hot.accept()`);
     return 'UNRESOLVED';

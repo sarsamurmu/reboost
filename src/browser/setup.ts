@@ -1,5 +1,4 @@
 import { HMRMapType } from './hmr';
-import { Importer } from '../node/plugins/defaults/commonjs-interop';
 
 declare const address: string;
 
@@ -15,11 +14,11 @@ const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
 if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
 if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
 const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
-const HMR_DATA_MAP = aWindow.$_HMR_DATA_MAP_;
+const HMR_DATA_MAP: Map<string, {}> = aWindow.$_HMR_DATA_MAP_;
 
 const lastUpdatedData = {} as Record<string, number>;
 
-let importer: Importer;
+let importer: any;
 const loadImporter = new Promise((resolve) => {
   import(`${address}/importer`).then((mod) => {
     importer = mod.default;
@@ -55,7 +54,7 @@ socket.addEventListener('message', async ({ data }) => {
             }
           }
 
-          HMR_DATA_MAP.set(acceptedFile, undefined);
+          HMR_DATA_MAP.delete(acceptedFile);
         });
       }
     } else {

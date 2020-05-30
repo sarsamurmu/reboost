@@ -42,12 +42,12 @@ export const createRouter = () => {
   router.get('/resolve', async (ctx) => {
     const relativeTo = ctx.query.from;
     const pathToResolve = ctx.query.to;
-    let finalPath = null;
+    let finalPath: string;
 
     for (const plugin of getConfig().plugins) {
       if (plugin.resolve) {
-        const resolvedPath = plugin.resolve(pathToResolve, relativeTo);
-        if (pathToResolve) {
+        const resolvedPath = await plugin.resolve(pathToResolve, relativeTo);
+        if (resolvedPath) {
           finalPath = resolvedPath;
           break;
         }
