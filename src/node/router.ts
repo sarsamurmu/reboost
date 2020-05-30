@@ -35,7 +35,6 @@ export const createRouter = () => {
     ctx.type = 'text/javascript';
     ctx.body = `
       console.error('[reboost] Unable to resolve import ${JSON.stringify(query.import)} of ${JSON.stringify(query.importer)}');
-      export default undefined;
     `.trim();
   });
 

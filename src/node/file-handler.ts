@@ -94,7 +94,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
 
     if (fileData.hash !== fileHash) {
       let pure = true;
-      const { code, map, dependencies, hasUnresolvedDeps } = await transformFile(filePath);
+      const { code, map, dependencies, error } = await transformFile(filePath);
       transformedCode = code;
       if (map) {
         // Remove other source maps
@@ -102,7 +102,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
         fs.promises.writeFile(`${outputFilePath}.map`, map);
       }
-      if (!hasUnresolvedDeps) {
+      if (!error) {
         fs.promises.writeFile(outputFilePath, transformedCode);
         if (map || dependencies.length) pure = undefined;
         fileData.hash = fileHash;
@@ -130,7 +130,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
     let pure = true;
     const uid = uniqueID();
     const outputFilePath = path.join(filesDir, uid);
-    const { code, map, dependencies, hasUnresolvedDeps } = await transformFile(filePath);
+    const { code, map, dependencies, error } = await transformFile(filePath);
     transformedCode = code;
     if (map) {
       // Remove other source maps
@@ -138,7 +138,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
       transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
       fs.promises.writeFile(`${outputFilePath}.map`, map);
     }
-    if (!hasUnresolvedDeps) {
+    if (!error) {
       fs.promises.writeFile(outputFilePath, transformedCode);
       if (map || dependencies.length) pure = undefined;
       getFilesData().files[filePath] = {

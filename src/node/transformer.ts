@@ -2,8 +2,9 @@ import { parse } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import generate, { GeneratorOptions } from '@babel/generator';
 import * as babelTypes from '@babel/types';
+import { codeFrameColumns, SourceLocation } from '@babel/code-frame';
 import anymatch from 'anymatch';
-import { RawSourceMap } from 'source-map';
+import { RawSourceMap, SourceMapConsumer } from 'source-map';
 import chalk from 'chalk';
 
 import fs from 'fs';
@@ -76,7 +77,7 @@ export const transformFile = async (filePath: string) => {
   let ast: babelTypes.Node;
   let type: string;
   let dependencies: string[] = [];
-  let hasUnresolvedDeps = false;
+  let errorOccurred = false;
 
   for (const hook of loadHooks) {
     let result = await bind(hook, pluginContext)(filePath);
@@ -123,9 +124,68 @@ export const transformFile = async (filePath: string) => {
       sourceType: 'module'
     });
   } catch (e) {
-    console.log(chalk.red(`Error while parsing "${filePath}"`));
-    console.log(chalk.red('You may need proper loader to handle this kind of files.'));
-    console.log(e);
+    let message = '';
+    let consoleMessage = '';
+    let frameMessage = e.message.replace(/\s*\(.*\)$/, '');
+    let rawCode = code;
+    let location: SourceLocation['start'] = e.loc;
+    let unableToLocateFile = false;
+    message += `Error while parsing "${filePath}"\n`;
+    message += 'You may need proper loader to handle this kind of files.\n\n';
+
+    consoleMessage += chalk.red(message);
+
+    if (inputSourceMap) {
+      const consumer = await new SourceMapConsumer(inputSourceMap);
+      const originalLoc = consumer.originalPositionFor(e.loc);
+      if (originalLoc.source) {
+        const originalCode = consumer.sourceContentFor(originalLoc.source);
+        if (originalCode) {
+          rawCode = originalCode;
+          location = originalLoc;
+          location.column = location.column || 1;
+        } else {
+          const absPathToSource = path.resolve(getConfig().rootDir, originalLoc.source);
+          if (fs.existsSync(absPathToSource)) {
+            rawCode = fs.readFileSync(absPathToSource).toString();
+            location = originalLoc;
+            location.column = location.column || 1;
+          } else {
+            unableToLocateFile = true;
+          }
+        }
+      }
+    }
+
+    if (unableToLocateFile) {
+      let unableToLocateMsg = 'We are unable to locate the original file. ';
+      unableToLocateMsg += 'This is not accurate, but it may help you at some point.\n\n';
+      
+      message += unableToLocateMsg + codeFrameColumns(code, { start: e.loc }, {
+        message: frameMessage
+      });
+
+      consoleMessage += unableToLocateMsg + codeFrameColumns(code, { start: e.loc }, {
+        highlightCode: true,
+        message: frameMessage
+      });
+    } else {
+      message += codeFrameColumns(rawCode, { start: location }, {
+        message: frameMessage
+      });
+
+      consoleMessage += codeFrameColumns(rawCode, { start: location }, {
+        highlightCode: true,
+        message: frameMessage
+      });
+    }
+
+    console.log(consoleMessage);
+
+    return {
+      code: `console.error('[reboost] ' + ${JSON.stringify(message)});`,
+      error: true
+    }
   }
 
   for (const hook of transformASTHooks) await bind(hook, pluginContext)(ast, { traverse, types: babelTypes }, filePath);
@@ -168,7 +228,7 @@ export const transformFile = async (filePath: string) => {
               dependencies.push(resolvedPath);
             }
           } else {
-            hasUnresolvedDeps = true;
+            errorOccurred = true;
           }
         }
 
@@ -236,6 +296,6 @@ export const transformFile = async (filePath: string) => {
     code: generatedCode,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
     dependencies,
-    hasUnresolvedDeps
+    error: errorOccurred
   }
 }
