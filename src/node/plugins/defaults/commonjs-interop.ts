@@ -118,12 +118,14 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
           ], t.stringLiteral('#/importer'))
         );
 
-        const last = program.get('body').filter((path) => path.isImportDeclaration()).pop();
-        const constDeclaration = t.variableDeclaration('const', declarators);
-        if (last) {
-          last.insertAfter(constDeclaration);
-        } else {
-          program.node.body.unshift(constDeclaration);
+        if (declarators.length) {
+          const last = program.get('body').filter((path) => path.isImportDeclaration()).pop();
+          const constDeclaration = t.variableDeclaration('const', declarators);
+          if (last) {
+            last.insertAfter(constDeclaration);
+          } else {
+            program.node.body.unshift(constDeclaration);
+          }
         }
       }
     }
