@@ -58,5 +58,8 @@ socket.addEventListener('message', async ({ data }) => {
     } else {
       location.reload();
     }
+  } else if (type === 'unlink') {
+    // ? Maybe we can ask user if they really want to reload?
+    location.reload();
   }
 });

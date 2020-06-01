@@ -46,6 +46,7 @@ export interface JSContent {
 export interface PluginContext {
   address: string;
   config: ReboostConfig;
+  addDependency: (dependency: string) => void;
   getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
   mergeSourceMaps: typeof mergeSourceMaps;
 }
@@ -129,6 +130,7 @@ export interface ReboostConfig {
   debugMode?: boolean;
   /** Clears cache whenever reboost starts. Only use while debugging */
   dumpCache?: boolean;
+  showResponseTime: boolean;
 }
 
 const INCOMPATIBLE_BELOW = 8;
@@ -153,6 +155,7 @@ export const start = async (config: ReboostConfig = {} as any) => {
       exclude: /node_modules/
     },
     plugins: [],
+    showResponseTime: false
   }, config));
 
   if (!config.entries) {

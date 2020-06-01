@@ -42,9 +42,12 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
   return map;
 }
 
-const getPluginContext = (filePath: string): PluginContext => ({
+const getPluginContext = (filePath: string, mergedDependencies: string[]): PluginContext => ({
   address: getAddress(),
   config: getConfig(),
+  addDependency(dependency) {
+    mergedDependencies.push(dependency);
+  },
   getCompatibleSourceMap,
   mergeSourceMaps
 })
@@ -70,14 +73,15 @@ export const transformFile = async (filePath: string) => {
     pluginsInitiated = true;
   }
 
-  const pluginContext = getPluginContext(filePath);
   let code: string;
   let sourceMap: RawSourceMap;
   let inputSourceMap: RawSourceMap;
   let ast: babelTypes.Node;
   let type: string;
-  let dependencies: string[] = [];
   let errorOccurred = false;
+  const dependencies: string[] = [];
+  const mergedDependencies: string[] = [];
+  const pluginContext = getPluginContext(filePath, mergedDependencies);
 
   for (const hook of loadHooks) {
     let result = await bind(hook, pluginContext)(filePath);
@@ -116,7 +120,7 @@ export const transformFile = async (filePath: string) => {
   }
 
   if (type !== 'js') {
-    console.log(chalk.red(`File with type "${type}" is not supported. You may need proper loader to transform this kind of files to JS.`));
+    console.log(chalk.red(`File with type "${type}" is not supported. You may need proper loader to transform this kind of files into JS.`));
   }
 
   try {
@@ -296,6 +300,7 @@ export const transformFile = async (filePath: string) => {
     code: generatedCode,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
     dependencies,
+    mergedDependencies,
     error: errorOccurred
   }
 }

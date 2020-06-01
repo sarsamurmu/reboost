@@ -10,14 +10,14 @@ let filesData: {
   files: Record<string, {
     /** Unique ID of the file */
     uid: string;
-    /** If the file is pure. File is pure if it has no dependency or source map */
-    pure?: boolean;
     /** Hash of the file */
     hash: string;
     /** Address used in the file */
     address: string;
     /** Dependencies of the file */
     dependencies: string[];
+    /** Files which are merged, like when imported in Sass */
+    mergedDependencies?: Record<string, string>;
   }>;
   dependents: Record<string, string[]>;
 };
