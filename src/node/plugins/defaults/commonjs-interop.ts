@@ -3,47 +3,8 @@ import { NodePath } from '@babel/traverse';
 
 import { ReboostPlugin } from '../../index';
 
-export interface Importer {
-  Default(mod: any, filePath: string, sourcePath: string): any;
-  Member(mod: any, member: string, filePath: string, sourcePath: string): any;
-  All(mod: any): any;
-}
-
 export const CommonJSInteropPlugin: ReboostPlugin = {
   name: 'core-commonjs-interop-plugin',
-  setup({ router }) {
-    const importerFunc = (): Importer => ({
-      Default(mod, filePath, sourcePath) {
-        const message = `The requested module "${sourcePath}" does not provide an export named "default". Module imported by "${filePath}"`;
-
-        if (mod.__cjsModule && mod.default.__esModule) {
-          if (!('default' in mod.default)) throw new SyntaxError(message);
-          return mod.default.default;
-        }
-        if (!('default' in mod)) throw new SyntaxError(message);
-        return mod.default;
-      },
-      Member(mod, member, filePath, sourcePath) {
-        const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module imported by "${filePath}"`;
-
-        if (mod.__cjsModule) {
-          if (!(member in mod.default)) throw new SyntaxError(message);
-          return mod.default[member];
-        }
-        if (!(member in mod)) throw new SyntaxError(message);
-        return mod[member];
-      },
-      All(mod) {
-        if (mod.__cjsModule) return mod.default;
-        return mod;
-      }
-    })
-
-    router.get('/importer', async (ctx) => {
-      ctx.type = 'text/javascript';
-      ctx.body = `export default (${importerFunc.toString()})()`;
-    });
-  },
   transformAST(ast, { traverse }, filePath) {
     if (!filePath.match(/node_modules/)) {
       let program: NodePath<t.Program>;
@@ -64,7 +25,6 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
             let importedName;
             const localName = specifier.local.name;
             const commons = [
-              t.stringLiteral(filePath),
               t.callExpression(
                 t.identifier('__reboost_resolve'),
                 [t.stringLiteral(path.node.source.value)]
@@ -115,7 +75,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
         program.node.body.unshift(
           t.importDeclaration([
             t.importDefaultSpecifier(importerIdentifier)
-          ], t.stringLiteral('#/importer'))
+          ], t.stringLiteral(`#/importer?q=${filePath}`))
         );
 
         if (declarators.length) {

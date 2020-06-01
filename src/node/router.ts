@@ -30,6 +30,13 @@ export const createRouter = () => {
     ctx.body += hmrCode;
   });
 
+  const importerCode = fs.readFileSync(path.resolve(__dirname, '../browser/importer.js')).toString();
+  router.get('/importer', async (ctx) => {
+    ctx.type = 'text/javascript';
+    ctx.body = `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
+    ctx.body += importerCode;
+  });
+
   router.get('/unresolved', async (ctx) => {
     const { query } = ctx;
     ctx.type = 'text/javascript';

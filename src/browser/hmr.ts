@@ -2,15 +2,15 @@ export interface HMR {
   data: Record<string, any>;
   id: string;
   self: {
-    accept(callback: (module: any) => void | false): void;
+    accept(callback: (module: any) => void): void;
     dispose(callback: (data: Record<string, any>) => void): void;
   };
-  accept(dependency: string, callback: (module: any) => void | false): void;
+  accept(dependency: string, callback: (module: any) => void): void;
   dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
 }
 
 export type HMRMapType = Map<string, Map<string, {
-  accept?: (module: any) => void | false;
+  accept?: (module: any) => void;
   dispose?: (data: Record<string, any>) => void;
 }>>;
 

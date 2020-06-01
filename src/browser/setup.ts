@@ -1,4 +1,5 @@
 import { HMRMapType } from './hmr';
+import { Importer } from './importer';
 
 declare const address: string;
 
@@ -18,7 +19,7 @@ const HMR_DATA_MAP: Map<string, {}> = aWindow.$_HMR_DATA_MAP_;
 
 const lastUpdatedData = {} as Record<string, number>;
 
-let importer: any;
+let importer: Importer;
 const loadImporter = new Promise((resolve) => {
   import(`${address}/importer`).then((mod) => {
     importer = mod.default;
@@ -48,10 +49,7 @@ socket.addEventListener('message', async ({ data }) => {
         import(`${address}/transformed?q=${encodeURI(acceptedFile)}&t=${Date.now()}`).then((mod) => {
           for (const { accept, dispose } of HMR_MAP.get(acceptedFile).values()) {
             if (dispose) dispose(HMR_DATA_MAP.get(acceptedFile));
-            if (accept && (accept(importer.All(mod)) === false)) {
-              location.reload();
-              break;
-            }
+            if (accept) accept(importer.All(mod));
           }
 
           HMR_DATA_MAP.delete(acceptedFile);
