@@ -4,6 +4,8 @@ import extractImports from 'postcss-modules-extract-imports';
 import moduleValues from 'postcss-modules-values';
 import moduleScope from 'postcss-modules-scope';
 import { extractICSS, ExtractedICSS } from 'icss-utils';
+import { RawSourceMap } from 'source-map';
+import MagicString from 'magic-string';
 
 import path from 'path';
 
@@ -35,6 +37,39 @@ const getID = (key: string) => {
   return idMap.get(key);
 }
 
+const getCSS = (css: string, sourceMap: RawSourceMap, filePath: string) => {
+  let str = `\n/* ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')} */\n\n`;
+  str += css;
+  if (sourceMap) {
+    str += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
+    str += Buffer.from(JSON.stringify(sourceMap)).toString('base64');
+    str += ' */';
+  }
+  return str;
+}
+
+const getScript = (css: string) => `
+  import { hot } from 'reboost/hmr';
+
+  let styleTag = document.createElement('style');
+  let __styleTag;
+  styleTag.innerHTML = ${JSON.stringify(css)};
+
+  if (!hot.data) {
+    document.head.appendChild(styleTag);
+  } else {
+    __styleTag = styleTag;
+  }
+
+  hot.self.accept((updatedMod) => {
+    if (!updatedMod.__styleTag) return;
+    styleTag.replaceWith(updatedMod.__styleTag);
+    styleTag = updatedMod.__styleTag;
+  });
+
+  export { __styleTag }
+`;
+
 export const PluginName = 'core-css-plugin';
 export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
   const modsEnabled = options.modules !== false;
@@ -52,92 +87,66 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
       if (data.type === 'css') {
         const { code: css, map } = data;
         const isModule = modsEnabled && modsOptions.test.test(filePath);
-        const mode = typeof modsOptions.mode === 'function'
-                      ? (modsOptions.mode(filePath) || defaultOptions.mode)
-                      : modsOptions.mode;
 
-        const modulePlugins = [
-          moduleValues(),
-          localByDefault({ mode }),
-          extractImports(),
-          moduleScope({
-            generateScopedName: (exportedName: string) => `_${exportedName}_${getID(exportedName + filePath)}_`,
-            exportGlobals: modsOptions.exportGlobals
-          } as any),
-        ]
+        if (isModule) {
+          return new Promise((resolve) => {
+            let extractedICSS: ExtractedICSS;
+            const mode = typeof modsOptions.mode === 'function'
+              ? (modsOptions.mode(filePath) || defaultOptions.mode)
+              : modsOptions.mode;
 
-        return new Promise((resolve) => {
-          let extractedICSS: ExtractedICSS;
-
-          postcss([
-            ...(isModule ? modulePlugins : []),
-            postcss.plugin('import-export-extractor', () => (root) => {
-              extractedICSS = extractICSS(root, true);
-            })
-          ]).process(css, {
-            from: filePath,
-            map: {
-              inline: false,
-              annotation: false
-            }
-          }).then(async (result) => {
-            const localNameMap = {} as Record<string, string>;
-            const importedClassMap = {} as Record<string, { from: string; name: string; }>;
-            const { icssImports, icssExports } = extractedICSS;
-            let script = '';
-
-            Object.keys(icssExports).forEach((key, _, keys) => {
-              const camelCased = camelCase(key);
-              if (!keys.includes(camelCased)) icssExports[camelCased] = icssExports[key];
-            });
-
-            let importedIndex = 0;
-            for (const key in icssImports) {
-              const localName = 'styles_' + importedIndex++;
-              localNameMap[key] = localName;
-              script += `import ${localName} from '${key}';\n`;
-
-              for (const className in icssImports[key]) {
-                importedClassMap[className] = {
-                  from: key,
-                  name: icssImports[key][className]
-                }
+            postcss([
+              moduleValues(),
+              localByDefault({ mode }),
+              extractImports(),
+              moduleScope({
+                generateScopedName: (exportedName: string) => `_${exportedName}_${getID(exportedName + filePath)}_`,
+                exportGlobals: modsOptions.exportGlobals
+              } as any),
+              postcss.plugin('import-export-extractor', () => (root) => {
+                extractedICSS = extractICSS(root, true);
+              })
+            ]).process(css, {
+              from: filePath,
+              map: {
+                inline: false,
+                annotation: false
               }
-            }
+            }).then(async (result) => {
+              const localNameMap = {} as Record<string, string>;
+              const importedClassMap = {} as Record<string, { from: string; name: string; }>;
+              const { icssImports, icssExports } = extractedICSS;
+              let script = '';
 
-            let cssString = `\n/* ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')} */\n\n`;
-            cssString += result.css;
-            if (sourceMapEnabled) {
-              const generatedMap = result.map.toJSON() as any;
-              const sourceMap = map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap;
-              const sourceMapStr = JSON.stringify(this.getCompatibleSourceMap(sourceMap));
-              cssString += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
-              cssString += Buffer.from(sourceMapStr).toString('base64');
-              cssString += ' */';
-            }
-
-            script += `
-              import { hot } from 'reboost/hmr';
-
-              let styleTag = document.createElement('style');
-              let __styleTag;
-              styleTag.innerHTML = ${JSON.stringify(cssString)};
-
-              if (!hot.data) {
-                document.head.appendChild(styleTag);
-              } else {
-                __styleTag = styleTag;
-              }
-
-              hot.self.accept((updatedMod) => {
-                styleTag.replaceWith(updatedMod.__styleTag);
-                styleTag = updatedMod.__styleTag;
+              Object.keys(icssExports).forEach((key, _, keys) => {
+                const camelCased = camelCase(key);
+                if (!keys.includes(camelCased)) icssExports[camelCased] = icssExports[key];
               });
 
-              export { __styleTag }
-            `;
+              let importedIndex = 0;
+              for (const key in icssImports) {
+                const localName = 'styles_' + importedIndex++;
+                localNameMap[key] = localName;
+                script += `import ${localName} from '${key}';\n`;
 
-            if (isModule) {
+                for (const className in icssImports[key]) {
+                  importedClassMap[className] = {
+                    from: key,
+                    name: icssImports[key][className]
+                  }
+                }
+              }
+
+              let cssSourceMap;
+              if (sourceMapEnabled) {
+                const generatedMap = result.map.toJSON() as any;
+                const sourceMap = map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap;
+                cssSourceMap = this.getCompatibleSourceMap(sourceMap);
+              }
+              const cssString = getCSS(result.css, cssSourceMap, filePath);
+
+              script += getScript(cssString);
+
               script += 'export default ' + JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (match, p1: string, p2: string, offset, string) => {
                 const transformed = p2.split(' ').map((className) => {
                   const classNameData = importedClassMap[className];
@@ -150,13 +159,23 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
 
                 return `"${p1}": \`${transformed}\``;
               });
-            }
 
-            resolve({
-              code: script
-            });
-          })
-        });
+              resolve({
+                code: script
+              });
+            })
+          });
+        }
+
+        let sourceMap = map;
+        if (!sourceMap) {
+          // Add default source map
+          sourceMap = new MagicString(css).generateMap({ source: filePath });
+        }
+
+        return {
+          code: getScript(getCSS(css, this.getCompatibleSourceMap(sourceMap), filePath))
+        }
       }
 
       return null;
