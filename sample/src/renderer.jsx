@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import styles from './styles/index.module.css';
 import JSLogo from './assets/js-logo.png';
+import './styles/scss/index.scss';
 
 const app = document.createElement('div');
 document.body.appendChild(app);
