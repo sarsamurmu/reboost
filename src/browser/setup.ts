@@ -29,7 +29,7 @@ const loadImporter = new Promise((resolve) => {
 
 socket.addEventListener('open', () => {
   console.log('[reboost] Connected to the server');
-  // TODO: Send message to server that we're connected
+  // ? Should we send message to server that we're connected?
 });
 
 socket.addEventListener('message', async ({ data }) => {
