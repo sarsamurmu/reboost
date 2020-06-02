@@ -2,7 +2,9 @@
 Reboost your web development workflow.
 
 > ### Experimental.
-> Reboost is still in the alpha stage. Some things might not work. API can change any time.
+> Reboost is not stable yet.
+> Things can change or break anytime.
+> But don't worry, we are working on that :D
 
 ## Motivation
 When developing a web app, as your number of modules increases,
@@ -27,7 +29,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Hot Module Replacement.
 - Out of the box support for CSS Modules, JSX, and TypeScript.
 - Preprocessor support.
-<!-- - Works with [Electron](https://www.electronjs.org/). -->
+- Works with [Electron](https://www.electronjs.org/).
 
 ## Compatibility
 Reboost works with both CommonJS and ES modules, so you can try it even
