@@ -97,9 +97,11 @@ export const transformFile = async (filePath: string) => {
     const transformed = await bind(hook, pluginContext)({ code, type }, filePath);
     if (transformed) {
       ({ code } = transformed);
-      // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
-      transformed.map.sources = transformed.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
-      sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, transformed.map) : transformed.map;
+      if (transformed.map) {
+        // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
+        transformed.map.sources = transformed.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
+        sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, transformed.map) : transformed.map;
+      }
       if (transformed.type) ({ type } = transformed);
     }
   }

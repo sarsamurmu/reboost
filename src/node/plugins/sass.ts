@@ -4,7 +4,6 @@ import type Sass from 'node-sass';
 import path from 'path';
 
 import { ReboostPlugin } from '../index';
-import { getConfig } from '../shared';
 
 interface SassPluginOptions {
   sassOptions?: Sass.Options;
@@ -12,13 +11,18 @@ interface SassPluginOptions {
 
 export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
   const sassOptions = Object.assign({}, options.sassOptions);
-  sassOptions.includePaths = (sassOptions.includePaths || []).map((includePath) => {
-    return path.isAbsolute(includePath) ? includePath : path.resolve(getConfig().rootDir, includePath)
-  });
+  let includePathsNormalized = false;
   
   return {
     name: 'core-sass-plugin',
     transformContent(data, filePath) {
+      if (!includePathsNormalized) {
+        sassOptions.includePaths = (sassOptions.includePaths || []).map((includePath) => {
+          return path.isAbsolute(includePath) ? includePath : path.resolve(this.config.rootDir, includePath);
+        });
+        includePathsNormalized = true;
+      }
+
       if (['sass', 'scss'].includes(data.type)) {
         try {
           const nodeSassPath = require.resolve('node-sass', { paths: [process.cwd()] });
@@ -61,9 +65,18 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
                       return setTimeout(() => renderAndResolve(false), 200);
                     }
                   }
-                  console.log(chalk.red(`SassPlugin: Error with file "${filePath}"\n`));
-                  console.log(chalk.red((err as any).formatted));
-                  return resolve();
+                  let errorMessage = `SassPlugin: Error with file "${filePath}"\n`;
+                  errorMessage += (err as any).formatted;
+                  console.log(chalk.red(errorMessage));
+
+                  this.addDependency(path.normalize(err.file));
+
+                  // Send error message to client
+                  return resolve({
+                    code: `console.error(${JSON.stringify(errorMessage)})`,
+                    map: undefined,
+                    type: 'js'
+                  });
                 }
 
                 result.stats.includedFiles.forEach((includedFile) => {
