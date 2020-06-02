@@ -1,7 +1,7 @@
 {
   "name": "reboost",
   "version": "0.1.0",
-  "description": "Reboost your web development workflow",
+  "description": "Fast dev server for web development",
   "main": "./dist/node/index.js",
   "types": "./types/node/index.d.ts",
   "files": [

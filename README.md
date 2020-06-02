@@ -1,5 +1,5 @@
 # Reboost
-Reboost your web development workflow.
+Yet another super fast dev server, for faster web development.
 
 > ### Experimental.
 > Reboost is not stable yet.
