@@ -1,12 +1,20 @@
 {
   "name": "reboost",
-  "version": "0.1.0",
-  "description": "Fast dev server for web development",
+  "version": "0.1.1",
+  "description": "A super fast web dev server, for faster development",
   "main": "./dist/node/index.js",
   "types": "./types/node/index.d.ts",
   "files": [
     "dist",
     "types"
+  ],
+  "keywords": [
+    "fast",
+    "faster",
+    "super-fast",
+    "dev-server",
+    "development",
+    "web"
   ],
   "scripts": {
     "prepublishOnly": "node prepublish && npm run build",

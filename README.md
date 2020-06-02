@@ -1,8 +1,8 @@
 # Reboost
-Yet another super fast dev server, for faster web development.
+A *super fast* web dev server, for faster development.
 
 > ### Experimental.
-> Reboost is not stable yet.
+> Reboost is not that stable yet.
 > Things can change or break anytime.
 > But don't worry, we are working on that :D
 
