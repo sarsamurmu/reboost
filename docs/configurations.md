@@ -204,4 +204,4 @@ An array of plugins to be used by Reboost.
 Type: `boolean`\
 Default: `false`
 
-If want to know how fast is Reboost, enable this ^_^.
+If want to know how fast Reboost is, enable this ^_^.
