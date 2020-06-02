@@ -1,13 +1,13 @@
-export interface HMR {
+export type HMR = Readonly<{
   data: Record<string, any>;
   id: string;
-  self: {
+  self: Readonly<{
     accept(callback: (module: any) => void): void;
     dispose(callback: (data: Record<string, any>) => void): void;
-  };
+  }>;
   accept(dependency: string, callback: (module: any) => void): void;
   dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
-}
+}>;
 
 export type HMRMapType = Map<string, Map<string, {
   accept?: (module: any) => void;
@@ -66,5 +66,8 @@ const hot: HMR = {
 
 (hot as any).selfAccept = hot.self.accept;
 (hot as any).selfDispose = hot.self.dispose;
+
+Object.freeze(hot.self);
+Object.freeze(hot);
 
 export { hot }
