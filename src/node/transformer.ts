@@ -246,8 +246,12 @@ export const transformFile = async (filePath: string) => {
   }
 
   const promiseFunctions: (() => Promise<void>)[] = [];
+  let astProgram: NodePath<babelTypes.Program>;
 
   traverse(ast, {
+    Program(astPath) {
+      astProgram = astPath;
+    },
     ImportDeclaration(astPath) {
       promiseFunctions.push(async () => {
         await resolveDeps(astPath);
@@ -270,6 +274,31 @@ export const transformFile = async (filePath: string) => {
             )
           );
         });
+      } else if (t.isImport(astPath.node.callee)) {
+        // Rewrite dynamic imports
+        const importDeclarations = astProgram.get('body').filter((p) => p.isImportDeclaration());
+        let importerDeclaration = importDeclarations.find(
+          (dec) => (dec as NodePath<babelTypes.ImportDeclaration>).node.source.value.includes('#/importer')
+        ).node as babelTypes.ImportDeclaration;
+        if (!importerDeclaration) {
+          const identifier = astPath.scope.generateUidIdentifier('$importer');
+          importerDeclaration = t.importDeclaration([
+            t.importDefaultSpecifier(identifier)
+          ], t.stringLiteral(`#/importer?q=${filePath}`));
+          astProgram.node.body.unshift(importerDeclaration);
+        }
+        const importerIdentifierName = importerDeclaration.specifiers[0].local.name;
+        astPath.replaceWith(
+          t.callExpression(
+            t.memberExpression(
+              t.identifier(importerIdentifierName),
+              t.identifier('Dynamic')
+            ),
+            [
+              t.stringLiteral((astPath.node.arguments[0] as babelTypes.StringLiteral).value)
+            ]
+          )
+        );
       }
     }
   });

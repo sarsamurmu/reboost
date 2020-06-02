@@ -33,7 +33,8 @@ export const createRouter = () => {
   const importerCode = fs.readFileSync(path.resolve(__dirname, '../browser/importer.js')).toString();
   router.get('/importer', async (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
+    ctx.body = `const address = "${getAddress()}";\n`;
+    ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
     ctx.body += importerCode;
   });
 
