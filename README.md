@@ -103,11 +103,12 @@ to use any other server (like browser-sync or your own http server) you can do t
 you've to just serve the generated scripts which are in your output directory.
 Reboost will handle the rest.
 
-### [Changelog](https://github.com/sarsamurmu/reboost/blob/master/CHANGELOG.md)
-### [Configurations](https://github.com/sarsamurmu/reboost/blob/master/docs/configurations.md)
-### [HMR API](https://github.com/sarsamurmu/reboost/blob/master/docs/hmr.md)
-### [Plugins](https://github.com/sarsamurmu/reboost/blob/master/docs/plugins.md)
-### [Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md)
+### Docs
+#### [Changelog](https://github.com/sarsamurmu/reboost/blob/master/CHANGELOG.md)
+#### [Configurations](https://github.com/sarsamurmu/reboost/blob/master/docs/configurations.md)
+#### [HMR API](https://github.com/sarsamurmu/reboost/blob/master/docs/hmr.md)
+#### [Plugins](https://github.com/sarsamurmu/reboost/blob/master/docs/plugins.md)
+#### [Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md)
 
 ---
 
