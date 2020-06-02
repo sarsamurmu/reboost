@@ -209,6 +209,7 @@ export const transformFile = async (filePath: string): Promise<{
 
     return {
       code: `console.error('[reboost] ' + ${JSON.stringify(message)});`,
+      dependencies,
       error: true
     }
   }
