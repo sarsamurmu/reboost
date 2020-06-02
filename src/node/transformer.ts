@@ -52,6 +52,15 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   mergeSourceMaps
 })
 
+const handleError = ({ message }: Error, dependencies: string[]) => {
+  console.log(chalk.red(message));
+  return {
+    code: `console.error(${JSON.stringify('[reboost] ' + message)})`,
+    dependencies,
+    error: true
+  }
+}
+
 let pluginsInitiated = false;
 let resolveHooks: ReboostPlugin['resolve'][];
 let loadHooks: ReboostPlugin['load'][];
@@ -59,7 +68,13 @@ let transformContentHooks: ReboostPlugin['transformContent'][];
 let transformIntoJSHooks: ReboostPlugin['transformIntoJS'][];
 let transformASTHooks: ReboostPlugin['transformAST'][];
 
-export const transformFile = async (filePath: string) => {
+export const transformFile = async (filePath: string): Promise<{
+  code: string;
+  dependencies: string[];
+  map?: string;
+  imports?: string[];
+  error?: boolean;
+}> => {
   if (!pluginsInitiated) {
     const def = (a: any) => !!a;
     const plugins = getConfig().plugins.filter(def);
@@ -79,9 +94,9 @@ export const transformFile = async (filePath: string) => {
   let ast: babelTypes.Node;
   let type: string;
   let errorOccurred = false;
+  const imports: string[] = [];
   const dependencies: string[] = [];
-  const mergedDependencies: string[] = [];
-  const pluginContext = getPluginContext(filePath, mergedDependencies);
+  const pluginContext = getPluginContext(filePath, dependencies);
 
   for (const hook of loadHooks) {
     let result = await bind(hook, pluginContext)(filePath);
@@ -94,28 +109,32 @@ export const transformFile = async (filePath: string) => {
   }
 
   for (const hook of transformContentHooks) {
-    const transformed = await bind(hook, pluginContext)({ code, type }, filePath);
-    if (transformed) {
-      ({ code } = transformed);
-      if (transformed.map) {
+    const result = await bind(hook, pluginContext)({ code, type }, filePath);
+    if (result) {
+      if (result instanceof Error) return handleError(result, dependencies);
+
+      ({ code } = result);
+      if (result.map) {
         // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
-        transformed.map.sources = transformed.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
-        sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, transformed.map) : transformed.map;
+        result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
+        sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
       }
-      if (transformed.type) ({ type } = transformed);
+      if (result.type) ({ type } = result);
     }
   }
 
   for (const hook of transformIntoJSHooks) {
-    const transformed = await bind(hook, pluginContext)({
+    const result = await bind(hook, pluginContext)({
       code,
       type,
       map: sourceMap
     }, filePath);
 
-    if (transformed) {
-      ({ code } = transformed);
-      if (transformed.inputMap) inputSourceMap = transformed.inputMap;
+    if (result) {
+      if (result instanceof Error) return handleError(result, dependencies);
+
+      ({ code } = result);
+      if (result.inputMap) inputSourceMap = result.inputMap;
       type = 'js';
       break;
     }
@@ -231,7 +250,7 @@ export const transformFile = async (filePath: string) => {
               routed = true;
             } else {
               finalPath = resolvedPath;
-              dependencies.push(resolvedPath);
+              imports.push(resolvedPath);
             }
           } else {
             errorOccurred = true;
@@ -241,7 +260,7 @@ export const transformFile = async (filePath: string) => {
         (astPath.node as any).source.value = getAddress() + (routed
           ? encodeURI(finalPath)
           : finalPath
-            ? `/transformed?q=${encodeURI(finalPath)}`
+            ? `/transformed?q=${encodeURI(finalPath)}&importer=${encodeURI(filePath)}`
             : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`);
       }
     }
@@ -330,8 +349,8 @@ export const transformFile = async (filePath: string) => {
   return {
     code: generatedCode,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
+    imports,
     dependencies,
-    mergedDependencies,
     error: errorOccurred
   }
 }

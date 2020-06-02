@@ -69,7 +69,7 @@ export interface ReboostPlugin {
       type: string;
     },
     filePath: string
-  ) => TransformedContent | Promise<TransformedContent>;
+  ) => TransformedContent | Error | Promise<TransformedContent | Error>;
   transformIntoJS?: (
     this: PluginContext,
     data: {
@@ -78,7 +78,7 @@ export interface ReboostPlugin {
       map: RawSourceMap;
     },
     filePath: string
-  ) => JSContent | Promise<JSContent>;
+  ) => JSContent | Error | Promise<JSContent | Error>;
   transformAST?: (
     this: PluginContext,
     ast: babelTypes.Node,

@@ -29,7 +29,7 @@ const importer: Importer = {
       throw new TypeError(`[reboost] Failed to resolve dynamically imported module "${toImport}"`);
     }
     const resolvedPath = await response.text();
-    return importer.All(await import(`${address}/transformed?q=${encodeURI(resolvedPath)}`));
+    return importer.All(await import(`${address}/transformed?q=${encodeURI(resolvedPath)}&importer=${encodeURI(filePath)}`));
   },
   Member(mod, member, sourcePath) {
     const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module imported by "${filePath}"`;

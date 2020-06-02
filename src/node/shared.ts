@@ -12,12 +12,12 @@ let filesData: {
     uid: string;
     /** Hash of the file */
     hash: string;
+    /** Only if file has no imports */
+    pure: boolean;
     /** Address used in the file */
     address: string;
     /** Dependencies of the file */
-    dependencies: string[];
-    /** Files which are merged, like when imported in Sass */
-    mergedDependencies?: Record<string, string>;
+    dependencies?: Record<string, string>;
   }>;
   dependents: Record<string, string[]>;
 };

@@ -65,18 +65,14 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
                       return setTimeout(() => renderAndResolve(false), 200);
                     }
                   }
+
                   let errorMessage = `SassPlugin: Error with file "${filePath}"\n`;
                   errorMessage += (err as any).formatted;
-                  console.log(chalk.red(errorMessage));
 
-                  this.addDependency(path.normalize(err.file));
+                  const normalizedPath = path.normalize(err.file);
+                  if (filePath !== normalizedPath) this.addDependency(normalizedPath);
 
-                  // Send error message to client
-                  return resolve({
-                    code: `console.error(${JSON.stringify(errorMessage)})`,
-                    map: undefined,
-                    type: 'js'
-                  });
+                  return resolve(new Error(errorMessage));
                 }
 
                 result.stats.includedFiles.forEach((includedFile) => {
