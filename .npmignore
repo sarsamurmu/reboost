@@ -3,5 +3,5 @@ node.tsconfig.json
 prepublish.js
 tsconfig.json
 src/
-sample/
+playground/
 docs/
