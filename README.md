@@ -109,7 +109,7 @@ Reboost will handle the rest.
 [Plugins](https://github.com/sarsamurmu/reboost/blob/master/docs/plugins.md)\
 [HMR API](https://github.com/sarsamurmu/reboost/blob/master/docs/hmr.md)\
 [Recipes](https://github.com/sarsamurmu/reboost/blob/master/docs/recipes.md)\
-[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md)\
+[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md)
 
 ---
 
