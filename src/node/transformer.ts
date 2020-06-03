@@ -334,8 +334,6 @@ export const transformFile = async (filePath: string): Promise<{
     sourceMaps: true,
     sourceFileName: fixPath(path.relative(getConfig().rootDir, filePath)),
     sourceRoot: 'reboost:///',
-    concise: debugMode,
-    compact: debugMode,
     minified: !debugMode
   }
 

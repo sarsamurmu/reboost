@@ -20,8 +20,8 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 
 ## Features
 - No bundling. So the server start time is fast.
-- Incremental builds, transforms only the file which is requested or changed.
-- Filesystem cache. It will stay fast even after restarting.
+- Transforms only the required/changed files.
+- Advanced filesystem cache. It will stay fast even after restarting.
 - Source maps support for better developer experience.
 - Supports CommonJS modules.
 - Support for Plugins.
@@ -110,11 +110,6 @@ Reboost will handle the rest.
 [HMR API](https://github.com/sarsamurmu/reboost/blob/master/docs/hmr.md)\
 [Recipes](https://github.com/sarsamurmu/reboost/blob/master/docs/recipes.md)\
 [Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md)\
-<!-- #### [Changelog](https://github.com/sarsamurmu/reboost/blob/master/CHANGELOG.md)
-#### [Configurations](https://github.com/sarsamurmu/reboost/blob/master/docs/configurations.md)
-#### [HMR API](https://github.com/sarsamurmu/reboost/blob/master/docs/hmr.md)
-#### [Plugins](https://github.com/sarsamurmu/reboost/blob/master/docs/plugins.md)
-#### [Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md) -->
 
 ---
 

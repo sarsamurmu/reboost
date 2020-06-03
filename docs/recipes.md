@@ -24,8 +24,8 @@ start({
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
 
 ## CSS and CSS Modules
-Works out of the box. By default all CSS files are loaded as regular CSS file,
-only the files which includes `.module.` in their name are treated as CSS module.
+Works out of the box. By default, all CSS files are loaded as a regular CSS file,
+only the files which include `.module.` in their name are treated as CSS module.
 Learn more about this on [`CSSPlugin`'s page](./plugins/css.md)
 
 ## Sass
@@ -46,7 +46,26 @@ start({
 })
 ```
 
-## CSS modules with Sass as preprocessor
-As told, files which includes `.module.` are treated as CSS module. So, if
+## CSS modules with Sass
+As told, files which include `.module.` are treated as CSS module. So, if
 your Sass/SCSS file includes `.module.` in its name, it will be treated as
 CSS module.
+
+## Asset files
+You can load asset files as well.
+Just adjust your configuration file to match this
+```js
+const { start, UsePlugin, FilePlugin } = require('reboost');
+
+start({
+  // Other options
+  plugins: [
+    // Other plugins
+    UsePlugin({
+      test: /\.(png|jpe?g)$/, // Example for only loading PNG/JPG/JPEG files as asset
+      use: FilePlugin()
+    })
+  ]
+  // ...
+})
+```
