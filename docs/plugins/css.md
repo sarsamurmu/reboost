@@ -107,3 +107,21 @@ start({
   ]
 })
 ```
+
+### Treating all CSS files as modules
+By default all CSS files which includes `.module.` in their name are treated as
+CSS modules. If you want your all CSS files to be loaded as CSS modules then
+you can use `modules.test` option change this behavior.
+```js
+const { start, CSSPlugin } = require('reboost');
+
+start({
+  plugins: [
+    CSSPlugin({
+      modules: {
+        test: /.*/ // Matches all
+      }
+    })
+  ]
+})
+```
