@@ -27,7 +27,7 @@ start({
       ADJECTIVE: JSON.stringify('cool')
     })
   ],
-  showResponseTime: true,
+  // showResponseTime: true,
 
   // Don't use these options, these are only for debugging
   dumpCache: true,
