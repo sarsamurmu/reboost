@@ -47,7 +47,7 @@ start({
 ```
 
 ## CSS modules with Sass
-As told, files which include `.module.` are treated as CSS module. So, if
+As told, files which include `.module.` in their name are treated as CSS module. So, if
 your Sass/SCSS file includes `.module.` in its name, it will be treated as
 CSS module.
 
