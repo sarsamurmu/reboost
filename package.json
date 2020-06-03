@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A super fast web dev server, for faster development",
   "main": "./dist/node/index.js",
   "types": "./types/node/index.d.ts",
