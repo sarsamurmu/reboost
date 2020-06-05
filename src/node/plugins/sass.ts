@@ -66,7 +66,7 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
                     }
                   }
 
-                  let errorMessage = `SassPlugin: Error with file "${filePath}"\n`;
+                  let errorMessage = `SassPlugin: Error while processing "${filePath}"\n`;
                   errorMessage += (err as any).formatted;
 
                   const normalizedPath = path.normalize(err.file);
