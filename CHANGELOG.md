@@ -2,6 +2,7 @@
 - Support for automatically opening browser
 - Support for proxies
 - Minor fixes
+- Updated dependencies
 - Updated docs
 
 ## 0.1.0
