@@ -65,6 +65,30 @@ start({
 })
 ```
 
+##### `contentServer.proxy`
+Type: `Record<string, string | object>`
+
+Sets up custom proxies in the content server. This option can be a `object` with
+keys as paths that you want to redirect and value as a string (shorthand) or
+[http-proxy](https://github.com/http-party/node-http-proxy#options) options object.
+
+```js
+const { start } = require('reboost');
+
+start({
+  // ...
+  contentServer: {
+    proxy: {
+      '/path': 'https://example.com/redirect',
+      '/another-path': {
+        target: 'https://target.path',
+        // More `http-proxy` options
+      }
+    }
+  }
+})
+```
+
 ##### `contentServer.onReady`
 Type: `(app: Koa) => void`
 

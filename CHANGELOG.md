@@ -1,5 +1,6 @@
 ## 0.1.3
 - Support for automatically opening browser
+- Support for proxies
 - Minor fixes
 - Updated docs
 

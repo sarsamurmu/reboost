@@ -33,4 +33,4 @@ import 'styles.scss';
 Type: `Sass.Options | object`
 
 Options to use when rendering Sass/SCSS files. You can read about all Sass options
-in `node-sass`'s [npm package](https://www.npmjs.com/package/node-sass) page.
+in `node-sass`'s [npm package](https://www.npmjs.com/package/node-sass#options) page.
