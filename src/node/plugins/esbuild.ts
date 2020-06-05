@@ -1,8 +1,6 @@
 import esbuild, { Target } from 'esbuild';
 
-import { ReboostPlugin, TransformedContent } from '../index';
-
-type Loaders = 'js' | 'jsx' | 'ts' | 'tsx';
+import { ReboostPlugin } from '../index';
 
 interface esbuildOptions {
   /**
