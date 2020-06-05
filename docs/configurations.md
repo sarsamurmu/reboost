@@ -68,7 +68,7 @@ start({
 ##### `contentServer.proxy`
 Type: `Record<string, string | object>`
 
-Sets up custom proxies in the content server. This option can be a `object` with
+Sets up custom proxies in the content server. This option can be an `object` with
 keys as paths that you want to redirect and value as a string (shorthand) or
 [http-proxy](https://github.com/http-party/node-http-proxy#options) options object.
 

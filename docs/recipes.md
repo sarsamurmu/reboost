@@ -26,13 +26,38 @@ start({
 ## CSS and CSS Modules
 Works out of the box. By default, all CSS files are loaded as a regular CSS file,
 only the files which include `.module.` in their name are treated as CSS module.
-Learn more about this on [`CSSPlugin`'s page](./plugins/css.md)
+Learn more about this on [`CSSPlugin`'s page](./plugins/css.md).
+
+So basically you can just import CSS modules without any extra configuration.
+
+`buttons.module.css`
+```css
+.base {
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.primary {
+  composes: base-button;
+  background-color: dodgerblue;
+}
+```
+`component.js`
+```js
+import buttons from 'buttons.module.css';
+
+// You can use it in many ways
+// Here's an example using JSX
+const PrimaryButton = () => (
+  <button className={buttons.primary}>CSS module works!</button>
+)
+```
 
 ## Sass
 Use [SassPlugin](./plugins/sass.md) to generate CSS out of Sass/SCSS,
 generated CSS will be handled by [CSSPlugin](./plugins/css.md).
 
-See the following configuration for adding Sass support.
+Following configuration file adds support for Sass.
 ```js
 const { start, SassPlugin } = require('reboost');
 
@@ -44,6 +69,11 @@ start({
   ]
   // ...
 })
+```
+
+After that, you can import Sass/SCSS files in your script files
+```js
+import 'styles.scss';
 ```
 
 ## CSS modules with Sass
@@ -68,4 +98,12 @@ start({
   ]
   // ...
 })
+```
+Now you can import your assets in your script files
+```js
+import logo from './resources/logo.png';
+
+// You can use it in many ways
+// But, here using JSX for example
+const BrandLogo = () => <img src={logo} height="100px">;
 ```
