@@ -11,6 +11,7 @@ import * as babelTypes from '@babel/types';
 import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
 import open from 'open';
+import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
@@ -103,6 +104,7 @@ export interface ReboostConfig {
     root: string;
     /** Options for automatically opening content server url when ready */
     open: open.Options;
+    proxy: Record<string, string | ProxyOptions>;
     onReady?: (app: Koa) => void;
   } & serveStatic.Options;
   /** Entries of files */
@@ -281,6 +283,18 @@ export const start = (config: ReboostConfig = {} as any) => {
           const contentServer = new Koa();
 
           contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
+
+          const proxyObject = config.contentServer.proxy;
+          if (proxyObject) {
+            for (const key in proxyObject) {
+              const proxyOptions: ProxyOptions = typeof proxyObject[key] === 'string'
+                ? { target: proxyObject[key] as string }
+                : proxyObject[key] as ProxyOptions;
+              
+              contentServer.use(proxy(key, proxyOptions));
+            }
+          }
+
           if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
 
           const startedAt = (address: string) => {
