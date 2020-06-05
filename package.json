@@ -43,6 +43,7 @@
     "koa-websocket": "^6.0.0",
     "magic-string": "^0.25.7",
     "md5-file": "^5.0.0",
+    "open": "^7.0.4",
     "portfinder": "^1.0.26",
     "postcss": "^7.0.30",
     "postcss-modules-extract-imports": "^2.0.0",

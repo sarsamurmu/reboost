@@ -10,6 +10,7 @@ import babelTraverse from '@babel/traverse';
 import * as babelTypes from '@babel/types';
 import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
+import open from 'open';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
@@ -123,8 +124,9 @@ export interface ReboostConfig {
   /** Options for content server */
   contentServer?: {
     root: string;
+    open: open.Options;
     onReady?: (koa: Koa) => void;
-  } & Omit<serveStatic.Options, 'defer'>;
+  } & serveStatic.Options;
 
   /** If you want to run reboost in debug mode */
   debugMode?: boolean;
@@ -258,6 +260,7 @@ export const start = (config: ReboostConfig = {} as any) => {
 
         if (config.contentServer) {
           const contentServer = new Koa();
+
           contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
           if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
 
@@ -271,6 +274,11 @@ export const start = (config: ReboostConfig = {} as any) => {
             () => startedAt(`localhost:${localPort}`)
           );
 
+          const openOptions = config.contentServer.open;
+          if (openOptions) {
+            open(`http://localhost:${localPort}`, typeof openOptions === 'object' ? openOptions : undefined);
+          }
+
           if (host !== 'localhost') {
             const ipPort = await portFinder.getPortPromise({ host });
             http.createServer(contentServer.callback()).listen(
@@ -282,7 +290,7 @@ export const start = (config: ReboostConfig = {} as any) => {
             return resolvePromise({
               proxyServer: fullAddress,
               contentServer: {
-                local: `http://${localPort}`,
+                local: `http://localhost:${localPort}`,
                 ip: `http://${host}:${ipPort}`
               }
             });
@@ -291,7 +299,7 @@ export const start = (config: ReboostConfig = {} as any) => {
           return resolvePromise({
             proxyServer: fullAddress,
             contentServer: {
-              local: `http://${localPort}`
+              local: `http://localhost:${localPort}`
             }
           });
         }
