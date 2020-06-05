@@ -92,47 +92,66 @@ export interface ReboostPlugin {
 }
 
 export interface ReboostConfig {
-  /** Directory to use for storing cached files */
+  /**
+   * Directory to use for storing cached files
+   * @default ./.reboost_cache
+   */
   cacheDir?: string;
-  /** File entries */
+  /** Options for content server */
+  contentServer?: {
+    /** Directory which the content server should serve */
+    root: string;
+    /** Options for automatically opening content server url when ready */
+    open: open.Options;
+    onReady?: (app: Koa) => void;
+  } & serveStatic.Options;
+  /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
-  /** Directory to use as root */
+  /** Plugins you want to use with Reboost */
+  plugins?: ReboostPlugin[];
+  /**
+   * Directory to use as root
+   * @default .
+   */
   rootDir?: string;
   /** Resolve options to use when resolving files */
   resolve?: {
     /** Aliases to use while resolving */
     alias?: Record<string, string>;
-    /** Extensions to use while resolving */
+    /**
+     * Extensions to use while resolving
+     * @default ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json']
+     */
     extensions?: string[];
-    /** File names to use while resolving directory */
+    /**
+     * File names to use while resolving directory
+     * @default ['index']
+     */
     mainFiles?: string[];
-    /** Module directories to use while resolving modules */
+    /**
+     * Module directories to use while resolving modules
+     * @default ['node_modules']
+     */
     modules?: string[];
+  };
+  /** When enabled, logs the time it takes to serve a file */
+  showResponseTime: boolean;
+  /** Options for sourceMaps */
+  sourceMaps?: {
+    include?: Matcher;
+    exclude?: Matcher;
   };
   watchOptions?: {
     include?: Matcher;
     exclude?: Matcher;
     chokidar?: WatchOptions;
   };
-  /** Options for sourceMaps */
-  sourceMaps?: {
-    include?: Matcher;
-    exclude?: Matcher;
-  };
-  /** Plugins you want to use */
-  plugins?: ReboostPlugin[];
-  /** Options for content server */
-  contentServer?: {
-    root: string;
-    open: open.Options;
-    onReady?: (koa: Koa) => void;
-  } & serveStatic.Options;
 
+  // Developer options
   /** If you want to run reboost in debug mode */
   debugMode?: boolean;
   /** Clears cache whenever reboost starts. Only use while debugging */
   dumpCache?: boolean;
-  showResponseTime: boolean;
 }
 
 const INCOMPATIBLE_BELOW = 8;

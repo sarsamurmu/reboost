@@ -1,3 +1,8 @@
+## 0.1.3
+- Support for automatically opening browser
+- Minor fixes
+- Updated docs
+
 ## 0.1.0
 - Improved Plugin API with Plugin Context
 - Better source maps

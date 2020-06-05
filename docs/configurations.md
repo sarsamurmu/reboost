@@ -18,6 +18,59 @@ Default: `./.reboost_cache`
 
 Directory to use for storing cached files.
 
+#### `contentServer`
+Type: `object`
+
+Options for the content server. The content server serves your static
+files like HTML. It supports all the options of [koa-static](https://github.com/koajs/static#options)
+and some extra options which are described below.
+
+##### `contentServer.root`
+Type: `string`
+
+Root directory which will be served by the content server.
+
+##### `contentServer.open`
+Type: `boolean | object`
+
+Automatically opens the content server URL when ready. If set to `true`, opens the
+URL in your default browser. You can set it to options `object` for more configurations.
+The `object` accepts all [open](https://www.npmjs.com/package/open) options.
+
+Here's an example if you want to open the url in Firefox browser
+```js
+const { start } = require('reboost');
+
+start({
+  // ...
+  contentServer: {
+    open: {
+      app: 'firefox'
+    }
+  }
+})
+```
+
+Or if you want to open the url in an Incognito tab of Chrome
+```js
+const { start } = require('reboost');
+
+start({
+  // ...
+  contentServer: {
+    open: {
+      app: ['google chrome', '--incognito']
+    }
+  }
+})
+```
+
+##### `contentServer.onReady`
+Type: `(app: Koa) => void`
+
+Expects a function as the option. The function will be called when the
+content server is ready. The first argument is the [Koa](https://koajs.com/) app
+instance used by the content server.
 
 #### `entries`
 Type: `([string, string] | [string, string, string])[]`
@@ -76,6 +129,11 @@ window.coolLib // Module { add: (...), subtract: (...) }
 ```
 As you expected, exports are available through the `window` object
 
+#### `plugins`
+Type: `ReboostPlugin[]`
+
+An array of plugins to be used by Reboost.
+
 #### `rootDir`
 Type: `string`\
 Default: `.`
@@ -106,7 +164,7 @@ start({
   }
 })
 ```
-Instead of using relative paths you can use alias.
+Instead of using relative paths, you can use aliases.
 
 Some deeply nested file -
 ```js
@@ -151,6 +209,31 @@ Default: `['node_modules']`
 
 Directories to use while resolving modules.
 
+#### `showResponseTime`
+Type: `boolean`\
+Default: `false`
+
+If want to know how fast Reboost is, enable this ^_^
+
+#### `sourceMaps`
+Type: `object`
+
+Options to use when generating source maps.
+
+##### `sourceMaps.include`
+Type: `Matcher`\
+Default: `/.*/`
+
+Files to include in source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
+patterns. By default, source maps are generated for all files.
+
+##### `sourceMaps.exclude`
+Type: `Matcher`\
+Default: `/node_modules/`
+
+Files to exclude from source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
+patterns. By default, all files which are in `node_modules` are excluded.
+
 #### `watchOptions`
 Type: `object`
 
@@ -175,33 +258,3 @@ Type: `chokidar.WatchOptions`\
 Default: `{}`
 
 Options to use when initializing [chokidar](https://www.npmjs.com/package/chokidar).
-
-#### `sourceMaps`
-Type: `object`
-
-Options to use when generating source maps.
-
-##### `sourceMaps.include`
-Type: `Matcher`\
-Default: `/.*/`
-
-Files to include in source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
-patterns. By default, source maps are generated for all files.
-
-##### `sourceMaps.exclude`
-Type: `Matcher`\
-Default: `/node_modules/`
-
-Files to exclude from source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
-patterns. By default, all files which are in `node_modules` are excluded.
-
-#### `plugins`
-Type: `ReboostPlugin[]`
-
-An array of plugins to be used by Reboost.
-
-#### `showResponseTime`
-Type: `boolean`\
-Default: `false`
-
-If want to know how fast Reboost is, enable this ^_^.
