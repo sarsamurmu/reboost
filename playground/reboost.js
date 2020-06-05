@@ -1,7 +1,8 @@
 const {
   start,
-  ReplacePlugin,
   FilePlugin,
+  PostCSSPlugin,
+  ReplacePlugin,
   SassPlugin,
   UsePlugin
 } = require('reboost');
@@ -25,7 +26,8 @@ start({
     }),
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
-    })
+    }),
+    PostCSSPlugin()
   ],
   // showResponseTime: true,
 

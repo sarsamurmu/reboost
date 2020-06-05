@@ -6,10 +6,10 @@ import moduleScope from 'postcss-modules-scope';
 import { extractICSS, ExtractedICSS } from 'icss-utils';
 import { RawSourceMap } from 'source-map';
 import MagicString from 'magic-string';
-import { codeFrameColumns } from '@babel/code-frame';
 
 import path from 'path';
 
+import { postcssError } from './postcss';
 import { ReboostPlugin } from '../index';
 import { getConfig } from '../shared';
 
@@ -165,19 +165,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 code: script
               });
             }, (err) => {
-              let errorMessage = `CSSPlugin: Error while processing "${path.relative(this.config.rootDir, err.file).replace(/\\/g, '/')}"\n`;
-              errorMessage += `${err.reason} on line ${err.line} at column ${err.column}\n\n`;
-
-              errorMessage += codeFrameColumns(err.source, {
-                start: {
-                  line: err.line,
-                  column: err.column
-                }
-              }, {
-                message: err.reason
-              });
-
-              resolve(new Error(errorMessage));
+              resolve(postcssError(err, this.config));
             });
           });
         }

@@ -1,3 +1,11 @@
 body {
   padding: 10px;
+
+  & > p {
+    font-size: 1rem;
+  }
+
+  & > .disabled {
+    pointer-events: none;
+  }
 }
