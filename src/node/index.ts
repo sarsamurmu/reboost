@@ -135,159 +135,170 @@ export interface ReboostConfig {
 
 const INCOMPATIBLE_BELOW = 8;
 
-export const start = async (config: ReboostConfig = {} as any) => {
-  config = setConfig(merge<ReboostConfig>({
-    cacheDir: './.reboost_cache',
-    entries: null,
-    rootDir: '.',
-    resolve: {
-      alias: {},
-      extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
-      mainFiles: ['index'],
-      modules: ['node_modules']
-    },
-    watchOptions: {
-      exclude: /node_modules/,
-      chokidar: {}
-    },
-    sourceMaps: {
-      include: /.*/,
-      exclude: /node_modules/
-    },
-    plugins: [],
-    showResponseTime: false
-  }, config));
+export const start = (config: ReboostConfig = {} as any) => {
+  return new Promise(async (resolvePromise) => {
+    config = setConfig(merge<ReboostConfig>({
+      cacheDir: './.reboost_cache',
+      entries: null,
+      rootDir: '.',
+      resolve: {
+        alias: {},
+        extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
+        mainFiles: ['index'],
+        modules: ['node_modules']
+      },
+      watchOptions: {
+        exclude: /node_modules/,
+        chokidar: {}
+      },
+      sourceMaps: {
+        include: /.*/,
+        exclude: /node_modules/
+      },
+      plugins: [],
+      showResponseTime: false
+    }, config));
 
-  if (!config.entries) {
-    console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
-    process.exit(1);
-  }
+    if (!config.entries) {
+      console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
+      process.exit(1);
+    }
 
-  if (!path.isAbsolute(config.rootDir)) config.rootDir = path.resolve(config.rootDir);
-  if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);
-  if (!config.watchOptions.include) {
-    config.watchOptions.include = /.*/;
-  }
-  if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
-    config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
-  }
+    if (!path.isAbsolute(config.rootDir)) config.rootDir = path.resolve(config.rootDir);
+    if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);
+    if (!config.watchOptions.include) {
+      config.watchOptions.include = /.*/;
+    }
+    if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
+      config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
+    }
 
-  config.plugins.push(...defaultPlugins);
-  const pluginNames = config.plugins.map(({ name }) => name);
+    config.plugins.push(...defaultPlugins);
+    const pluginNames = config.plugins.map(({ name }) => name);
 
-  if (!pluginNames.includes(esbuildPluginName)) {
-    config.plugins.push(esbuildPlugin());
-  }
-  if (!pluginNames.includes(CSSPluginName)) {
-    config.plugins.unshift(CSSPlugin());
-  }
+    if (!pluginNames.includes(esbuildPluginName)) {
+      config.plugins.push(esbuildPlugin());
+    }
+    if (!pluginNames.includes(CSSPluginName)) {
+      config.plugins.unshift(CSSPlugin());
+    }
 
-  if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
+    if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
 
-  if (getFilesData().version < INCOMPATIBLE_BELOW) {
-    console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
-    rmDir(config.cacheDir);
-    console.log(chalk.cyan('[reboost] Clear cache complete'));
-  }
+    if (getFilesData().version < INCOMPATIBLE_BELOW) {
+      console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
+      rmDir(config.cacheDir);
+      console.log(chalk.cyan('[reboost] Clear cache complete'));
+    }
 
-  if (fs.existsSync(config.cacheDir)) {
-    console.log(chalk.cyan('[reboost] Refreshing cache...'));
-    verifyFiles();
-    console.log(chalk.cyan('[reboost] Refresh cache complete'));
-  }
+    if (fs.existsSync(config.cacheDir)) {
+      console.log(chalk.cyan('[reboost] Refreshing cache...'));
+      verifyFiles();
+      console.log(chalk.cyan('[reboost] Refresh cache complete'));
+    }
 
-  console.log(chalk.green('[reboost] Starting proxy server...'));
-  
-  const app = withWebSocket(new Koa());
-  const router = createRouter();
-  const interfaces = networkInterfaces();
-  let host: string;
-  let port: number;
-  let fullAddress: string;
+    console.log(chalk.green('[reboost] Starting proxy server...'));
 
-  interfaceLoop: for (const dev in interfaces) {
-    for (const details of interfaces[dev]) {
-      if (details.family === 'IPv4' && details.internal === false) {
-        host = details.address;
-        port = await portFinder.getPortPromise({ host });
-        break interfaceLoop;
+    const app = withWebSocket(new Koa());
+    const router = createRouter();
+    const interfaces = networkInterfaces();
+    let host: string;
+    let port: number;
+    let fullAddress: string;
+
+    interfaceLoop: for (const dev in interfaces) {
+      for (const details of interfaces[dev]) {
+        if (details.family === 'IPv4' && details.internal === false) {
+          host = details.address;
+          port = await portFinder.getPortPromise({ host });
+          break interfaceLoop;
+        }
       }
     }
-  }
 
-  if (!host && !port) {
-    host = 'localhost';
-    port = await portFinder.getPortPromise();
-  }
+    if (!host && !port) {
+      host = 'localhost';
+      port = await portFinder.getPortPromise();
+    }
 
-  fullAddress = `http://${host}:${port}`;
-  setAddress(fullAddress);
+    fullAddress = `http://${host}:${port}`;
+    setAddress(fullAddress);
 
-  for (const [input, output, libName] of config.entries) {
-    const outputPath = path.resolve(config.rootDir, output);
-    ensureDir(path.dirname(outputPath));
+    for (const [input, output, libName] of config.entries) {
+      const outputPath = path.resolve(config.rootDir, output);
+      ensureDir(path.dirname(outputPath));
 
-    let fileContent = `import '${fullAddress}/setup';\n`;
-    fileContent += 'import';
-    if (libName) fileContent += ' * as _$lib$_ from';
-    fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.resolve(config.rootDir, input))}';\n`;
-    if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
+      let fileContent = `import '${fullAddress}/setup';\n`;
+      fileContent += 'import';
+      if (libName) fileContent += ' * as _$lib$_ from';
+      fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.resolve(config.rootDir, input))}';\n`;
+      if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
 
-    fs.writeFileSync(outputPath, fileContent);
-    console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
-  }
+      fs.writeFileSync(outputPath, fileContent);
+      console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
+    }
 
-  if (config.debugMode) {
-    // let idx = 0;
-    // app.use(async (ctx, next) => {
-    //   const current = idx++;
-    //   console.time(chalk.cyan(`[reboost] Response time ${current}`));
-    //   await next();
-    //   console.timeEnd(chalk.cyan(`[reboost] Response time ${current}`));
-    // });
-  }
-
-  app.ws.use((ctx) => {
-    setWebSocket(ctx.websocket);
-  });
-
-  const setupPromises = [];
-  for (const plugin of config.plugins) {
-    if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router }));
-  }
-  await Promise.all(setupPromises);
-  deepFreeze(config);
-
-  app
-    .use(cors({ origin: '*' }))
-    .use(router.routes())
-    .use(router.allowedMethods())
-    .listen(port, host, async () => {
-      console.log(chalk.green('[reboost] Proxy server started'));
-
-      if (config.contentServer) {
-        const contentServer = new Koa();
-        contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
-        if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
-
-        const startedAt = (address: string) => {
-          console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
-        }
-
-        const localPort = await portFinder.getPortPromise();
-        http.createServer(contentServer.callback()).listen(
-          localPort,
-          () => startedAt(`localhost:${localPort}`)
-        );
-
-        if (host !== 'localhost') {
-          const ipPort = await portFinder.getPortPromise({ host });
-          http.createServer(contentServer.callback()).listen(
-            ipPort,
-            host,
-            () => startedAt(`${host}:${ipPort}`)
-          );
-        }
-      }
+    app.ws.use((ctx) => {
+      setWebSocket(ctx.websocket);
     });
+
+    const setupPromises = [];
+    for (const plugin of config.plugins) {
+      if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router }));
+    }
+    await Promise.all(setupPromises);
+    deepFreeze(config);
+
+    app
+      .use(cors({ origin: '*' }))
+      .use(router.routes())
+      .use(router.allowedMethods())
+      .listen(port, host, async () => {
+        console.log(chalk.green('[reboost] Proxy server started'));
+
+        if (config.contentServer) {
+          const contentServer = new Koa();
+          contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
+          if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
+
+          const startedAt = (address: string) => {
+            console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
+          }
+
+          const localPort = await portFinder.getPortPromise();
+          http.createServer(contentServer.callback()).listen(
+            localPort,
+            () => startedAt(`localhost:${localPort}`)
+          );
+
+          if (host !== 'localhost') {
+            const ipPort = await portFinder.getPortPromise({ host });
+            http.createServer(contentServer.callback()).listen(
+              ipPort,
+              host,
+              () => startedAt(`${host}:${ipPort}`)
+            );
+
+            return resolvePromise({
+              proxyServer: fullAddress,
+              contentServer: {
+                local: `http://${localPort}`,
+                ip: `http://${host}:${ipPort}`
+              }
+            });
+          }
+
+          return resolvePromise({
+            proxyServer: fullAddress,
+            contentServer: {
+              local: `http://${localPort}`
+            }
+          });
+        }
+
+        resolvePromise({
+          proxyServer: fullAddress
+        });
+      });
+  });
 }
