@@ -1,5 +1,6 @@
-## 0.1.4
+## 0.2.0
 - Added PostCSSPlugin
+- Minor fixes
 
 ## 0.1.3
 - Support for automatically opening browser
