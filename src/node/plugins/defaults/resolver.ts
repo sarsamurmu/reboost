@@ -29,7 +29,7 @@ const baseResolve = (fPath: string) => {
   return null;
 }
 
-export const resolvePath = (basePath: string, pathToResolve: string) => {
+export const resolveModule = (basePath: string, pathToResolve: string, preferModule = true) => {
   if (pathToResolve.startsWith('.')) {
     return baseResolve(path.resolve(path.dirname(basePath), pathToResolve));
   } else {
@@ -63,7 +63,7 @@ export const resolvePath = (basePath: string, pathToResolve: string) => {
             const pkgJSONPath = path.join(moduleDirPath, 'package.json');
             if (fs.existsSync(pkgJSONPath)) {
               const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
-              const scriptFilePath = pkgJSON.module || pkgJSON.main;
+              const scriptFilePath = (preferModule ? pkgJSON.module : false) || pkgJSON.main;
               if (scriptFilePath) return path.join(moduleDirPath, scriptFilePath);
             }
 
@@ -82,6 +82,6 @@ export const ResolverPlugin: ReboostPlugin = {
   name: 'core-resolver-plugin',
   resolve(importPath, importer) {
     if (importPath.startsWith('#/')) return importPath;
-    return resolvePath(importer, importPath);
+    return resolveModule(importer, importPath);
   }
 }
