@@ -109,6 +109,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
               })
             ]).process(css, {
               from: filePath,
+              to: filePath,
               map: {
                 inline: false,
                 annotation: false

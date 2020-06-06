@@ -36,6 +36,7 @@ export const PostCSSPlugin = (): ReboostPlugin => ({
               options,
               {
                 from: filePath,
+                to: filePath,
                 map: {
                   inline: false,
                   annotation: false
