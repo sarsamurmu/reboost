@@ -90,7 +90,6 @@ export const transformFile = async (filePath: string): Promise<{
 
   let code: string;
   let sourceMap: RawSourceMap;
-  let inputSourceMap: RawSourceMap;
   let ast: babelTypes.Node;
   let type: string;
   let errorOccurred = false;
@@ -134,7 +133,7 @@ export const transformFile = async (filePath: string): Promise<{
       if (result instanceof Error) return handleError(result, dependencies);
 
       ({ code } = result);
-      if (result.inputMap) inputSourceMap = result.inputMap;
+      sourceMap = result.inputMap;
       type = 'js';
       break;
     }
@@ -160,8 +159,8 @@ export const transformFile = async (filePath: string): Promise<{
 
     consoleMessage += chalk.red(message);
 
-    if (inputSourceMap) {
-      const consumer = await new SourceMapConsumer(inputSourceMap);
+    if (sourceMap) {
+      const consumer = await new SourceMapConsumer(sourceMap);
       const originalLoc = consumer.originalPositionFor(e.loc);
       if (originalLoc.source) {
         const originalCode = consumer.sourceContentFor(originalLoc.source);
@@ -340,8 +339,8 @@ export const transformFile = async (filePath: string): Promise<{
   const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
   let map;
 
-  if (inputSourceMap && sourceMapsEnabled) {
-    const merged = await mergeSourceMaps(inputSourceMap, generatedMap);
+  if (sourceMap && sourceMapsEnabled) {
+    const merged = await mergeSourceMaps(sourceMap, generatedMap);
     map = getCompatibleSourceMap(merged);
   }
 

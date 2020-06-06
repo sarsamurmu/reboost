@@ -1,4 +1,4 @@
-import esbuild, { Target } from 'esbuild';
+import esbuild, { Target, Loader } from 'esbuild';
 
 import { ReboostPlugin } from '../index';
 
@@ -21,17 +21,26 @@ let esbuildService: esbuild.Service;
 
 export const PluginName = 'core-esbuild-plugin';
 export const esbuildPlugin = (options: esbuildOptions = {}): ReboostPlugin => {
+  const loaderMap = {
+    js: 'jsx',
+    jsx: 'jsx',
+    mjs: 'jsx',
+    ts: 'tsx',
+    tsx: 'tsx'
+  } as Record<string, Loader>;
+  const compatibleTypes = Object.keys(loaderMap);
+
   return {
     name: PluginName,
     async setup() {
       esbuildService = await esbuild.startService();
     },
-    async transformIntoJS(data, filePath) {
-      if (['ts', 'tsx', 'js', 'jsx'].includes(data.type)) {
+    async transformContent(data, filePath) {
+      if (compatibleTypes.includes(data.type)) {
         try {
           const { js, jsSourceMap } = await esbuildService.transform(data.code, {
             sourcemap: true,
-            loader: data.type.includes('x') ? data.type : data.type + 'x' as any,
+            loader: loaderMap[data.type],
             jsxFactory: options.jsxFactory,
             jsxFragment: options.jsxFragment,
             target: options.target
@@ -42,7 +51,8 @@ export const esbuildPlugin = (options: esbuildOptions = {}): ReboostPlugin => {
 
           return {
             code: js,
-            inputMap: data.map ? await this.mergeSourceMaps(data.map, generatedMap) : generatedMap
+            map: generatedMap,
+            type: 'js'
           }
         } catch (e) {
           console.log('esbuild error', e);
