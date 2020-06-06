@@ -7,6 +7,7 @@ manually adding them to plugins with your options.
 - [CSSPlugin](./plugins/css.md) *
 - [esbuildPlugin](./plugins/esbuild.md) *
 - [FilePlugin](./plugins/file.md)
+- [PostCSSPlugin](./plugins/postcss.md) *
 - [ReplacePlugin](./plugins/replace.md)
 - [SassPlugin](./plugins/sass.md)
 - [UsePlugin](./plugins/use.md)

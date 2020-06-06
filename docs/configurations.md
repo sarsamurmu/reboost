@@ -37,7 +37,7 @@ Automatically opens the content server URL when ready. If set to `true`, opens t
 URL in your default browser. You can set it to options `object` for more configurations.
 The `object` accepts all [open](https://www.npmjs.com/package/open) options.
 
-Here's an example if you want to open the url in Firefox browser
+Here's an example if you want to open the URL in Firefox browser
 ```js
 const { start } = require('reboost');
 
@@ -51,7 +51,7 @@ start({
 })
 ```
 
-Or if you want to open the url in an Incognito tab of Chrome
+Or if you want to open the URL in an Incognito tab of Chrome
 ```js
 const { start } = require('reboost');
 

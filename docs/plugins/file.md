@@ -1,4 +1,4 @@
-# FilePlugin
+# File Plugin
 Load files by importing them from JavaScript.
 
 ## Usage

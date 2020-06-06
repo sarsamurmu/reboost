@@ -27,7 +27,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Support for Plugins.
 - Import resolving.
 - Hot Module Replacement.
-- Out of the box support for CSS Modules, JSX, and TypeScript.
+- Out of the box support for CSS Modules, JSX, PostCSS, and TypeScript.
 - Preprocessor support.
 - Works with [Electron](https://www.electronjs.org/).
 
@@ -71,7 +71,7 @@ and HTML content (`public/index.html`)
 <!doctype html>
 <html>
   <body>
-    <!-- Notice the type is "module" -->
+    <!-- Note that the type is "module" -->
     <script type="module" src="./dist/bundle.js"></script>
   </body>
 </html>

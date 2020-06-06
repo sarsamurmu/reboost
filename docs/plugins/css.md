@@ -1,9 +1,9 @@
 # CSSPlugin
-Adds support for importing CSS files in JavaScript.
+Adds support for importing CSS files in JavaScript and HMR for CSS.
 
 ## Usage
 ### Setup
-Import `CSSPlugin` from Reboost.
+Import `CSSPlugin` from Reboost
 ```js
 const { start, CSSPlugin } = require('reboost');
 ```
