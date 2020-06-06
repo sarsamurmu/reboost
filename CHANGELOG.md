@@ -1,3 +1,6 @@
+## 0.1.4
+- Added PostCSSPlugin
+
 ## 0.1.3
 - Support for automatically opening browser
 - Support for proxies
