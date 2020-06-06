@@ -25,6 +25,7 @@ import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
+import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
 
 export * from './plugins';
 
@@ -102,7 +103,7 @@ export interface ReboostConfig {
   contentServer?: {
     /** Directory which the content server should serve */
     root: string;
-    /** Options for automatically opening content server url when ready */
+    /** Options for automatically opening content server URL when ready */
     open: open.Options;
     proxy: Record<string, string | ProxyOptions>;
     onReady?: (app: Koa) => void;
@@ -204,6 +205,9 @@ export const start = (config: ReboostConfig = {} as any) => {
     }
     if (!pluginNames.includes(CSSPluginName)) {
       config.plugins.unshift(CSSPlugin());
+    }
+    if (!pluginNames.includes(PostCSSPluginName)) {
+      config.plugins.unshift(PostCSSPlugin());
     }
 
     if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);

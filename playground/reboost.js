@@ -1,7 +1,6 @@
 const {
   start,
   FilePlugin,
-  PostCSSPlugin,
   ReplacePlugin,
   SassPlugin,
   UsePlugin
@@ -26,8 +25,7 @@ start({
     }),
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
-    }),
-    PostCSSPlugin()
+    })
   ],
   // showResponseTime: true,
 

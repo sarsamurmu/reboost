@@ -1,6 +1,7 @@
 import loadConfig from 'postcss-load-config';
 import postcss, { ProcessOptions } from 'postcss';
 import { codeFrameColumns } from '@babel/code-frame';
+import chalk from 'chalk';
 
 import path from 'path';
 
@@ -22,14 +23,32 @@ export const postcssError = (error: any, config: ReboostConfig) => {
   return new Error(errorMessage);
 }
 
-export const PostCSSPlugin = (): ReboostPlugin => ({
-  name: 'core-postcss-plugin',
+interface PostCSSPluginOptions {
+  ctx?: Record<string, any>;
+}
+
+export const PluginName = 'core-postcss-plugin';
+export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin => ({
+  name: PluginName,
   transformContent(data, filePath) {
     if (data.type === 'css') {
       return new Promise((resolve) => {
-        loadConfig({
-          env: 'development'
-        }).then(({ plugins, options }) => {
+        const loadConfigOptions = {
+          path: path.dirname(filePath),
+          ctx: {
+            file: {
+              extname: path.extname(filePath),
+              dirname: path.dirname(filePath),
+              basename: path.basename(filePath)
+            },
+            options: {},
+            env: 'development'
+          }
+        }
+
+        if (options.ctx) loadConfigOptions.ctx.options = options.ctx;
+
+        loadConfig(loadConfigOptions.ctx, loadConfigOptions.path).then(({ plugins, options }) => {
           postcss(plugins)
             .process(data.code, Object.assign(
               {},
@@ -44,9 +63,22 @@ export const PostCSSPlugin = (): ReboostPlugin => ({
               } as ProcessOptions
             ))
             .then((result) => {
+              const { css, map, warnings, messages } = result;
+
+              warnings().forEach((warning) => {
+                const { text, line, column } = warning;
+                console.log(chalk.yellow(`Warning\n\n(${line}:${column}) ${text}`));
+              });
+
+              messages.forEach((message) => {
+                if (message.type === 'dependency') {
+                  this.addDependency(message.file);
+                }
+              });
+
               resolve({
-                code: result.css,
-                map: (result.map || { toJSON: () => {} }).toJSON() as any
+                code: css,
+                map: map && map.toJSON() as any
               });
             }, (err) => {
               resolve(postcssError(err, this.config));
