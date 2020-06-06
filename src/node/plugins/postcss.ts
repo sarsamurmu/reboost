@@ -76,12 +76,22 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
                 }
               });
 
+              const sourceMap = map.toJSON();
+              // Sources are relative to the file, but they should be absolute or relative to `config.rootDir`
+              sourceMap.sources = sourceMap.sources.map((sourcePath) => {
+                return path.join(path.dirname(filePath), sourcePath);
+              });
+
               resolve({
                 code: css,
-                map: map && map.toJSON() as any
+                map: sourceMap as any
               });
             }, (err) => {
               resolve(postcssError(err, this.config));
+            })
+            .catch((err) => {
+              console.log(chalk.red(`Error while processing ${filePath}`), err);
+              resolve();
             });
         });
       });

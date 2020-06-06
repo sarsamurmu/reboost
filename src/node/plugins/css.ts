@@ -141,7 +141,13 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
 
               let cssSourceMap;
               if (sourceMapEnabled) {
-                const generatedMap = result.map.toJSON() as any;
+                const generatedMap = result.map.toJSON() as any as RawSourceMap;
+
+                // Sources are relative to the file, but they should be absolute or relative to `config.rootDir`
+                generatedMap.sources = generatedMap.sources.map((sourcePath) => {
+                  return path.join(path.dirname(filePath), sourcePath);
+                });
+
                 const sourceMap = map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap;
                 cssSourceMap = this.getCompatibleSourceMap(sourceMap);
               }
