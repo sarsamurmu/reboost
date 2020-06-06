@@ -65,10 +65,18 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
             .then((result) => {
               const { css, map, warnings, messages } = result;
 
-              warnings().forEach((warning) => {
-                const { text, line, column } = warning;
-                console.log(chalk.yellow(`Warning\n\n(${line}:${column}) ${text}`));
-              });
+              try {
+                warnings().forEach((warning) => {
+                  const { text, line, column } = warning;
+                  console.log(chalk.yellow(`Warning\n\n(${line}:${column}) ${text}`));
+                });
+              } catch (e) {
+                // Do nothing
+
+                // IDK why but it was causing the following error
+                // TypeError: Cannot read property 'messages' of undefined
+                //    at warnings (<reboostDir>\node_modules\postcss\lib\result.js:181:17)
+              }
 
               messages.forEach((message) => {
                 if (message.type === 'dependency') {
@@ -89,10 +97,6 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
             }, (err) => {
               resolve(postcssError(err, this.config));
             })
-            .catch((err) => {
-              console.log(chalk.red(`Error while processing ${filePath}`), err);
-              resolve();
-            });
         });
       });
     }
