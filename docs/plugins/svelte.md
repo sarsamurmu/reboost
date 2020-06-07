@@ -54,7 +54,6 @@ start({
 })
 ```
 
-Now it will automatically resolve `.svelte` files.
 Now you can write
 ```js
 import App from 'file';

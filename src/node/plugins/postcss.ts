@@ -48,7 +48,13 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
 
         if (options.ctx) loadConfigOptions.ctx.options = options.ctx;
 
-        loadConfig(loadConfigOptions.ctx, loadConfigOptions.path).then(({ plugins, options }) => {
+        loadConfig(
+          loadConfigOptions.ctx,
+          loadConfigOptions.path,
+          {
+            stopDir: this.config.rootDir
+          }
+        ).then(({ plugins, options }) => {
           postcss(plugins)
             .process(data.code, Object.assign(
               {},
