@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "browser-sync start --server --files \"public/**/*.(html|js)\"",
+    "serve": "browser-sync start --server --files \"public/**/*.(html|js)\" --startPath \"public\" --extensions html",
     "start": "nodemon reboost"
   },
   "dependencies": {
@@ -14,7 +14,8 @@
     "postcss-nesting": "^7.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "reboost": "../"
+    "reboost": "../",
+    "svelte": "^3.23.0"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT"

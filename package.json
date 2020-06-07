@@ -55,7 +55,8 @@
     "source-map": "^0.7.3"
   },
   "peerDependencies": {
-    "node-sass": "^4.14.1"
+    "node-sass": "^4.14.1",
+    "svelte": "^3.23.0"
   },
   "devDependencies": {
     "@types/babel__code-frame": "^7.0.1",
@@ -72,6 +73,7 @@
     "@types/yargs": "^15.0.5",
     "concurrently": "^5.2.0",
     "glob": "^7.1.6",
+    "svelte": "^3.23.0",
     "typescript": "^3.9.5"
   }
 }

@@ -1,3 +1,6 @@
+## 0.2.1
+- Fixed error in PostCSS plugin
+
 ## 0.2.0
 - Added PostCSSPlugin
 - Minor fixes

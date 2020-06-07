@@ -3,12 +3,14 @@ const {
   FilePlugin,
   ReplacePlugin,
   SassPlugin,
+  SveltePlugin,
   UsePlugin
 } = require('reboost');
 
 start({
   entries: [
-    ['./src/index.js', './public/dist/main.js', 'coolLib']
+    ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
+    ['./src/svelte/index.js', './public/dist/svelte.js']
   ],
   contentServer: {
     root: './public'
@@ -25,7 +27,8 @@ start({
     }),
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
-    })
+    }),
+    SveltePlugin()
   ],
   // showResponseTime: true,
 
