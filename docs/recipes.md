@@ -107,3 +107,28 @@ import logo from './resources/logo.png';
 // But, here using JSX for example
 const BrandLogo = () => <img src={logo} height="100px">;
 ```
+
+## PostCSS
+Works out of the box.
+
+## Svelte
+Adjust your configuration to match this
+```js
+const { start, DefaultConfig, SveltePlugin } = require('reboost');
+
+start({
+  // Other options
+  resolve: {
+    // Adds support for resolving `.svelte` files
+    extensions: ['.svelte'].concat(DefaultConfig.resolve.extensions),
+
+    // Prefer `svelte` field to load script from `package.json`
+    mainFields: ['svelte']
+  },
+  plugins: [
+    // ... Other plugins
+    SveltePlugin()
+  ]
+  // ...
+})
+```

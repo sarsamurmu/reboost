@@ -46,7 +46,7 @@ const { start, DefaultConfig, SveltePlugin } = require('reboost');
 
 start({
   resolve: {
-    extensions: ['.svelte'].concat(DefaultConfig.extensions)
+    extensions: ['.svelte'].concat(DefaultConfig.resolve.extensions)
   },
   plugins: [
     SveltePlugin()
