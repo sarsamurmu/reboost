@@ -10,4 +10,5 @@ manually adding them to plugins with your options.
 - [PostCSSPlugin](./plugins/postcss.md) *
 - [ReplacePlugin](./plugins/replace.md)
 - [SassPlugin](./plugins/sass.md)
+- [SveltePlugin](./plugins/svelte.md)
 - [UsePlugin](./plugins/use.md)

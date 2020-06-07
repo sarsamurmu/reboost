@@ -214,6 +214,13 @@ import mod from './mod.js';
 
 It returns the first file with the first matched extension, so extension ordering matters.
 
+##### `resolve.mainFields`
+Type: `string[]`\
+Default: `['module', 'main']`
+
+When resolving an npm package, this option will determine which
+fields in `package.json` should be checked for resolving the script file.
+
 ##### `resolve.mainFiles`
 Type: `string[]`\
 Default: `['index']`

@@ -47,7 +47,7 @@ Factory function to use when transforming JSX or TSX files.
 Type: `string`\
 Default: `React.Fragment`
 
-The component to use as fragment.
+The component to use as the fragment component.
 
 #### `target`
 Type: `'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020'`

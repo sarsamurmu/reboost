@@ -19,7 +19,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze } from './utils';
+import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze, clone } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
@@ -127,15 +127,15 @@ export interface ReboostConfig {
      */
     extensions?: string[];
     /**
-     * File names to use while resolving directory
-     * @default ['index']
-     */
-    mainFiles?: string[];
-    /**
      * Fields to check in package.json for script file
      * @default ['module', 'main']
      */
     mainFields?: string[];
+    /**
+     * File names to use while resolving directory
+     * @default ['index']
+     */
+    mainFiles?: string[];
     /**
      * Module directories to use while resolving modules
      * @default ['node_modules']
@@ -164,30 +164,34 @@ export interface ReboostConfig {
 
 const INCOMPATIBLE_BELOW = 8;
 
+export const DefaultConfig: ReboostConfig = {
+  cacheDir: './.reboost_cache',
+  entries: null,
+  rootDir: '.',
+  resolve: {
+    alias: {},
+    extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
+    mainFiles: ['index'],
+    mainFields: ['module', 'main'],
+    modules: ['node_modules']
+  },
+  watchOptions: {
+    exclude: /node_modules/,
+    chokidar: {}
+  },
+  sourceMaps: {
+    include: /.*/,
+    exclude: /node_modules/
+  },
+  plugins: [],
+  showResponseTime: false
+};
+
+deepFreeze(DefaultConfig);
+
 export const start = (config: ReboostConfig = {} as any) => {
   return new Promise(async (resolvePromise) => {
-    config = setConfig(merge<ReboostConfig>({
-      cacheDir: './.reboost_cache',
-      entries: null,
-      rootDir: '.',
-      resolve: {
-        alias: {},
-        extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
-        mainFiles: ['index'],
-        mainFields: ['module', 'main'],
-        modules: ['node_modules']
-      },
-      watchOptions: {
-        exclude: /node_modules/,
-        chokidar: {}
-      },
-      sourceMaps: {
-        include: /.*/,
-        exclude: /node_modules/
-      },
-      plugins: [],
-      showResponseTime: false
-    }, config));
+    config = setConfig(merge(clone(DefaultConfig), config));
 
     if (!config.entries) {
       console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));

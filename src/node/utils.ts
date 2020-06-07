@@ -18,6 +18,18 @@ export const merge = <T extends Record<string, any>>(source: T, target: Partial<
   return source;
 }
 
+export const clone = (object: any) => {
+  const cloned = Array.isArray(object) ? [] : {} as any;
+  for (const key in object) {
+    if (isObject(object[key])) {
+      cloned[key] = clone(object[key]);
+      continue;
+    }
+    cloned[key] = object[key];
+  }
+  return cloned;
+}
+
 export const ensureDir = (dirPath: string) => {
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 }
