@@ -199,12 +199,12 @@ export const start = (config: ReboostConfig = {} as any) => {
     }
 
     if (!path.isAbsolute(config.rootDir)) config.rootDir = path.resolve(config.rootDir);
-    if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.resolve(config.rootDir, config.cacheDir);
+    if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
     if (!config.watchOptions.include) {
       config.watchOptions.include = /.*/;
     }
     if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
-      config.contentServer.root = path.resolve(config.rootDir, config.contentServer.root);
+      config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
     }
 
     config.plugins.push(...defaultPlugins);
@@ -262,13 +262,13 @@ export const start = (config: ReboostConfig = {} as any) => {
     setAddress(fullAddress);
 
     for (const [input, output, libName] of config.entries) {
-      const outputPath = path.resolve(config.rootDir, output);
+      const outputPath = path.join(config.rootDir, output);
       ensureDir(path.dirname(outputPath));
 
       let fileContent = `import '${fullAddress}/setup';\n`;
       fileContent += 'import';
       if (libName) fileContent += ' * as _$lib$_ from';
-      fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.resolve(config.rootDir, input))}';\n`;
+      fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
       if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
 
       fs.writeFileSync(outputPath, fileContent);

@@ -20,7 +20,7 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
     transformContent(data, filePath) {
       if (!includePathsNormalized) {
         sassOptions.includePaths = (sassOptions.includePaths || []).map((includePath) => {
-          return path.isAbsolute(includePath) ? includePath : path.resolve(this.config.rootDir, includePath);
+          return path.isAbsolute(includePath) ? includePath : path.join(this.config.rootDir, includePath);
         });
         includePathsNormalized = true;
       }

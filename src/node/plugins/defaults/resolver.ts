@@ -39,13 +39,13 @@ export const resolveModule = (
   const resolveOptions = overrides ? Object.assign({}, config.resolve, overrides) : config.resolve;
   
   if (pathToResolve.startsWith('.')) {
-    return baseResolve(path.resolve(path.dirname(basePath), pathToResolve), resolveOptions);
+    return baseResolve(path.join(path.dirname(basePath), pathToResolve), resolveOptions);
   } else {
     const [firstPart, ...restPart] = pathToResolve.split('/').filter((s) => s !== '');
 
     if (firstPart in resolveOptions.alias) {
       const aliasPath = resolveOptions.alias[firstPart];
-      return baseResolve(path.resolve(rootDir, aliasPath, ...restPart), resolveOptions);
+      return baseResolve(path.join(rootDir, aliasPath, ...restPart), resolveOptions);
     } else {
       // Check in resolve.modules directories
 

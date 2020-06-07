@@ -28,7 +28,7 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
 
   map.sourcesContent = [];
   map.sources.forEach((sourcePath) => {
-    const absolutePath = path.resolve(config.rootDir, sourcePath);
+    const absolutePath = path.join(config.rootDir, sourcePath);
     if (fs.existsSync(absolutePath)) {
       map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
     } else {
@@ -169,7 +169,7 @@ export const transformFile = async (filePath: string): Promise<{
           location = originalLoc;
           location.column = location.column || 1;
         } else {
-          const absPathToSource = path.resolve(getConfig().rootDir, originalLoc.source);
+          const absPathToSource = path.join(getConfig().rootDir, originalLoc.source);
           if (fs.existsSync(absPathToSource)) {
             rawCode = fs.readFileSync(absPathToSource).toString();
             location = originalLoc;
