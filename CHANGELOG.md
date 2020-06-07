@@ -1,3 +1,7 @@
+## 0.2.2
+- Addded SveltePlugin
+- Added new resolve options - `resolve.mainFields`
+
 ## 0.2.1
 - Fixed error in PostCSS plugin
 

@@ -1,27 +1,27 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostPlugin } from '../../index';
+import { ReboostPlugin, ReboostConfig } from '../../index';
 import { getConfig } from '../../shared';
 import { isDir } from '../../utils';
 
-const resolveExt = (fPath: string) => {
-  for (const ext of getConfig().resolve.extensions) {
+const resolveExt = (fPath: string, extensions: string[]) => {
+  for (const ext of extensions) {
     if (fs.existsSync(fPath + ext)) return ext;
   }
   return null;
 }
 
-const baseResolve = (fPath: string) => {
+const baseResolve = (fPath: string, resolveOptions: ReboostConfig['resolve']) => {
   if (fs.existsSync(fPath) && isDir(fPath)) {
-    for (const mainFile of getConfig().resolve.mainFiles) {
+    for (const mainFile of resolveOptions.mainFiles) {
       const dirPath = path.join(fPath, mainFile);
-      const ext = resolveExt(dirPath);
+      const ext = resolveExt(dirPath, resolveOptions.extensions);
       if (ext) return dirPath + ext;
     }
   }
 
-  const ext = resolveExt(fPath);
+  const ext = resolveExt(fPath, resolveOptions.extensions);
   if (ext) return fPath + ext;
 
   if (fs.existsSync(fPath) && !isDir(fPath)) return fPath;
@@ -29,21 +29,27 @@ const baseResolve = (fPath: string) => {
   return null;
 }
 
-export const resolveModule = (basePath: string, pathToResolve: string, preferModule = true) => {
+export const resolveModule = (
+  basePath: string,
+  pathToResolve: string,
+  overrides?: ReboostConfig['resolve']
+) => {
+  const config = getConfig();
+  const { rootDir } = config;
+  const resolveOptions = overrides ? Object.assign({}, config.resolve, overrides) : config.resolve;
+  
   if (pathToResolve.startsWith('.')) {
-    return baseResolve(path.resolve(path.dirname(basePath), pathToResolve));
+    return baseResolve(path.resolve(path.dirname(basePath), pathToResolve), resolveOptions);
   } else {
     const [firstPart, ...restPart] = pathToResolve.split('/').filter((s) => s !== '');
-    const config = getConfig();
 
-    if (firstPart in config.resolve.alias) {
-      const aliasPath = config.resolve.alias[firstPart];
-      return baseResolve(path.resolve(config.rootDir, aliasPath, ...restPart));
+    if (firstPart in resolveOptions.alias) {
+      const aliasPath = resolveOptions.alias[firstPart];
+      return baseResolve(path.resolve(rootDir, aliasPath, ...restPart), resolveOptions);
     } else {
       // Check in resolve.modules directories
-      const { rootDir, resolve } = getConfig();
 
-      for (const modulesDirName of resolve.modules) {
+      for (const modulesDirName of resolveOptions.modules) {
         const modulesDirPath = path.join(rootDir, modulesDirName);
 
         if (fs.existsSync(modulesDirPath)) {
@@ -57,14 +63,15 @@ export const resolveModule = (basePath: string, pathToResolve: string, preferMod
 
           if (restPart.length !== 0) {
             // Using subdirectories
-            return baseResolve(path.join(moduleDirPath, ...restPart));
+            return baseResolve(path.join(moduleDirPath, ...restPart), resolveOptions);
           } else {
             // Get from package.json
             const pkgJSONPath = path.join(moduleDirPath, 'package.json');
             if (fs.existsSync(pkgJSONPath)) {
               const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
-              const scriptFilePath = (preferModule ? pkgJSON.module : false) || pkgJSON.main;
-              if (scriptFilePath) return path.join(moduleDirPath, scriptFilePath);
+              for (const field of resolveOptions.mainFields) {
+                if (pkgJSON[field]) return path.join(moduleDirPath, pkgJSON[field]);
+              }
             }
 
             const indexJSPath = path.join(moduleDirPath, 'index.js');

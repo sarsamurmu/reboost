@@ -132,6 +132,11 @@ export interface ReboostConfig {
      */
     mainFiles?: string[];
     /**
+     * Fields to check in package.json for script file
+     * @default ['module', 'main']
+     */
+    mainFields?: string[];
+    /**
      * Module directories to use while resolving modules
      * @default ['node_modules']
      */
@@ -169,6 +174,7 @@ export const start = (config: ReboostConfig = {} as any) => {
         alias: {},
         extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
         mainFiles: ['index'],
+        mainFields: ['module', 'main'],
         modules: ['node_modules']
       },
       watchOptions: {

@@ -26,7 +26,7 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
       }
 
       if (['sass', 'scss'].includes(data.type)) {
-        if (!nodeSassPath) nodeSassPath = resolveModule(process.cwd(), 'node-sass', false);
+        if (!nodeSassPath) nodeSassPath = resolveModule(process.cwd(), 'node-sass', { mainFields: ['main'] });
 
         if (!nodeSassPath) {
           console.log(chalk.red('You need to install "node-sass" package in order to use SassPlugin.'));
