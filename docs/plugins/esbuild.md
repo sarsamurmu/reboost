@@ -22,6 +22,21 @@ start({
 ```
 
 ## Options
+#### `loaders`
+Type: `object`\
+Default:
+```js
+{
+  js: 'jsx',
+  jsx: 'jsx',
+  mjs: 'jsx',
+  ts: 'tsx',
+  tsx: 'tsx'
+}
+```
+
+An object containing key as file type and value as the loader to use for the file type.
+
 #### `jsxFactory`
 Type: `string`\
 Default: `React.createElement`

@@ -2,7 +2,9 @@ import esbuild, { Target, Loader } from 'esbuild';
 
 import { ReboostPlugin } from '../index';
 
-interface esbuildOptions {
+export interface Options {
+  /** Loaders to use for file types */
+  loaders?: Record<string, Loader>;
   /**
    * Factory function to use with JSX
    * @default React.createElement
@@ -20,14 +22,14 @@ interface esbuildOptions {
 let esbuildService: esbuild.Service;
 
 export const PluginName = 'core-esbuild-plugin';
-export const esbuildPlugin = (options: esbuildOptions = {}): ReboostPlugin => {
-  const loaderMap = {
+export const esbuildPlugin = (options: Options = {}): ReboostPlugin => {
+  const loaderMap: Options['loaders'] = options.loaders || {
     js: 'jsx',
     jsx: 'jsx',
     mjs: 'jsx',
     ts: 'tsx',
     tsx: 'tsx'
-  } as Record<string, Loader>;
+  };
   const compatibleTypes = Object.keys(loaderMap);
 
   return {
