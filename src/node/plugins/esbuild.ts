@@ -2,7 +2,7 @@ import esbuild, { Target, Loader } from 'esbuild';
 
 import { ReboostPlugin } from '../index';
 
-export interface Options {
+export interface esbuildPluginOptions {
   /** Loaders to use for file types */
   loaders?: Record<string, Loader>;
   /**
@@ -22,8 +22,8 @@ export interface Options {
 let esbuildService: esbuild.Service;
 
 export const PluginName = 'core-esbuild-plugin';
-export const esbuildPlugin = (options: Options = {}): ReboostPlugin => {
-  const loaderMap: Options['loaders'] = options.loaders || {
+export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin => {
+  const loaderMap: esbuildPluginOptions['loaders'] = options.loaders || {
     js: 'jsx',
     jsx: 'jsx',
     mjs: 'jsx',
