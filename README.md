@@ -87,7 +87,8 @@ start({
     ['./src/index.js', './public/dist/bundle.js']
   ],
   contentServer: {
-    root: './public'
+    root: './public',
+    open: true // Opens the browser
   }
 })
 ```
@@ -95,7 +96,7 @@ after that run the script using `node`, open your terminal in that directory and
 ```shell
 node reboost
 ```
-Now open the address in which the content server is started. You can see your code is working without any problem.
+You can see your code is working without any problem!
 
 ### What if I want to use any other server?
 Reboost's content server is basically static, it just serves the file. If you want
