@@ -1,10 +1,9 @@
 # Reboost
 A *super fast* web dev server, for faster development.
 
-> ### Experimental.
-> Reboost is not that stable yet.
-> Things can change or break anytime.
-> But don't worry, we are working on that :D
+> ***Experimental***\
+> Reboost is in early development, and some things may
+> change/break before we hit version 1.0
 
 ## Motivation
 When developing a web app, as your number of modules increases,
