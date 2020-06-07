@@ -35,9 +35,15 @@ const depsChanged = async (file: string) => {
   const deps = getFilesData().files[file].dependencies;
   if (!deps) return false;
   for (const dependency in deps) {
-    const prevHash = deps[dependency];
-    const currentHash = await hash(dependency);
-    if (prevHash !== currentHash) return true;
+    try {
+      const prevHash = deps[dependency];
+      const currentHash = await hash(dependency);
+      if (prevHash !== currentHash) return true;
+    } catch (e) {
+      // Probably the `hash` function caused error if
+      // the dependency file is unavailable
+      return true;
+    }
   }
   return false;
 }
@@ -109,13 +115,14 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
 
   const filePath = ctx.query.q;
   const importerPath = ctx.query.importer;
-  const fileHash = await hash(filePath);
   const timerName = chalk.cyan(`Response time - ${path.relative(config.rootDir, filePath)}`);
   let transformedCode: string;
 
   if (config.showResponseTime) console.time(timerName);
 
   if (fs.existsSync(filePath)) {
+    const fileHash = await hash(filePath);
+
     if (getFilesData().files[filePath]) {
       const fileData = getFilesData().files[filePath];
       const outputFilePath = path.join(filesDir, fileData.uid);
