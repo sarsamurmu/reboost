@@ -8,14 +8,14 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
   transformAST(ast, { traverse }, filePath) {
     let program: NodePath<t.Program>;
     let importerIdentifier: t.Identifier;
-    const declarators: t.VariableDeclarator[] = [];
-    const replacements: [NodePath<t.ImportDeclaration>, t.ImportDeclaration][] = [];
+    const replacements: [NodePath<t.ImportDeclaration>, t.ImportDeclaration, t.VariableDeclarator[]][] = [];
 
     traverse(ast, {
       Program(path) {
         program = path;
       },
       ImportDeclaration(path) {
+        const declarators: t.VariableDeclarator[] = [];
         const identifier = path.scope.generateUidIdentifier('$import');
         if (!importerIdentifier) importerIdentifier = path.scope.generateUidIdentifier('$importer');
 
@@ -62,14 +62,19 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
           path,
           t.importDeclaration([
             t.importNamespaceSpecifier(identifier)
-          ], t.stringLiteral(path.node.source.value))
+          ], t.stringLiteral(path.node.source.value)),
+          declarators
         ]);
       }
     });
 
     if (importerIdentifier) {
-      replacements.forEach(([path, replacement]) => {
+      replacements.forEach(([path, replacement, declarators]) => {
         path.replaceWith(replacement);
+        if (declarators.length) {
+          const constDeclaration = t.variableDeclaration('const', declarators);
+          path.insertAfter(constDeclaration);
+        }
       });
 
       program.node.body.unshift(
@@ -77,16 +82,6 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
           t.importDefaultSpecifier(importerIdentifier)
         ], t.stringLiteral(`#/importer`))
       );
-
-      if (declarators.length) {
-        const last = program.get('body').filter((path) => path.isImportDeclaration()).pop();
-        const constDeclaration = t.variableDeclaration('const', declarators);
-        if (last) {
-          last.insertAfter(constDeclaration);
-        } else {
-          program.node.body.unshift(constDeclaration);
-        }
-      }
     }
   }
 }
