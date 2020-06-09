@@ -1,5 +1,7 @@
 import SvelteCompiler from 'svelte/compiler';
 import chalk from 'chalk';
+import { RawSourceMap } from 'source-map';
+import MagicString from 'magic-string';
 
 import fs from 'fs';
 import path from 'path';
@@ -51,17 +53,54 @@ export const SveltePlugin = (options: SveltePluginOptions = {}): ReboostPlugin =
           this.addDependency(normalizedPath);
         });
 
-        const {
+        let {
           js: { code, map },
           warnings
+        }: {
+          js: { code: string; map: RawSourceMap; }
+          warnings: { toString(): string; }[]
         } = Compiler.compile(processedCode, {
+          dev: true,
           ...svelteConfig,
-          filename: filePath
+          filename: filePath,
         });
 
         warnings.forEach((warning) => {
           console.log(chalk.yellow(`\nWarning: ${path.relative(this.config.rootDir, filePath)}\n\n${warning.toString()}\n`));
         });
+
+        // Replace the source map for CSS
+        const regex = /\/\*#\s*sourceMappingURL=data:(?:application|text)\/json;(?:charset[:=]\S+?;)?base64,(.*)\s*\*\//;
+        const match = code.match(regex);
+        if (match) {
+          let replacePromise: Promise<any>;
+          let replacement: string;
+
+          code.replace(
+            regex,
+            ((match: any, p1: string, offset: any, string: any) => {
+              replacePromise = (async () => {
+                const sourceMap = JSON.parse(Buffer.from(p1, 'base64').toString()) as RawSourceMap;
+
+                sourceMap.sources = sourceMap.sources.map((sourcePath) => {
+                  return sourcePath === path.basename(filePath) ? filePath : sourcePath;
+                });
+
+                const mergedMap = data.map ? await this.mergeSourceMaps(data.map, sourceMap) : sourceMap;
+                const compatibleMap = this.getCompatibleSourceMap(mergedMap);
+                const sourceMapStr = Buffer.from(JSON.stringify(compatibleMap)).toString('base64');
+                return `/*# sourceMappingURL=data:application/json;charset=utf-8;base64,${sourceMapStr} */`;
+              })();
+            }) as any
+          );
+
+          replacement = await replacePromise;
+
+          const magicString = new MagicString(code);
+          magicString.overwrite(match.index, match.index + match[0].length, replacement);
+          map = await this.mergeSourceMaps(magicString.generateMap(), map);
+          code = magicString.toString();
+        }
 
         return {
           code,

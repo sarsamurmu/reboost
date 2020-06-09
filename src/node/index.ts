@@ -70,6 +70,7 @@ export interface ReboostPlugin {
     data: {
       code: string;
       type: string;
+      map: RawSourceMap;
     },
     filePath: string
   ) => TransformedContent | Error | Promise<TransformedContent | Error>;

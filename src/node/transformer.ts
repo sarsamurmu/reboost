@@ -108,7 +108,7 @@ export const transformFile = async (filePath: string): Promise<{
   }
 
   for (const hook of transformContentHooks) {
-    const result = await bind(hook, pluginContext)({ code, type }, filePath);
+    const result = await bind(hook, pluginContext)({ code, type, map: sourceMap }, filePath);
     if (result) {
       if (result instanceof Error) return handleError(result, dependencies);
 
