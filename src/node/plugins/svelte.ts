@@ -11,6 +11,7 @@ import { resolveModule } from './defaults/resolver';
 
 interface SveltePluginOptions {
   configFile?: string;
+  preprocess?: any;
 }
 
 export const SveltePlugin = (options: SveltePluginOptions = {}): ReboostPlugin => {
@@ -43,9 +44,13 @@ export const SveltePlugin = (options: SveltePluginOptions = {}): ReboostPlugin =
         const {
           code: processedCode,
           dependencies
-        } = await Compiler.preprocess(data.code, svelteConfig.preprocess || {}, {
-          filename: filePath
-        });
+        } = await Compiler.preprocess(
+          data.code,
+          options.preprocess || svelteConfig.preprocess || {},
+          {
+            filename: filePath
+          }
+        );
 
         dependencies.forEach((dependency) => {
           const absolutePath = path.isAbsolute(dependency) ? dependency : path.join(path.dirname(filePath), dependency);

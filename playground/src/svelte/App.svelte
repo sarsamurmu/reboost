@@ -1,12 +1,18 @@
 <script>
+  import { afterUpdate } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fade, draw, fly } from 'svelte/transition';
   import { expand } from './transitions.js';
   import { inner, outer } from './shape.js';
+
+  afterUpdate(() => {
+    console.log('After update');
+    visible = true;
+  });
   
   console.log('From Svelte');
 
-  let visible = true;
+  let visible = false;
 </script>
 
 <style>
