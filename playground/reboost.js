@@ -17,7 +17,7 @@ start({
   },
   plugins: [
     UsePlugin({
-      test: /.png$/,
+      include: /.png$/,
       use: FilePlugin()
     }),
     SassPlugin({

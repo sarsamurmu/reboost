@@ -4,12 +4,22 @@ import { ReboostPlugin } from '../index';
 import { bind } from '../utils';
 
 interface UsePluginOptions {
-  test: Matcher;
+  include: Matcher;
+  exclude?: Matcher;
   use: ReboostPlugin | ReboostPlugin[];
 }
 
 export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> => {
-  const test = (string: string) => anymatch(options.test, string);
+  // TODO: Remove `options.test` in future releases
+  const aOpt = options as any;
+  if (aOpt.test) {
+    if (!options.include) options.include = aOpt.test;
+  }
+
+  const test = (string: string) => (
+    anymatch(options.include, string) &&
+    (options.exclude ? !anymatch(options.exclude, string) : true)
+  );
   const def = (a: any) => !!a;
   const plugins = Array.isArray(options.use) ? options.use : [options.use];
   const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
