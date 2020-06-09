@@ -260,8 +260,8 @@ export const transformFile = async (filePath: string): Promise<{
         (astPath.node as any).source.value = getAddress() + (routed
           ? encodeURI(finalPath)
           : finalPath
-            ? `/transformed?q=${encodeURI(finalPath)}&importer=${encodeURI(filePath)}`
-            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`);
+            ? `/transformed?q=${encodeURI(finalPath)}}`
+            : `/unresolved?import=${encodeURI(source)}}`);
       }
     }
   }

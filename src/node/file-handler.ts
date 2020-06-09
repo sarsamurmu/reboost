@@ -114,7 +114,6 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
   if (!watcher) watcher = createWatcher();
 
   const filePath = ctx.query.q;
-  const importerPath = ctx.query.importer;
   const timerName = chalk.cyan(`Response time - ${path.relative(config.rootDir, filePath)}`);
   let transformedCode: string;
 
@@ -214,8 +213,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
       watcher.setDependencies(filePath, dependencies);
     }
   } else {
-    let message = `[reboost] The requested file does not exist: ${filePath}. `;
-    message += `File is requested by ${importerPath}`;
+    let message = `[reboost] The requested file does not exist: ${filePath}.`;
     transformedCode = `console.error(${JSON.stringify(message)})`;
   }
 
