@@ -167,7 +167,7 @@ const INCOMPATIBLE_BELOW = 8;
 export const DefaultConfig: DeeplyFrozen<ReboostConfig> = {
   cacheDir: './.reboost_cache',
   entries: null,
-  rootDir: '.',
+  rootDir: process.cwd(),
   resolve: {
     alias: {},
     extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json'],
@@ -198,7 +198,7 @@ export const start = (config: ReboostConfig = {} as any) => {
       process.exit(1);
     }
 
-    if (!path.isAbsolute(config.rootDir)) config.rootDir = path.resolve(config.rootDir);
+    if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
     if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
     if (!config.watchOptions.include) {
       config.watchOptions.include = /.*/;
