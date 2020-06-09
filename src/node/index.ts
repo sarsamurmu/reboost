@@ -19,7 +19,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze, clone } from './utils';
+import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze, clone, DeeplyFrozen } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
@@ -164,7 +164,7 @@ export interface ReboostConfig {
 
 const INCOMPATIBLE_BELOW = 8;
 
-export const DefaultConfig: ReboostConfig = {
+export const DefaultConfig: DeeplyFrozen<ReboostConfig> = {
   cacheDir: './.reboost_cache',
   entries: null,
   rootDir: '.',
