@@ -158,7 +158,7 @@ export interface ReboostConfig {
   // Developer options
   /** If you want to run reboost in debug mode */
   debugMode?: boolean;
-  /** Clears cache whenever reboost starts. Only use while debugging */
+  /** Clears cache whenever reboost starts. Only for use while debugging. */
   dumpCache?: boolean;
 }
 
@@ -170,7 +170,7 @@ export const DefaultConfig: DeeplyFrozen<ReboostConfig> = {
   rootDir: '.',
   resolve: {
     alias: {},
-    extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json'],
+    extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json'],
     mainFiles: ['index'],
     mainFields: ['module', 'main'],
     modules: ['node_modules']
@@ -191,7 +191,7 @@ deepFreeze(DefaultConfig);
 
 export const start = (config: ReboostConfig = {} as any) => {
   return new Promise(async (resolvePromise) => {
-    config = setConfig(merge(clone(DefaultConfig), config));
+    config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
 
     if (!config.entries) {
       console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
@@ -220,7 +220,7 @@ export const start = (config: ReboostConfig = {} as any) => {
       config.plugins.unshift(PostCSSPlugin());
     }
 
-    if (config.dumpCache && config.debugMode) rmDir(config.cacheDir);
+    if (config.dumpCache) rmDir(config.cacheDir);
 
     if (getFilesData().version < INCOMPATIBLE_BELOW) {
       console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));

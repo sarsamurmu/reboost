@@ -39,6 +39,8 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       js: 'jsx',
       jsx: 'jsx',
       mjs: 'jsx',
+      es6: 'jsx',
+      es: 'jsx',
       ts: 'tsx',
       tsx: 'tsx'
     },
