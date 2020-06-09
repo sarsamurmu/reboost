@@ -27,7 +27,8 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
             t.callExpression(
               t.identifier('__reboost_resolve'),
               [t.stringLiteral(path.node.source.value)]
-            )
+            ),
+            t.stringLiteral(filePath)
           ];
 
           if (t.isImportDefaultSpecifier(specifier)) {
@@ -74,7 +75,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
       program.node.body.unshift(
         t.importDeclaration([
           t.importDefaultSpecifier(importerIdentifier)
-        ], t.stringLiteral(`#/importer?q=${filePath}`))
+        ], t.stringLiteral(`#/importer`))
       );
 
       if (declarators.length) {

@@ -34,7 +34,6 @@ export const createRouter = () => {
   router.get('/importer', async (ctx) => {
     ctx.type = 'text/javascript';
     ctx.body = `const address = "${getAddress()}";\n`;
-    ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
     ctx.body += importerCode;
   });
 

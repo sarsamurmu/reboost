@@ -260,8 +260,8 @@ export const transformFile = async (filePath: string): Promise<{
         (astPath.node as any).source.value = getAddress() + (routed
           ? encodeURI(finalPath)
           : finalPath
-            ? `/transformed?q=${encodeURI(finalPath)}}`
-            : `/unresolved?import=${encodeURI(source)}}`);
+            ? `/transformed?q=${encodeURI(finalPath)}`
+            : `/unresolved?import=${encodeURI(source)}`);
       }
     }
   }
@@ -305,7 +305,7 @@ export const transformFile = async (filePath: string): Promise<{
           const identifier = astPath.scope.generateUidIdentifier('$importer');
           importerDeclaration = t.importDeclaration([
             t.importDefaultSpecifier(identifier)
-          ], t.stringLiteral(`#/importer?q=${filePath}`));
+          ], t.stringLiteral(`#/importer`));
           astProgram.node.body.unshift(importerDeclaration);
         }
         const importerIdentifierName = importerDeclaration.specifiers[0].local.name;
@@ -316,7 +316,8 @@ export const transformFile = async (filePath: string): Promise<{
               t.identifier('Dynamic')
             ),
             [
-              t.stringLiteral((astPath.node.arguments[0] as babelTypes.StringLiteral).value)
+              t.stringLiteral((astPath.node.arguments[0] as babelTypes.StringLiteral).value),
+              t.stringLiteral(filePath)
             ]
           )
         );
