@@ -14,14 +14,23 @@ start({
   plugins: [
     // Other plugins
     esbuildPlugin({
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment'
+      jsx: {
+        factory: 'h',
+        fragment: 'Fragment'
+      }
     })
   ]
   // ...
 })
 ```
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
+
+## TypeScript
+TypeScript is supported out of the box. But, note that it just compiles
+your TypeScript code and does not do type checking. Type checking should be handled
+by your IDE/Code editor or by yourself. If you were using `tsc` to compile your
+TypeScript code, you can use it to do type checking by using the command
+`tsc --noEmit` (if you want `tsc` to watch for changes, use the command `tsc --noEmit -w`).
 
 ## CSS and CSS Modules
 Works out of the box. By default, all CSS files are loaded as a regular CSS file,
@@ -92,7 +101,7 @@ start({
   plugins: [
     // Other plugins
     UsePlugin({
-      test: /\.(png|jpe?g)$/, // Example for only loading PNG/JPG/JPEG files as asset
+      include: /\.(png|jpe?g)$/, // Example for only loading PNG/JPG/JPEG files as asset
       use: FilePlugin()
     })
   ]

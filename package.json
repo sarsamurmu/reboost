@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A super fast web dev server, for faster development",
   "main": "./dist/node/index.js",
   "types": "./types/node/index.d.ts",
@@ -34,9 +34,9 @@
     "@types/koa-static": "^4.0.1",
     "@types/node-sass": "^4.11.1",
     "anymatch": "^3.1.1",
-    "chalk": "^4.0.0",
+    "chalk": "^4.1.0",
     "chokidar": "^3.4.0",
-    "esbuild": "^0.4.8",
+    "esbuild": "^0.4.12",
     "icss-utils": "^4.1.1",
     "koa": "^2.12.0",
     "koa-proxies": "^0.11.0",
@@ -56,7 +56,7 @@
   },
   "peerDependencies": {
     "node-sass": "^4.14.1",
-    "svelte": "^3.23.0"
+    "svelte": "^3.23.1"
   },
   "peerDependenciesMeta": {
     "node-sass": {
@@ -72,7 +72,7 @@
     "@types/koa-websocket": "^5.0.4",
     "@types/koa__cors": "^3.0.1",
     "@types/koa__router": "^8.0.2",
-    "@types/node": "^14.0.11",
+    "@types/node": "^14.0.12",
     "@types/postcss-load-config": "^2.0.1",
     "@types/postcss-modules-extract-imports": "^2.0.0",
     "@types/postcss-modules-local-by-default": "^1.2.0",
@@ -81,7 +81,7 @@
     "@types/yargs": "^15.0.5",
     "concurrently": "^5.2.0",
     "glob": "^7.1.6",
-    "svelte": "^3.23.0",
+    "svelte": "^3.23.1",
     "typescript": "^3.9.5"
   }
 }

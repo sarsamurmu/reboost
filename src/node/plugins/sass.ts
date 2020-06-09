@@ -14,7 +14,6 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
   const sassOptions = Object.assign({}, options.sassOptions);
   let includePathsNormalized = false;
   let sass: typeof Sass;
-  let isNodeSass = false;
   
   return {
     name: 'core-sass-plugin',
@@ -33,7 +32,6 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
 
           if (nodeSassPath) {
             sass = require(nodeSassPath);
-            isNodeSass = true;
           } else {
             const sassPath = resolveModule(process.cwd(), 'sass', { mainFields: ['main'] });
             if (sassPath) sass = require(sassPath);
@@ -67,63 +65,45 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
             }
           );
 
-          const handleError = (err: any, retry: boolean) => {
-            if (retry) {
-              /*
-                Dirty check message
-                `File to import not found or unreadable`
-                If this (^^^) is our error message then try again
-               */
-              if (err.message.includes('unreadable')) {
-                /*
-                  Error `File to import not found or unreadable` occurs when
-                  Sass tries to read the file and code editor (like VSCode)
-                  didn't complete write finish. Try to render again in 200ms
-                 */
-                return setTimeout(() => renderAndResolve(false), 200);
-              }
-            }
+          const renderAndResolve = (retry: boolean): any => {
+            try {
+              // In `sass` renderSync is fast
+              const result = sass.renderSync(renderOptions as any);
 
-            let errorMessage = `SassPlugin: Error while processing "${filePath}"\n`;
-            errorMessage += (err as any).formatted;
-
-            const normalizedPath = path.normalize(err.file);
-            if (filePath !== normalizedPath) this.addDependency(normalizedPath);
-
-            return resolve(new Error(errorMessage));
-          }
-
-          const handleResult = (result: Sass.Result) => {
-            result.stats.includedFiles.forEach((includedFile) => {
-              const normalizedPath = path.normalize(includedFile);
-              this.addDependency(normalizedPath);
-            });
-
-            resolve({
-              code: result.css.toString(),
-              map: JSON.parse(result.map.toString()),
-              type: 'css'
-            });
-          }
-
-          function renderAndResolve(retry: boolean) {
-            if (isNodeSass) {
-              sass.render(renderOptions, (err, result) => {
-                if (err) {
-                  return handleError(err, retry);
-                }
-
-                handleResult(result);
+              result.stats.includedFiles.forEach((includedFile) => {
+                const normalizedPath = path.normalize(includedFile);
+                this.addDependency(normalizedPath);
               });
-            } else {
-              try {
-                // In `sass` renderSync is fast
-                const result = sass.renderSync(renderOptions);
 
-                handleResult(result);
-              } catch (err) {
-                handleError(err, retry);
+              resolve({
+                code: result.css.toString(),
+                map: JSON.parse(result.map.toString()),
+                type: 'css'
+              });
+            } catch (err) {
+              if (retry) {
+                /*
+                  Dirty check message
+                  `File to import not found or unreadable`
+                  If this (^^^) is our error message then try again
+                 */
+                if (err.message.includes('unreadable')) {
+                  /*
+                    Error `File to import not found or unreadable` occurs when
+                    Sass tries to read the file and code editor (like VSCode)
+                    didn't complete write finish. Try to render again in 200ms
+                   */
+                  return setTimeout(() => renderAndResolve(false), 200);
+                }
               }
+
+              let errorMessage = `SassPlugin: Error while processing "${filePath}"\n`;
+              errorMessage += (err as any).formatted;
+
+              const normalizedPath = path.normalize(err.file);
+              if (filePath !== normalizedPath) this.addDependency(normalizedPath);
+
+              return resolve(new Error(errorMessage));
             }
           }
 

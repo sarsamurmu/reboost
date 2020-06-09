@@ -2,6 +2,11 @@
 [esbuild](https://github.com/evanw/esbuild) is a fast and powerful transformer,
 which you can use to transform TypeScript, JSX, or newer ECMAScript features.
 
+**NOTE**: `esbuild` does not do type checking. Type checking should be handled
+by your IDE/Code editor or by yourself. If you were using `tsc` to compile your
+TypeScript code, you can use it to just do type checking by using the command
+`tsc --noEmit` (if you want `tsc` to watch for changes, use the command `tsc --noEmit -w`).
+
 ## Usage
 ### Setup
 Import `esbuildPlugin` from Reboost
@@ -30,6 +35,8 @@ Default:
   js: 'jsx',
   jsx: 'jsx',
   mjs: 'jsx',
+  es6: 'jsx',
+  es: 'jsx',
   ts: 'tsx',
   tsx: 'tsx'
 }
@@ -37,40 +44,61 @@ Default:
 
 An object containing key as file type and value as the loader to use for the file type.
 
-#### `jsxFactory`
+#### `jsx`
+Type: `object`
+
+Options for JSX
+
+##### `jsx.factory`
 Type: `string`\
 Default: `React.createElement`
 
-Factory function to use when transforming JSX or TSX files.
+Factory function to use for creating JSX elements.
 
-#### `jsxFragment`
+##### `jsx.fragment`
 Type: `string`\
 Default: `React.Fragment`
 
-The component to use as the fragment component.
+Component to use as the fragment component.
 
 #### `target`
-Type: `'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020'`
+Type: `'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020'`\
+Default: `'es2019'`
 
 The ECMAScript version esbuild should target when transforming files.
 
-## Example
-### Transforming new ECMAScript features
-See [Syntax support](https://github.com/evanw/esbuild#syntax-support) section
-of esbuild for more info.
+#### `minify`
+Type: `boolean`\
+Default: `true`
 
+Minify the generated code. Enabling it improves performance.
+
+#### `define`
+Type: `object`\
+Default: `{ 'process.env.NODE_ENV': '"development"' }`
+
+Substitute the keys of the object with their values.
+
+For example, this config
 ```js
 const { start, esbuildPlugin } = require('reboost');
 
 start({
-  entries: [
-    // This is just an example
-    ['./src/index.js', './public/dist/bundle.js']
-  ],
+  // ...
   plugins: [
     esbuildPlugin({
-      target: 'es2018' // Supported by most browsers
+      define: {
+        'process.env.NODE_ENV': JSON.stringify('development')
+      }
     })
   ]
 })
+```
+will transform this code
+```js
+const mode = process.env.NODE_ENV;
+```
+into
+```js
+const mode = 'development';
 ```

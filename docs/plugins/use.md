@@ -14,7 +14,7 @@ const { start, UsePlugin } = require('reboost');
 start({
   plugins: [
     UsePlugin({
-      test: /regex/,
+      include: /regex/,
       use: [
         // Plugins
       ]
@@ -24,11 +24,17 @@ start({
 ```
 
 ## Options
-#### `test`
+#### `include`
 Type: `Matcher`
 
 [Anymatch](https://www.npmjs.com/package/anymatch) pattern to test file paths.
 If test passes all plugin(s) in `use` will be used for the file.
+
+#### `exclude`
+Type: `Matcher`
+
+[Anymatch](https://www.npmjs.com/package/anymatch) pattern to test file paths.
+If test passes the file will be excluded.
 
 #### `use`
 Type: `ReboostPlugin | ReboostPlugin[]`

@@ -3,9 +3,15 @@ Transform Sass/SCSS files to CSS on the fly.
 
 ## Usage
 ### Setup
-This plugin depends on `node-sass` package, so you have to install `node-sass` from npm
+This plugin works with both `node-sass` and `sass` package, but it prefers
+`node-sass` over `sass`. So you have to install `node-sass` or `sass` from npm,
+whichever you like
 ```shell
 npm i -D node-sass
+```
+or
+```shell
+npm i -D sass
 ```
 Then import `SassPlugin` from Reboost
 ```js

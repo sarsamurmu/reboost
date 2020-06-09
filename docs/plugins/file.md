@@ -14,7 +14,7 @@ const { start, FilePlugin, UsePlugin } = require('reboost');
 start({
   plugins: [
     UsePlugin({
-      test: /.(png|jpg|jpeg)$/i,
+      include: /.(png|jpg|jpeg)$/i,
       use: FilePlugin()
     })
   ]
@@ -36,7 +36,7 @@ const { start, FilePlugin, UsePlugin } = require('reboost');
 start({
   plugins: [
     UsePlugin({
-      test: /.(png|jpg|jpeg)$/i, // We want to load only PNG and JPG as file
+      include: /.(png|jpg|jpeg)$/i, // We want to load only PNG and JPG as file
       use: FilePlugin()
     })
   ]

@@ -1,3 +1,13 @@
+## 0.3.0
+- Improved SassPlugin
+- Enabled CommonJS interop for all files
+- UsePlugin: Added option `exclude`
+- MASSIVE performance improvement
+- Support for `.es6` and `.es` files
+- Now generates correct source map for Svelte files
+- Fixed error with CommonJS interop plugin
+- Updated dependencies
+
 ## 0.2.2
 - Addded SveltePlugin
 - Added new resolve options - `resolve.mainFields`

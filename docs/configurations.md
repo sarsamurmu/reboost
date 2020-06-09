@@ -66,7 +66,7 @@ start({
 ```
 
 ##### `contentServer.proxy`
-Type: `Record<string, string | object>`
+Type: `object`
 
 Sets up custom proxies in the content server. This option can be an `object` with
 keys as paths that you want to redirect and value as a string (shorthand) or
@@ -160,7 +160,7 @@ An array of plugins to be used by Reboost.
 
 #### `rootDir`
 Type: `string`\
-Default: `.`
+Default: `process.cwd()`
 
 Directory to use as the root directory. Used to resolve relative paths.
 
@@ -201,7 +201,7 @@ import ProgressBar from 'Components/progressbar';
 
 ##### `resolve.extensions`
 Type: `string[]`\
-Default: `['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json']`
+Default: `['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json']`
 
 Extensions to use for resolving files.
 
