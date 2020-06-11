@@ -132,7 +132,7 @@ start({
     extensions: ['.svelte'].concat(DefaultConfig.resolve.extensions),
 
     // Prefer `svelte` field to load script from `package.json`
-    mainFields: ['svelte']
+    mainFields: ['svelte'].concat(DefaultConfig.resolve.mainFields)
   },
   plugins: [
     // ... Other plugins
