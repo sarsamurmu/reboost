@@ -99,12 +99,7 @@ export const SveltePlugin = (options: SveltePluginOptions = {}): ReboostPlugin =
             }) as any
           );
 
-          replacement = await replacePromise;
-
-          const magicString = new MagicString(code);
-          magicString.overwrite(match.index, match.index + match[0].length, replacement);
-          map = await this.mergeSourceMaps(magicString.generateMap(), map);
-          code = magicString.toString();
+          code = code.replace(regex, await replacePromise);
         }
 
         return {

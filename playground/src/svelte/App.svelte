@@ -5,9 +5,14 @@
   import { expand } from './transitions.js';
   import { inner, outer } from './shape.js';
 
+  let started = false;
+
   afterUpdate(() => {
     console.log('After update');
-    visible = true;
+    if (!started) {
+      visible = true;
+      started = true;
+    }
   });
   
   console.log('From Svelte');
