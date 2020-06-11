@@ -75,14 +75,14 @@ sass syntax in your Svelte files, like so
 ```html
 <style lang="sass">
 .card
-  padding: 10px;
-  background-color: dodgerblue;
+  padding: 10px
+  background-color: dodgerblue
 
   h1
-    font-weight: normal;
+    font-weight: normal
   
   p
-    text-align: justify;
+    text-align: justify
 </style>
 
 <div class="card">
