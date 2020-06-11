@@ -30,7 +30,7 @@ export interface esbuildPluginOptions {
   define?: Record<string, string>;
 }
 
-let esbuildService: esbuild.Service;
+let esbuildServicePromise: Promise<esbuild.Service>;
 
 export const PluginName = 'core-esbuild-plugin';
 export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin => {
@@ -59,15 +59,22 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
   return {
     name: PluginName,
     async setup({ config }) {
-      if (!esbuildService) esbuildService = await esbuild.startService();
+      if (!esbuildServicePromise) esbuildServicePromise = esbuild.startService();
 
       defaultOptions.minify = !config.debugMode;
       options = merge(defaultOptions, options);
       compatibleTypes = Object.keys(options.loaders);
+
+      // TODO: Remove in further releases
+      const aOpts = options as esbuildPluginOptions & { jsxFactory: string; jsxFragment: string; };
+      if (aOpts.jsxFactory) aOpts.jsx.factory = aOpts.jsxFactory;
+      if (aOpts.jsxFragment) aOpts.jsx.fragment = aOpts.jsxFragment;
     },
     async transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
         try {
+          const esbuildService = await esbuildServicePromise;
+
           const { js, jsSourceMap } = await esbuildService.transform(data.code, {
             sourcemap: 'external',
             sourcefile: filePath,
