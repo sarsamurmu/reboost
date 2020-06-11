@@ -105,8 +105,8 @@ export interface ReboostConfig {
     /** Directory which the content server should serve */
     root: string;
     /** Options for automatically opening content server URL when ready */
-    open: open.Options;
-    proxy: Record<string, string | ProxyOptions>;
+    open?: open.Options;
+    proxy?: Record<string, string | ProxyOptions>;
     onReady?: (app: Koa) => void;
   } & serveStatic.Options;
   /** Entries of files */
@@ -144,7 +144,7 @@ export interface ReboostConfig {
     modules?: string[];
   };
   /** When enabled, logs the time it takes to serve a file */
-  showResponseTime: boolean;
+  showResponseTime?: boolean;
   /** Options for sourceMaps */
   sourceMaps?: {
     include?: Matcher;
