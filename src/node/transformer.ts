@@ -58,6 +58,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
 
 const handleError = ({ message }: Error, dependencies: string[]) => {
   console.log(chalk.red(message));
+
   return {
     code: `console.error(${JSON.stringify('[reboost] ' + message)})`,
     dependencies,

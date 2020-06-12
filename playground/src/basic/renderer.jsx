@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
 import styles from './styles/index.module.css';
 import JSLogo from './assets/js-logo.png';

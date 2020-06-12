@@ -1,3 +1,4 @@
+export { BabelPlugin } from './babel';
 export { CSSPlugin } from './css';
 export { esbuildPlugin } from './esbuild';
 export { FilePlugin } from './file';
