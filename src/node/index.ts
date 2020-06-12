@@ -27,6 +27,7 @@ import { defaultPlugins } from './plugins/defaults';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
 import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
+import { resolveModule } from './plugins/defaults/resolver';
 
 export * from './plugins';
 
@@ -54,6 +55,7 @@ export interface PluginContext {
   getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
   MagicString: typeof MagicString;
   mergeSourceMaps: typeof mergeSourceMaps;
+  resolveModule: typeof resolveModule;
 }
 
 export interface ReboostPlugin {
@@ -62,7 +64,8 @@ export interface ReboostPlugin {
     data: {
       config: ReboostConfig;
       app: Koa;
-      router: Router
+      router: Router;
+      resolveModule: typeof resolveModule;
     }
   ) => void | Promise<void>;
   resolve?: (pathToResolve: string, relativeTo: string) => string | Promise<string>;
@@ -292,7 +295,7 @@ export const start = (config: ReboostConfig = {} as any) => {
 
     const setupPromises = [];
     for (const plugin of config.plugins) {
-      if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router }));
+      if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router, resolveModule }));
     }
     await Promise.all(setupPromises);
     deepFreeze(config);

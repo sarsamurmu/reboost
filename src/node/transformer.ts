@@ -14,6 +14,7 @@ import path from 'path';
 import { ReboostPlugin, PluginContext } from './index';
 import { getConfig, getAddress } from './shared';
 import { mergeSourceMaps, bind } from './utils';
+import { resolveModule } from './plugins/defaults/resolver';
 
 const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
 
@@ -51,7 +52,8 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   },
   getCompatibleSourceMap,
   MagicString,
-  mergeSourceMaps
+  mergeSourceMaps,
+  resolveModule
 })
 
 const handleError = ({ message }: Error, dependencies: string[]) => {

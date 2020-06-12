@@ -4,7 +4,6 @@ import type Sass from 'node-sass';
 import path from 'path';
 
 import { ReboostPlugin } from '../index';
-import { resolveModule } from './defaults/resolver';
 
 interface SassPluginOptions {
   sassOptions?: Sass.Options;
@@ -28,12 +27,12 @@ export const SassPlugin = (options: SassPluginOptions = {}): ReboostPlugin => {
       if (['sass', 'scss'].includes(data.type)) {
         // Prefer `node-sass` over `sass`
         if (!sass) {
-          const nodeSassPath = resolveModule(process.cwd(), 'node-sass', { mainFields: ['main'] });
+          const nodeSassPath = this.resolveModule('', 'node-sass', { mainFields: ['main'] });
 
           if (nodeSassPath) {
             sass = require(nodeSassPath);
           } else {
-            const sassPath = resolveModule(process.cwd(), 'sass', { mainFields: ['main'] });
+            const sassPath = this.resolveModule('', 'sass', { mainFields: ['main'] });
             if (sassPath) sass = require(sassPath);
           }
         }
