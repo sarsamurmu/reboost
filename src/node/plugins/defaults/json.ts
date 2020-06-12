@@ -1,5 +1,3 @@
-import MagicString from 'magic-string';
-
 import { ReboostPlugin } from '../../index';
 
 export const JSONPlugin: ReboostPlugin = {
@@ -7,7 +5,7 @@ export const JSONPlugin: ReboostPlugin = {
   transformIntoJS(data, filePath) {
     if (data.type === 'json') {
       const jsonString = data.code;
-      const magicString = new MagicString(jsonString);
+      const magicString = new this.MagicString(jsonString);
       magicString.prepend('export default ');
 
       const inputMap = magicString.generateMap();

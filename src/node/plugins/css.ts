@@ -5,7 +5,6 @@ import moduleValues from 'postcss-modules-values';
 import moduleScope from 'postcss-modules-scope';
 import { extractICSS, ExtractedICSS } from 'icss-utils';
 import { RawSourceMap } from 'source-map';
-import MagicString from 'magic-string';
 
 import path from 'path';
 
@@ -180,7 +179,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
         let sourceMap = map;
         if (!sourceMap) {
           // Add default source map
-          sourceMap = new MagicString(css).generateMap({ source: filePath });
+          sourceMap = new this.MagicString(css).generateMap({ source: filePath });
         }
 
         return {

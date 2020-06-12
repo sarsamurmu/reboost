@@ -1,5 +1,3 @@
-import MagicString from 'magic-string';
-
 import { ReboostPlugin } from '../index';
 
 export const ReplacePlugin = (replacements: Record<string, string>): ReboostPlugin => {
@@ -7,7 +5,7 @@ export const ReplacePlugin = (replacements: Record<string, string>): ReboostPlug
     name: 'core-replace-plugin',
     transformContent({ code: sourceCode }) {
       if (Object.keys(replacements).some((string) => sourceCode.indexOf(string) !== -1)) {
-        const magicString = new MagicString(sourceCode);
+        const magicString = new this.MagicString(sourceCode);
 
         for (const toReplace in replacements) {
           const toReplaceWith = replacements[toReplace];

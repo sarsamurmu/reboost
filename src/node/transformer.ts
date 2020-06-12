@@ -6,6 +6,7 @@ import { codeFrameColumns, SourceLocation } from '@babel/code-frame';
 import anymatch from 'anymatch';
 import { RawSourceMap, SourceMapConsumer } from 'source-map';
 import chalk from 'chalk';
+import MagicString from 'magic-string';
 
 import fs from 'fs';
 import path from 'path';
@@ -49,6 +50,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
     mergedDependencies.push(dependency);
   },
   getCompatibleSourceMap,
+  MagicString,
   mergeSourceMaps
 })
 

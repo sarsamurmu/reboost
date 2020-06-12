@@ -12,6 +12,7 @@ import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
 import open from 'open';
 import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
+import MagicString from 'magic-string';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
@@ -51,6 +52,7 @@ export interface PluginContext {
   config: ReboostConfig;
   addDependency: (dependency: string) => void;
   getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
+  MagicString: typeof MagicString;
   mergeSourceMaps: typeof mergeSourceMaps;
 }
 

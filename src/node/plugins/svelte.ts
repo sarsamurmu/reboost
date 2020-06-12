@@ -1,7 +1,6 @@
 import SvelteCompiler from 'svelte/compiler';
 import chalk from 'chalk';
 import { RawSourceMap } from 'source-map';
-import MagicString from 'magic-string';
 
 import fs from 'fs';
 import path from 'path';
