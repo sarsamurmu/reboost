@@ -3,8 +3,12 @@ import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 import fs from 'fs';
 import path from 'path';
 
-export type DeeplyFrozen<T> = T extends object | any[] ? {
-  readonly [P in keyof T]: DeeplyFrozen<T[P]>;
+export type DeepRequire<T> = T extends object ? {
+  [P in keyof T]-?: DeepRequire<T[P]>;
+} : T;
+
+export type DeepFrozen<T> = T extends object | any[] ? {
+  readonly [P in keyof T]: DeepFrozen<T[P]>;
 } : T;
 
 export const uniqueID = (length = 32) => Array(length).fill(0).map(() => (Math.random() * 16 | 0).toString(16)).join('');

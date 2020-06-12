@@ -12,12 +12,17 @@ let filesData: {
     uid: string;
     /** Hash of the file */
     hash: string;
+    /** Last modified time of the file */
+    mtime: number;
     /** Only if file has no imports */
     pure: boolean;
     /** Address used in the file */
     address: string;
     /** Dependencies of the file */
-    dependencies?: Record<string, string>;
+    dependencies?: Record<string, {
+      hash: string;
+      mtime: number;
+    }>;
   }>;
   dependents: Record<string, string[]>;
 };

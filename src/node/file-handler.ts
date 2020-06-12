@@ -1,6 +1,6 @@
 import { ParameterizedContext } from 'koa';
 import { RouterParamContext } from '@koa/router';
-import hash from 'md5-file';
+import getHash from 'md5-file';
 import chalk from 'chalk';
 
 import fs from 'fs';
@@ -36,11 +36,15 @@ const depsChanged = async (file: string) => {
   if (!deps) return false;
   for (const dependency in deps) {
     try {
-      const prevHash = deps[dependency];
-      const currentHash = await hash(dependency);
-      if (prevHash !== currentHash) return true;
+      const dependencyMeta = deps[dependency];
+      const currentMtime = Math.floor(fs.statSync(dependency).mtimeMs);
+
+      if (dependencyMeta.mtime === currentMtime) continue;
+
+      const currentHash = await getHash(dependency);
+      if (dependencyMeta.hash !== currentHash) return true;
     } catch (e) {
-      // Probably the `hash` function caused error if
+      // Probably the `fs.statSync` function caused error if
       // the dependency file is unavailable
       return true;
     }
@@ -83,12 +87,15 @@ const updateDependencies = async (
 
   if (dependencies.length === 0) return fileData.dependencies = undefined;
 
-  const depsData = {} as Record<string, string>;
+  const depsData = {} as ReturnType<typeof getFilesData>['files'][string]['dependencies'];
   const promises: Promise<void>[] = [];
 
   dependencies.forEach((dependency) => {
     promises.push((async () => {
-      depsData[dependency] = await hash(dependency);
+      depsData[dependency] = {
+        hash: await getHash(dependency),
+        mtime: Math.floor(fs.statSync(dependency).mtimeMs)
+      };
     })());
   });
 
@@ -99,6 +106,7 @@ const updateDependencies = async (
 
 let gitignoreCreated = false;
 let watcher: ReturnType<typeof createWatcher>;
+const memoizedFiles = new Map();
 
 export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterParamContext<any, {}>>) => {
   const config = getConfig();
@@ -107,7 +115,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
   ensureDir(filesDir);
 
   if (!gitignoreCreated) {
-    fs.writeFileSync(path.join(config.cacheDir, './.gitignore'), '/**/*');
+    fs.promises.writeFile(path.join(config.cacheDir, './.gitignore'), '/**/*');
     gitignoreCreated = true;
   }
 
@@ -120,13 +128,20 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
   if (config.showResponseTime) console.time(timerName);
 
   if (fs.existsSync(filePath)) {
-    const fileHash = await hash(filePath);
+    const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
 
     if (getFilesData().files[filePath]) {
       const fileData = getFilesData().files[filePath];
       const outputFilePath = path.join(filesDir, fileData.uid);
+      let hash: string;
 
-      if ((fileData.hash !== fileHash) || await depsChanged(filePath)) {
+      if (
+        await depsChanged(filePath) ||
+        (
+          (fileData.mtime !== mtime) &&
+          (fileData.hash !== (hash = await getHash(filePath)))
+        )
+      ) {
         let pure = true;
         const {
           code,
@@ -147,18 +162,20 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         if (!error) {
           if (map || imports.length) pure = undefined;
           fs.promises.writeFile(outputFilePath, transformedCode);
-          fileData.hash = fileHash;
+          fileData.hash = hash;
+          fileData.mtime = mtime;
           fileData.address = getAddress();
           fileData.pure = pure;
           await updateDependencies(filePath, dependencies);
           saveFilesData();
         }
 
+        if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, dependencies);
       } else {
         const pure = fileData.pure;
         const currentAddress = getAddress();
-        transformedCode = fs.readFileSync(outputFilePath).toString();
+        transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
 
         if (!pure && (fileData.address !== currentAddress)) {
           const addressRegex = new RegExp(fileData.address, 'g');
@@ -174,6 +191,12 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
           saveFilesData();
         }
 
+        if (fileData.mtime !== mtime) {
+          fileData.mtime = mtime;
+          saveFilesData();
+        }
+
+        if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
       }
     } else {
@@ -202,7 +225,8 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         type fileData = ReturnType<typeof getFilesData>['files'][string];
         (getFilesData().files[filePath] as Omit<fileData, 'mergedDependencies' | 'dependencies'>) = {
           uid,
-          hash: fileHash,
+          hash: await getHash(filePath),
+          mtime,
           address: getAddress(),
           pure
         };
@@ -210,6 +234,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         saveFilesData();
       }
 
+      if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
       watcher.setDependencies(filePath, dependencies);
     }
   } else {

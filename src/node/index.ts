@@ -20,7 +20,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze, clone, DeeplyFrozen } from './utils';
+import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze, clone, DeepFrozen, DeepRequire } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { defaultPlugins } from './plugins/defaults';
@@ -102,6 +102,8 @@ export interface ReboostConfig {
    * @default ./.reboost_cache
    */
   cacheDir?: string;
+  /** Cache on transformed files on memory */
+  cacheOnMemory?: boolean;
   /** Options for content server */
   contentServer?: {
     /** Directory which the content server should serve */
@@ -165,11 +167,14 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = 8;
+const INCOMPATIBLE_BELOW = 31;
 
-export const DefaultConfig: DeeplyFrozen<ReboostConfig> = {
+export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
+  cacheOnMemory: true,
+  contentServer: undefined,
   entries: null,
+  plugins: [],
   rootDir: process.cwd(),
   resolve: {
     alias: {},
@@ -178,16 +183,19 @@ export const DefaultConfig: DeeplyFrozen<ReboostConfig> = {
     mainFields: ['module', 'main'],
     modules: ['node_modules']
   },
-  watchOptions: {
-    exclude: /node_modules/,
-    chokidar: {}
-  },
+  showResponseTime: false,
   sourceMaps: {
     include: /.*/,
     exclude: /node_modules/
   },
-  plugins: [],
-  showResponseTime: false
+  watchOptions: {
+    include: undefined,
+    exclude: /node_modules/,
+    chokidar: undefined
+  },
+
+  dumpCache: false,
+  debugMode: false
 };
 
 deepFreeze(DefaultConfig);
@@ -246,12 +254,12 @@ export const start = (config: ReboostConfig = {} as any) => {
     let port: number;
     let fullAddress: string;
 
-    interfaceLoop: for (const dev in interfaces) {
+    loop: for (const dev in interfaces) {
       for (const details of interfaces[dev]) {
         if (details.family === 'IPv4' && details.internal === false) {
           host = details.address;
           port = await portFinder.getPortPromise({ host });
-          break interfaceLoop;
+          break loop;
         }
       }
     }
@@ -274,7 +282,7 @@ export const start = (config: ReboostConfig = {} as any) => {
       fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
       if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
 
-      fs.writeFileSync(outputPath, fileContent);
+      fs.promises.writeFile(outputPath, fileContent);
       console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
     }
 
