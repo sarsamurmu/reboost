@@ -1,8 +1,8 @@
-## next
+## 0.4.0
 - Fix CommonJSPlugin
 - New memory caching system. Now its 20-30x faster
 - Fixed import resolving with absolute paths
-- Added BabelPlugin
+- Added `BabelPlugin`
 - `esbuildPlugin` now shows better error and warning messages
 
 ## 0.3.0
