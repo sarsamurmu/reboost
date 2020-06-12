@@ -1,11 +1,13 @@
-import esbuild, { Target, Loader } from 'esbuild';
+import * as esbuild from 'esbuild';
+
+import path from 'path';
 
 import { ReboostPlugin } from '../index';
 import { merge } from '../utils';
 
 export interface esbuildPluginOptions {
   /** Loaders to use for file types */
-  loaders?: Record<string, Loader>;
+  loaders?: Record<string, esbuild.Loader>;
   /** Options for JSX */
   jsx?: {
     /**
@@ -20,7 +22,7 @@ export interface esbuildPluginOptions {
     fragment?: string;
   }
   /** ECMAScript version to target */
-  target?: Target;
+  target?: esbuild.Target;
   /**
    * Minify code
    * @default true
@@ -65,7 +67,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       options = merge(defaultOptions, options);
       compatibleTypes = Object.keys(options.loaders);
 
-      // TODO: Remove in further releases
+      // TODO: Remove in future releases
       const aOpts = options as esbuildPluginOptions & { jsxFactory: string; jsxFragment: string; };
       if (aOpts.jsxFactory) aOpts.jsx.factory = aOpts.jsxFactory;
       if (aOpts.jsxFragment) aOpts.jsx.fragment = aOpts.jsxFragment;
@@ -77,7 +79,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
 
           const { js, jsSourceMap } = await esbuildService.transform(data.code, {
             sourcemap: 'external',
-            sourcefile: filePath,
+            sourcefile: path.relative(this.config.rootDir, filePath),
             loader: options.loaders[data.type],
             jsxFactory: options.jsx.factory,
             jsxFragment: options.jsx.fragment,
@@ -92,7 +94,12 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
             type: 'js'
           }
         } catch (e) {
-          console.log('esbuild error', e);
+          const error = e.errors[0] as esbuild.Message;
+          let msg = `esbuildPlugin: Error when processing "${error.location.file}"\n`;
+          msg += `${error.text} on line ${error.location.line} at column ${error.location.column}\n\n`;
+          msg += `| ${error.location.lineText}`;
+
+          return new Error(msg);
         }
       }
 
