@@ -18,6 +18,14 @@ Default: `./.reboost_cache`
 
 Directory to use for storing cached files.
 
+#### `cacheOnMemory`
+Type: `boolean`\
+Default: `true`
+
+Enables file caching on memory. Improves response speed as it reads
+cached files from memory instead of the file system. May cause problems
+if you are working on a very large project.
+
 #### `contentServer`
 Type: `object`
 

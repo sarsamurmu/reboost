@@ -69,7 +69,7 @@ export const SveltePlugin = (options: SveltePluginOptions = {}): ReboostPlugin =
         });
 
         warnings.forEach((warning) => {
-          console.log(chalk.yellow(`\nWarning: ${path.relative(this.config.rootDir, filePath)}\n\n${warning.toString()}\n`));
+          console.log(chalk.yellow(`Svelte: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n${warning.toString()}\n`));
         });
 
         // Replace the source map for CSS

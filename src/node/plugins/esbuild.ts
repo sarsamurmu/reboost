@@ -1,4 +1,5 @@
 import * as esbuild from 'esbuild';
+import chalk from 'chalk';
 
 import path from 'path';
 
@@ -77,7 +78,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
         try {
           const esbuildService = await esbuildServicePromise;
 
-          const { js, jsSourceMap } = await esbuildService.transform(data.code, {
+          const { js, jsSourceMap, warnings } = await esbuildService.transform(data.code, {
             sourcemap: 'external',
             sourcefile: path.relative(this.config.rootDir, filePath),
             loader: options.loaders[data.type],
@@ -86,6 +87,13 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
             target: options.target,
             minify: options.minify,
             define: options.define
+          });
+
+          warnings.forEach(({ location: { line, column, lineText, file }, text }) => {
+            let msg = `esbuild: Warning "${file}"\n\n`;
+            msg += `(${line}:${column}) ${text}\n`;
+            msg += `| ${lineText}`;
+            console.log(chalk.yellow(msg));
           });
 
           return {

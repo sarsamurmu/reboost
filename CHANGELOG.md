@@ -1,3 +1,10 @@
+## next
+- Fix CommonJSPlugin
+- New memory caching system. Now its 20-30x faster
+- Fixed import resolving with absolute paths
+- Added BabelPlugin
+- `esbuildPlugin` now shows better error and warning messages
+
 ## 0.3.0
 - Improved SassPlugin
 - Enabled CommonJS interop for all files

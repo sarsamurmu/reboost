@@ -1,4 +1,4 @@
-# ReplacePlugin
+# Replace Plugin
 A plugin that you can use to replace strings in your code.
 
 ## Usage

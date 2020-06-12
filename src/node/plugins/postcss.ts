@@ -7,8 +7,8 @@ import path from 'path';
 
 import { ReboostPlugin, ReboostConfig } from '../index';
 
-export const postcssError = (error: any, config: ReboostConfig) => {
-  let errorMessage = `CSSPlugin: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
+export const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
+  let errorMessage = `${pluginName}: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
   errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
 
   errorMessage += codeFrameColumns(error.source, {
@@ -74,7 +74,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
               try {
                 warnings().forEach((warning) => {
                   const { text, line, column } = warning;
-                  console.log(chalk.yellow(`Warning: ${path.relative(this.config.rootDir, filePath)}\n\n(${line}:${column}) ${text}`));
+                  console.log(chalk.yellow(`PostCSS: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n(${line}:${column}) ${text}`));
                 });
               } catch (e) {
                 // Do nothing
@@ -101,7 +101,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
                 map: sourceMap as any
               });
             }, (err) => {
-              resolve(postcssError(err, this.config));
+              resolve(postcssError('PostCSSPlugin', err, this.config));
             })
         });
       });

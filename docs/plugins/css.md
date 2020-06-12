@@ -1,4 +1,4 @@
-# CSSPlugin
+# CSS Plugin
 Adds support for importing CSS files in JavaScript and HMR for CSS.
 
 ## Usage

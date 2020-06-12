@@ -141,3 +141,27 @@ start({
   // ...
 })
 ```
+
+## Babel
+To enable Babel transformation just enable [BabelPlugin](./plugins/babel.md)
+
+BTW, here's an example
+```js
+const { start, BabelPlugin, UsePlugin } = require('reboost');
+
+start({
+  plugins: [
+    UsePlugin({
+      include: /.*/,
+      exclude: /node_modules/,
+      use: BabelPlugin({
+        plugins: [
+          // Your babel plugin,
+          // for example
+          ['@babel/plugin-proposal-pipeline-operator', { proposal: 'smart' }]
+        ]
+      })
+    })
+  ]
+})
+```

@@ -1,4 +1,4 @@
-# UsePlugin
+# Use Plugin
 Use plugins based on [anymatch](https://www.npmjs.com/package/anymatch) pattern.
 
 ## Usage

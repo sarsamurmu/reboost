@@ -1,5 +1,6 @@
 const {
   start,
+  BabelPlugin,
   FilePlugin,
   ReplacePlugin,
   SassPlugin,
@@ -10,7 +11,8 @@ const {
 start({
   entries: [
     ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
-    ['./src/svelte/index.js', './public/dist/svelte.js']
+    ['./src/svelte/index.js', './public/dist/svelte.js'],
+    ['./src/babel/index.js', './public/dist/babel.js']
   ],
   contentServer: {
     root: './public'
@@ -28,11 +30,19 @@ start({
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
     }),
-    SveltePlugin()
+    SveltePlugin(),
+    UsePlugin({
+      include: '**/src/babel/**',
+      use: BabelPlugin({
+        plugins: [
+          ['@babel/plugin-proposal-pipeline-operator', { proposal: 'smart' }]
+        ]
+      })
+    })
   ],
-  // showResponseTime: true,
+  showResponseTime: true,
 
   // Don't use these options, these are only for debugging
   dumpCache: true,
-  debugMode: true,
+  // debugMode: true,
 });

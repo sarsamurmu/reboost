@@ -171,7 +171,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 code: script
               });
             }, (err) => {
-              resolve(postcssError(err, this.config));
+              resolve(postcssError('CSSPlugin', err, this.config));
             });
           });
         }
