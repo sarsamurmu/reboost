@@ -38,45 +38,47 @@ export const resolveModule = (
   const { rootDir } = config;
   const resolveOptions = overrides ? Object.assign({}, config.resolve, overrides) : config.resolve;
   
+  if (path.isAbsolute(pathToResolve)) return pathToResolve;
+
   if (pathToResolve.startsWith('.')) {
     return baseResolve(path.join(path.dirname(basePath), pathToResolve), resolveOptions);
+  }
+
+  const [firstPart, ...restPart] = pathToResolve.split('/').filter((s) => s !== '');
+
+  if (firstPart in resolveOptions.alias) {
+    const aliasPath = resolveOptions.alias[firstPart];
+    return baseResolve(path.join(rootDir, aliasPath, ...restPart), resolveOptions);
   } else {
-    const [firstPart, ...restPart] = pathToResolve.split('/').filter((s) => s !== '');
+    // Check in resolve.modules directories
 
-    if (firstPart in resolveOptions.alias) {
-      const aliasPath = resolveOptions.alias[firstPart];
-      return baseResolve(path.join(rootDir, aliasPath, ...restPart), resolveOptions);
-    } else {
-      // Check in resolve.modules directories
+    for (const modulesDirName of resolveOptions.modules) {
+      const modulesDirPath = path.join(rootDir, modulesDirName);
 
-      for (const modulesDirName of resolveOptions.modules) {
-        const modulesDirPath = path.join(rootDir, modulesDirName);
+      if (fs.existsSync(modulesDirPath)) {
+        const moduleName = firstPart;
+        let moduleDirPath = path.join(modulesDirPath, moduleName);
 
-        if (fs.existsSync(modulesDirPath)) {
-          const moduleName = firstPart;
-          let moduleDirPath = path.join(modulesDirPath, moduleName);
+        if (moduleName.startsWith('@')) {
+          // Using scoped package
+          moduleDirPath = path.join(modulesDirPath, moduleName, restPart.shift());
+        }
 
-          if (moduleName.startsWith('@')) {
-            // Using scoped package
-            moduleDirPath = path.join(modulesDirPath, moduleName, restPart.shift());
-          }
-
-          if (restPart.length !== 0) {
-            // Using subdirectories
-            return baseResolve(path.join(moduleDirPath, ...restPart), resolveOptions);
-          } else {
-            // Get from package.json
-            const pkgJSONPath = path.join(moduleDirPath, 'package.json');
-            if (fs.existsSync(pkgJSONPath)) {
-              const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
-              for (const field of resolveOptions.mainFields) {
-                if (pkgJSON[field]) return path.join(moduleDirPath, pkgJSON[field]);
-              }
+        if (restPart.length !== 0) {
+          // Using subdirectories
+          return baseResolve(path.join(moduleDirPath, ...restPart), resolveOptions);
+        } else {
+          // Get from package.json
+          const pkgJSONPath = path.join(moduleDirPath, 'package.json');
+          if (fs.existsSync(pkgJSONPath)) {
+            const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
+            for (const field of resolveOptions.mainFields) {
+              if (pkgJSON[field]) return path.join(moduleDirPath, pkgJSON[field]);
             }
-
-            const indexJSPath = path.join(moduleDirPath, 'index.js');
-            if (fs.existsSync(indexJSPath)) return indexJSPath;
           }
+
+          const indexJSPath = path.join(moduleDirPath, 'index.js');
+          if (fs.existsSync(indexJSPath)) return indexJSPath;
         }
       }
     }
