@@ -30,6 +30,19 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Preprocessor support.
 - Works with [Electron](https://www.electronjs.org/).
 
+## What are supported
+- ES Modules
+- CommonJS Modules
+- CSS
+- JSON
+- CSS Modules
+- JSX
+- PostCSS
+- TypeScript
+- Sass/SCSS
+- Babel
+- Svelte
+
 ## Compatibility
 Reboost works with both CommonJS and ES modules, so you can try it even
 if you are not using ES modules, though using ES modules is recommended.
