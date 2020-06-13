@@ -22,11 +22,11 @@ start({
 ### Require file in your code
 For normal CSS files
 ```js
-import 'any.css';
+import './any.css';
 ```
 Or if you are using CSS Modules
 ```js
-import styles from 'any.module.css';
+import styles from './any.module.css';
 
 // `styles` is object of exported class names
 ```
