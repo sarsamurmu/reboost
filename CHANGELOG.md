@@ -1,3 +1,6 @@
+## 0.4.1
+- Fixed error with PostCSS
+
 ## 0.4.0
 - Fix CommonJSPlugin
 - New memory caching system. Now its 20-30x faster
