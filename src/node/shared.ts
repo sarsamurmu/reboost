@@ -1,7 +1,9 @@
-import { ReboostConfig } from './index';
+import { Context } from 'koa';
+
 import fs from 'fs';
 import path from 'path';
-import { Context } from 'koa';
+
+import { ReboostConfig } from './index';
 
 let address: string;
 let config: ReboostConfig;
@@ -57,7 +59,7 @@ export const getFilesData = () => {
   }
   return filesData;
 }
-export const saveFilesData = () => {
+export const saveFilesData = async () => {
   if (filesData) {
     fs.promises.writeFile(filesDataPath(), JSON.stringify(filesData, null, getConfig().debugMode ? 2 : 0));
   }
