@@ -53,7 +53,7 @@ So basically you can just import CSS modules without any extra configuration.
 ```
 `component.js`
 ```js
-import buttons from 'buttons.module.css';
+import buttons from './buttons.module.css';
 
 // You can use it in many ways
 // Here's an example using JSX
@@ -82,7 +82,7 @@ start({
 
 After that, you can import Sass/SCSS files in your script files
 ```js
-import 'styles.scss';
+import './styles.scss';
 ```
 
 ## CSS modules with Sass
