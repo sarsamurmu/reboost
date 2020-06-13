@@ -1,0 +1,14 @@
+{
+  "name": "{{ lowerCase (dashCase appName) }}",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node reboost"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "reboost": "{{ version }}"
+  }
+}

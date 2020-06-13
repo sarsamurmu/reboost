@@ -1,0 +1,24 @@
+{
+  "name": "reboost-cli",
+  "version": "0.4.2",
+  "description": "CLI for Reboost",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "bin": {
+    "reboost": "./dist/index.js"
+  },
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "commander": "^5.1.0",
+    "node-plop": "^0.26.0",
+    "plop-pack-npm-install": "^0.3.0"
+  }
+}
