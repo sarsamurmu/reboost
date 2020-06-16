@@ -32,11 +32,11 @@ Type: `object`\
 Default:
 ```js
 {
-  js: 'jsx',
-  jsx: 'jsx',
-  mjs: 'jsx',
-  es6: 'jsx',
-  es: 'jsx',
+  js: 'tsx',
+  jsx: 'tsx',
+  mjs: 'tsx',
+  es6: 'tsx',
+  es: 'tsx',
   ts: 'tsx',
   tsx: 'tsx'
 }

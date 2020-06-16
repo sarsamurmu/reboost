@@ -39,11 +39,11 @@ export const PluginName = 'core-esbuild-plugin';
 export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin => {
   const defaultOptions: Required<esbuildPluginOptions> = {
     loaders: {
-      js: 'jsx',
-      jsx: 'jsx',
-      mjs: 'jsx',
-      es6: 'jsx',
-      es: 'jsx',
+      js: 'tsx',
+      jsx: 'tsx',
+      mjs: 'tsx',
+      es6: 'tsx',
+      es: 'tsx',
       ts: 'tsx',
       tsx: 'tsx'
     },

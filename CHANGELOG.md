@@ -1,3 +1,7 @@
+## 0.4.2
+- Fix source maps
+- Enabled decorators support
+
 ## 0.4.1
 - Fixed error with PostCSS
 

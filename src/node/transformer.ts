@@ -25,7 +25,7 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
 
   map.sources = map.sources.map((sourcePath: string) => {
     if (path.isAbsolute(sourcePath)) return fixPath(path.relative(config.rootDir, sourcePath));
-    return sourcePath;
+    return fixPath(sourcePath);
   });
 
   map.sourcesContent = [];
