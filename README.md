@@ -42,6 +42,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Sass/SCSS
 - Babel
 - Svelte
+- JS/TS Decorators
 
 ## Compatibility
 Reboost works with both CommonJS and ES modules, so you can try it even
