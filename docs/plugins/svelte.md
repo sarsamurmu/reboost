@@ -25,7 +25,7 @@ start({
 ```
 ### Require file in your code
 ```js
-import Component from 'file.svelte';
+import Component from './file.svelte';
 ```
 
 ## Options
@@ -111,9 +111,9 @@ start({
 
 Now you can write
 ```js
-import App from 'file';
+import App from './file';
 ```
 instead of
 ```js
-import App from 'file.svelte';
+import App from './file.svelte';
 ```

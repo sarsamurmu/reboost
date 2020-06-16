@@ -31,7 +31,7 @@ start({
 ```
 ### Require file in your code
 ```js
-import 'styles.scss';
+import './styles.scss';
 ```
 
 ## Options
