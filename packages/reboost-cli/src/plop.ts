@@ -3,9 +3,9 @@ import plopFunc from 'node-plop';
 import fs from 'fs';
 import path from 'path';
 
-type NodePlopAPI = ReturnType<typeof plopFunc>;
+import { versions } from './versions';
 
-const version = '0.x.x';
+type NodePlopAPI = ReturnType<typeof plopFunc>;
 
 export = (plop: NodePlopAPI) => {
   const templatesDir = path.join(__dirname, '../templates');
@@ -51,7 +51,7 @@ export = (plop: NodePlopAPI) => {
           base: '../templates/{{ template }}',
           templateFiles: '../templates/{{ template }}/**/*',
           data: {
-            version
+            versions
           },
           globOptions: {
             ignore: ['**/node_modules/**']

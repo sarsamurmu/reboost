@@ -4,6 +4,7 @@
   "description": "CLI for Reboost",
   "main": "./dist/index.js",
   "scripts": {
+    "prepublishOnly": "node prepublish && npm run build",
     "build": "tsc",
     "watch": "tsc -w"
   },
@@ -19,6 +20,7 @@
     "chalk": "^4.1.0",
     "commander": "^5.1.0",
     "node-plop": "^0.26.0",
-    "plop-pack-npm-install": "^0.3.0"
+    "plop-pack-npm-install": "^0.3.0",
+    "update-check": "^1.5.4"
   }
 }

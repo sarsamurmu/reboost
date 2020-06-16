@@ -6,6 +6,9 @@
     "start": "node reboost"
   },
   "license": "MIT",
+  "dependencies": {
+    "lit-element": "{{ versions.litElement }}"
+  },
   "devDependencies": {
     "reboost": "{{ versions.reboost }}"
   }
