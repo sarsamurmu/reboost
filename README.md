@@ -1,4 +1,6 @@
 # Reboost
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsarsamurmu%2Freboost.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsarsamurmu%2Freboost?ref=badge_shield)
+
 A *super fast* web dev server, for faster development.
 
 > ***Experimental***\
@@ -135,3 +137,6 @@ Reboost is highly inspired by these awesome projects
 
 # License
 Licensed under the [MIT License](https://github.com/sarsamurmu/reboost/blob/master/LICENSE).
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsarsamurmu%2Freboost.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsarsamurmu%2Freboost?ref=badge_large)
