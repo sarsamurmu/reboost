@@ -1,0 +1,29 @@
+{
+  "name": "@reboost/plugin-svelte",
+  "version": "0.4.3",
+  "description": "Svelte plugin for Reboost",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run clear && npm run build",
+    "clear": "node ../../rmDist",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "keywords": [],
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "svelte": "^3.23.2"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0"
+  },
+  "devDependencies": {
+    "magic-string": "^0.25.7",
+    "svelte": "^3.23.2"
+  }
+}

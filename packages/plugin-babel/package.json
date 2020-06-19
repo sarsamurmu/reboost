@@ -1,0 +1,25 @@
+{
+  "name": "@reboost/plugin-babel",
+  "version": "0.4.3",
+  "description": "Babel plugin for Reboost",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run clear && npm run build",
+    "clear": "node ../../rmDist",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "keywords": [],
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "@babel/core": "^7.10.2"
+  },
+  "dependencies": {
+    "@types/babel__core": "^7.1.8"
+  }
+}

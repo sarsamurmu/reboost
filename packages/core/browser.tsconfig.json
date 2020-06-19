@@ -1,0 +1,10 @@
+{
+  "extends": "../../base.tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "outDir": "./dist/browser"
+  },
+  "include": [
+    "src/browser"
+  ]
+}

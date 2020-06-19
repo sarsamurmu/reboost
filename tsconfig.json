@@ -1,14 +1,15 @@
 {
+  "extends": "./base.tsconfig.json",
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "ESNext",
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "declaration": true
+    "baseUrl": ".",
+    "paths": {
+      "reboost": ["./packages/core/src/node"]
+    }
   },
   "include": [
-    "src"
+    "packages/**/*"
+  ],
+  "exclude": [
+    "**/node_modules/**"
   ]
 }

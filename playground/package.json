@@ -11,12 +11,15 @@
   "dependencies": {
     "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-pipeline-operator": "^7.10.1",
+    "@reboost/plugin-babel": "file:../packages/plugin-babel",
+    "@reboost/plugin-sass": "file:../packages/plugin-sass",
+    "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
     "browser-sync": "^2.26.7",
     "node-sass": "^4.14.1",
     "postcss-nesting": "^7.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "reboost": "../",
+    "reboost": "file:../packages/core",
     "svelte": "^3.23.0"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",

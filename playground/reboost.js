@@ -1,12 +1,14 @@
 const {
   start,
-  BabelPlugin,
-  FilePlugin,
-  ReplacePlugin,
-  SassPlugin,
-  SveltePlugin,
-  UsePlugin
+  builtInPlugins: {
+    FilePlugin,
+    ReplacePlugin,
+    UsePlugin
+  }
 } = require('reboost');
+const BabelPlugin = require('@reboost/plugin-babel');
+const SassPlugin = require('@reboost/plugin-sass');
+const SveltePlugin = require('@reboost/plugin-svelte');
 
 start({
   entries: [

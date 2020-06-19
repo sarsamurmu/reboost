@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "CommonJS",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "reboost": ["./packages/core"]
+    }
+  },
+  "references": [
+    {
+      "path": "./packages/core/node.tsconfig.json"
+    }
+  ]
+}
