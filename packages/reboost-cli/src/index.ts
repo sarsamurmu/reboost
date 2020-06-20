@@ -8,7 +8,7 @@ import checkUpdate, { Result as UpdateResult } from 'update-check';
 import fs from 'fs';
 import path from 'path';
 
-const program = new Command();
+const program = new Command('reboost');
 const plop = nodePlop(path.join(__dirname, './plop.js'));
 
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json')).toString());
@@ -36,7 +36,7 @@ program
   .command('create')
   .description('create an app')
   .action(async () => {
-    const generator = plop.getGenerator('main');
+    const generator = plop.getGenerator('default');
     const answers = await generator.runPrompts();
     await generator.runActions(answers);
 

@@ -14,35 +14,37 @@ export = (plop: NodePlopAPI) => {
 
   plop.load('plop-pack-npm-install', undefined, undefined);
 
-  plop.setGenerator('main', {
-    description: 'Main logic',
-    prompts: [
-      {
-        type: 'input',
-        name: 'appName',
-        message: `What is your app's name`,
-        validate: (val: string) => val.trim() !== ''
-      },
-      {
-        type: 'list',
-        name: 'template',
-        message: 'Choose template',
-        choices: templates,
-        default: 'vanilla'
-      },
-      {
-        type: 'input',
-        name: 'root',
-        message: 'Where to extract the files',
-        default: (answers: any) => './' + answers.appName
-      },
-      {
-        type: 'confirm',
-        name: 'shouldInstall',
-        message: 'Do you want to install dependencies (using "npm i")',
-        default: true
-      }
-    ],
+  const prompts = [
+    {
+      type: 'input',
+      name: 'appName',
+      message: `What is your app's name`,
+      validate: (val: string) => val.trim() !== ''
+    },
+    {
+      type: 'list',
+      name: 'template',
+      message: 'Choose template',
+      choices: templates,
+      default: 'vanilla'
+    },
+    {
+      type: 'input',
+      name: 'root',
+      message: 'Where to extract the files',
+      default: (answers: any) => './' + answers.appName
+    },
+    {
+      type: 'confirm',
+      name: 'shouldInstall',
+      message: 'Do you want to install dependencies (using "npm i")',
+      default: true
+    }
+  ];
+
+  plop.setGenerator('default', {
+    description: '',
+    prompts,
     actions: (answers) => {
       const actions: any[] = [
         {
