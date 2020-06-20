@@ -1,4 +1,5 @@
 import anymatch, { Matcher } from 'anymatch';
+import chalk from 'chalk';
 
 import { ReboostPlugin } from '../index';
 import { bind } from '../utils';
@@ -10,10 +11,13 @@ interface UsePluginOptions {
 }
 
 export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> => {
-  // TODO: Remove `options.test` in future releases
+  // TODO: Remove `options.test` in v1.0
   const aOpt = options as any;
   if (aOpt.test) {
     if (!options.include) options.include = aOpt.test;
+    let message = `UsePlugin: options.test is deprecated and will be removed in next major release. `;
+    message += `Use options.include instead.`
+    console.log(chalk.yellow(message));
   }
 
   const test = (string: string) => (

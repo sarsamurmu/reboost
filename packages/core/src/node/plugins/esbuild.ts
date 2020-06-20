@@ -60,17 +60,28 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
 
   return {
     name: PluginName,
-    async setup({ config }) {
+    async setup({ config, chalk }) {
       if (!esbuildServicePromise) esbuildServicePromise = esbuild.startService();
 
       defaultOptions.minify = !config.debugMode;
       options = merge(defaultOptions, options);
       compatibleTypes = Object.keys(options.loaders);
 
-      // TODO: Remove in future releases
+      // TODO: Remove in v1.0
       const aOpts = options as esbuildPluginOptions & { jsxFactory: string; jsxFragment: string; };
-      if (aOpts.jsxFactory) aOpts.jsx.factory = aOpts.jsxFactory;
-      if (aOpts.jsxFragment) aOpts.jsx.fragment = aOpts.jsxFragment;
+      const showWarning = (oldOpt: string, newOpt: string) => {
+        let message = `esbuildPlugin: options.${oldOpt} is deprecated and will be removed in next major release. `;
+        message += `Use options.${newOpt} instead.`;
+        console.log(chalk.yellow(message));
+      }
+      if (aOpts.jsxFactory) {
+        showWarning('jsxFactory', 'jsx.factory');
+        aOpts.jsx.factory = aOpts.jsxFactory;
+      }
+      if (aOpts.jsxFragment) {
+        showWarning('jsxFragment', 'jsx.fragment');
+        aOpts.jsx.fragment = aOpts.jsxFragment;
+      }
     },
     async transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
