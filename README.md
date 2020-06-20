@@ -118,12 +118,12 @@ you've to just serve the generated scripts which are in your output directory.
 Reboost will handle the rest.
 
 ## Docs
-[Changelog](https://github.com/sarsamurmu/reboost/blob/master/CHANGELOG.md)\
-[Configurations](https://github.com/sarsamurmu/reboost/blob/master/docs/configurations.md)\
-[Plugins](https://github.com/sarsamurmu/reboost/blob/master/docs/plugins.md)\
-[HMR API](https://github.com/sarsamurmu/reboost/blob/master/docs/hmr.md)\
-[Recipes](https://github.com/sarsamurmu/reboost/blob/master/docs/recipes.md)\
-[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/master/docs/supporting-old-browsers.md)
+[Changelog](https://github.com/sarsamurmu/reboost/blob/primary/CHANGELOG.md)\
+[Configurations](https://github.com/sarsamurmu/reboost/blob/primary/docs/configurations.md)\
+[Plugins](https://github.com/sarsamurmu/reboost/blob/primary/docs/plugins.md)\
+[HMR API](https://github.com/sarsamurmu/reboost/blob/primary/docs/hmr.md)\
+[Recipes](https://github.com/sarsamurmu/reboost/blob/primary/docs/recipes.md)\
+[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/primary/docs/supporting-old-browsers.md)
 
 ---
 
@@ -134,4 +134,4 @@ Reboost is highly inspired by these awesome projects
 - [esbuild](https://github.com/evanw/esbuild)
 
 # License
-Licensed under the [MIT License](https://github.com/sarsamurmu/reboost/blob/master/LICENSE).
+Licensed under the [MIT License](https://github.com/sarsamurmu/reboost/blob/primary/LICENSE).

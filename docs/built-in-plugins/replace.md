@@ -3,13 +3,23 @@ A plugin that you can use to replace strings in your code.
 
 ## Usage
 ### Setup
-Import `ReplacePlugin` from Reboost
+1. Import `ReplacePlugin`
 ```js
-const { start, ReplacePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    ReplacePlugin
+  }
+} = require('reboost');
 ```
-Add it to the plugins array
+2. Add it to the plugins array
 ```js
-const { start, ReplacePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    ReplacePlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -23,7 +33,12 @@ start({
 ### Example
 If you want to replace `process.env.NODE_ENV` with `production`
 ```js
-const { start, ReplacePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    ReplacePlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [

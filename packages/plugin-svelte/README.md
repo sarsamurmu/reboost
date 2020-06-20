@@ -3,17 +3,23 @@ Adds support for `.svelte` files.
 
 ## Usage
 ### Setup
-This plugin depends on `svelte` package, so first install `svelte` package from npm
+1. Install it using `npm`
 ```shell
-npm i -D svelte
+npm i @reboost/plugin-svelte -D
 ```
-Then import `SveltePlugin` from Reboost
-```js
-const { start, SveltePlugin } = require('reboost');
+2. Install `svelte` package, if not already installed
+```shell
+npm i svelte
 ```
-Add it to the plugins array
+3. Import it from the package
 ```js
-const { start, SveltePlugin } = require('reboost');
+const { start } = require('reboost');
+const SveltePlugin = require('@reboost/plugin-svelte');
+```
+4. Add it to the plugins array
+```js
+const { start } = require('reboost');
+const SveltePlugin = require('@reboost/plugin-svelte');
 
 start({
   plugins: [
@@ -49,7 +55,8 @@ PostCSS, SCSS, Pug and more. Let's see how we can use it
 with Svelte.
 
 ```js
-const { start, DefaultConfig, SveltePlugin } = require('reboost');
+const { start, DefaultConfig } = require('reboost');
+const SveltePlugin = require('@reboost/plugin-svelte');
 const sveltePreprocess = require('svelte-preprocess');
 const { pug, scss } = require('svelte-preprocess');
 
@@ -70,19 +77,22 @@ start({
   ]
 })
 ```
-If you've enabled Sass preprocessor, you can now use
-sass syntax in your Svelte files, like so
+If you've enabled SCSS preprocessor, you can now use
+SCSS syntax in your Svelte files, like so
 ```html
-<style lang="sass">
-.card
-  padding: 10px
-  background-color: dodgerblue
+<style lang="scss">
+.card {
+  padding: 10px;
+  background-color: dodgerblue;
 
-  h1
-    font-weight: normal
-  
-  p
-    text-align: justify
+  h1 {
+    font-weight: normal;
+  }
+
+  p {
+    text-align: justify;
+  }
+}
 </style>
 
 <div class="card">
@@ -94,10 +104,11 @@ sass syntax in your Svelte files, like so
 ### Automatic file resolving
 You have to always type `.svelte` extension to import Svelte
 files. You can set up automatic import using
-[`resolve.extensions`](../configurations.md#resolveextensions) option
+[`resolve.extensions`](https://github.com/sarsamurmu/reboost/blob/primary/docs/configurations.md#resolveextensions) option
 
 ```js
-const { start, DefaultConfig, SveltePlugin } = require('reboost');
+const { start, DefaultConfig } = require('reboost');
+const SveltePlugin = require('@reboost/plugin-svelte');
 
 start({
   resolve: {

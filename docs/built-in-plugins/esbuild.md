@@ -9,13 +9,23 @@ TypeScript code, you can use it to just do type checking by using the command
 
 ## Usage
 ### Setup
-Import `esbuildPlugin` from Reboost
+1. Import `esbuildPlugin`
 ```js
-const { start, esbuildPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
 ```
-Add it to the plugins array
+2. Add it to the plugins array
 ```js
-const { start, esbuildPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -81,7 +91,12 @@ Substitute the keys of the object with their values.
 
 For example, this config
 ```js
-const { start, esbuildPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
 
 start({
   // ...

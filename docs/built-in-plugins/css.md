@@ -1,15 +1,25 @@
 # CSS Plugin
-Adds support for importing CSS files in JavaScript and HMR for CSS.
+Adds support for importing CSS files in JavaScript. Enables Hot reload for CSS files.
 
 ## Usage
 ### Setup
-Import `CSSPlugin` from Reboost
+1. Import `CSSPlugin`
 ```js
-const { start, CSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    CSSPlugin
+  }
+} = require('reboost');
 ```
-Add it to the plugins array
+2. Add it to the plugins array
 ```js
-const { start, CSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    CSSPlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -55,7 +65,12 @@ returns any of these modes based on the file path.
 
 Example with function as value
 ```js
-const { start, CSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    CSSPlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -97,7 +112,13 @@ place `CSSPlugin` at the end of those plugins.
 
 Example - Using with `SassPlugin`
 ```js
-const { start, SassPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    CSSPlugin
+  }
+} = require('reboost');
+const SassPlugin = require('@reboost/plugin-sass');
 
 start({
   plugins: [
@@ -113,7 +134,12 @@ By default all CSS files which includes `.module.` in their name are treated as
 CSS modules. If you want your all CSS files to be loaded as CSS modules then
 you can use `modules.test` option change this behavior.
 ```js
-const { start, CSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    CSSPlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [

@@ -3,13 +3,23 @@ Adds support for transforming stylesheets with PostCSS.
 
 ## Usage
 ### Setup
-Import `PostCSSPlugin` from Reboost
+1. Import `PostCSSPlugin`
 ```js
-const { start, PostCSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    PostCSSPlugin
+  }
+} = require('reboost');
 ```
-Add it to the plugins array
+2. Add it to the plugins array
 ```js
-const { start, PostCSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    PostCSSPlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -42,7 +52,12 @@ your `postcss.config.js`, like so
 
 `reboost.js`
 ```js
-const { start, PostCSSPlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    PostCSSPlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [

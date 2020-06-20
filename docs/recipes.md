@@ -7,7 +7,7 @@ Works out of the box.
 ## Preact
 Change configuration to match this
 ```js
-const { start, esbuildPlugin } = require('reboost');
+const { start, builtInPlugins: { esbuildPlugin } } = require('reboost');
 
 start({
   // Other options
@@ -63,12 +63,14 @@ const PrimaryButton = () => (
 ```
 
 ## Sass
-Use [SassPlugin](./plugins/sass.md) to generate CSS out of Sass/SCSS,
+Use [SassPlugin](../packages/plugin-sass/README.md) to generate CSS out of Sass/SCSS,
 generated CSS will be handled by [CSSPlugin](./plugins/css.md).
 
 Following configuration file adds support for Sass.
 ```js
-const { start, SassPlugin } = require('reboost');
+const { start } = require('reboost');
+// NOTE: You have to install @reboost/plugin-sass from npm
+const SassPlugin = require('@reboost/plugin-sass');
 
 start({
   // Other options
@@ -94,7 +96,13 @@ CSS module.
 You can load asset files as well.
 Just adjust your configuration file to match this
 ```js
-const { start, UsePlugin, FilePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    FilePlugin,
+    UsePlugin
+  }
+} = require('reboost');
 
 start({
   // Other options
@@ -123,7 +131,9 @@ Works out of the box.
 ## Svelte
 Adjust your configuration to match this
 ```js
-const { start, DefaultConfig, SveltePlugin } = require('reboost');
+const { start, DefaultConfig } = require('reboost');
+// NOTE: You have to install @reboost/plugin-svelte from npm
+const SveltePlugin = require('@reboost/plugin-svelte');
 
 start({
   // Other options
@@ -147,7 +157,9 @@ To enable Babel transformation just enable [BabelPlugin](./plugins/babel.md)
 
 BTW, here's an example
 ```js
-const { start, BabelPlugin, UsePlugin } = require('reboost');
+const { start, builtInPlugins: { UsePlugin } } = require('reboost');
+// NOTE: You have to install @reboost/plugin-babel from npm
+const BabelPlugin = require('@reboost/plugin-babel');
 
 start({
   plugins: [

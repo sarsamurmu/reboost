@@ -3,13 +3,23 @@ Use plugins based on [anymatch](https://www.npmjs.com/package/anymatch) pattern.
 
 ## Usage
 ### Setup
-Import `UsePlugin` from Reboost.
+1. Import `UsePlugin`
 ```js
-const { start, UsePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    UsePlugin
+  }
+} = require('reboost');
 ```
-Add it to the plugins array
+2. Add it to the plugins array
 ```js
-const { start, UsePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    UsePlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -46,7 +56,13 @@ Plugin(s) to use if the test passes for a file.
 With the following configuration, `FilePlugin` will be used for all files ending with `.png`.
 
 ```js
-const { start, UsePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    FilePlugin,
+    UsePlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [

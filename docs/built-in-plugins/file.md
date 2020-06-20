@@ -3,13 +3,25 @@ Load files by importing them from JavaScript.
 
 ## Usage
 ### Setup
-Import `FilePlugin` and `UsePlugin` from Reboost.
+1. Import `FilePlugin` and `UsePlugin`
 ```js
-const { start, FilePlugin, UsePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    FilePlugin,
+    UsePlugin
+  }
+} = require('reboost');
 ```
-Add it to the plugins array
+2. Add it to the plugins array
 ```js
-const { start, FilePlugin, UsePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    FilePlugin,
+    UsePlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
@@ -31,7 +43,13 @@ URL is supported
 ### Importing image in JSX
 Our configuration
 ```js
-const { start, FilePlugin, UsePlugin } = require('reboost');
+const {
+  start,
+  builtInPlugins: {
+    FilePlugin,
+    UsePlugin
+  }
+} = require('reboost');
 
 start({
   plugins: [
