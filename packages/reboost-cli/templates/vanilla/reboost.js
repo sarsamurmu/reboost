@@ -1,6 +1,4 @@
-const {
-  start
-} = require('reboost');
+const { start } = require('reboost');
 
 start({
   entries: [
