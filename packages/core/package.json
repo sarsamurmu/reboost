@@ -13,8 +13,8 @@
     "web"
   ],
   "scripts": {
-    "prepublishOnly": "npm run clear && npm run build",
-    "clear": "node ../../rmDist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../rmDist",
     "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
     "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
   },

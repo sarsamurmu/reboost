@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "clear": "lerna run clear",
+    "clean": "lerna run clean",
     "build": "npm run build:core && npm run build:plugins",
     "build:core": "lerna run --scope reboost build",
     "build:plugins": "lerna run --scope @reboost/plugin-* build",
