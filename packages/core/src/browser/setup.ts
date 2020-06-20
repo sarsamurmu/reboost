@@ -5,9 +5,11 @@ declare const address: string;
 
 const aWindow = window as any;
 aWindow._REBOOST_ADDRESS_ = address;
-aWindow.process = {
-  env: {
-    NODE_ENV: 'development'
+if (!aWindow.process) {
+  aWindow.process = {
+    env: {
+      NODE_ENV: 'development'
+    }
   }
 }
 
