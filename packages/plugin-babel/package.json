@@ -25,7 +25,9 @@
     "@babel/core": "^7.10.3"
   },
   "dependencies": {
-    "@types/babel__core": "^7.1.9",
+    "@types/babel__core": "^7.1.9"
+  },
+  "devDependencies": {
     "typescript": "*"
   }
 }
