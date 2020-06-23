@@ -24,6 +24,7 @@ module.exports = (
         type: 'addMany',
         destination: './packages/plugin-{{ name }}',
         templateFiles: './plugin-template/**/*',
+        globOptions: { dot: true },
         data: {
           version: JSON.parse(fs.readFileSync(path.join(__dirname, './lerna.json'))).version
         }
