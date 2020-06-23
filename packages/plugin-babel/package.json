@@ -22,10 +22,10 @@
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "@babel/core": "^7.10.2"
+    "@babel/core": "^7.10.3"
   },
   "dependencies": {
-    "@types/babel__core": "^7.1.8",
+    "@types/babel__core": "^7.1.9",
     "typescript": "*"
   }
 }
