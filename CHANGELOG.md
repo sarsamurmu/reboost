@@ -1,3 +1,9 @@
+## 0.5.2
+- Fixed `typescript` being installed as dependency
+
+## 0.5.1
+- Minor fixes
+
 ## 0.5.0
 - Moved to monorepo
 - Fixed bug with `window.process`
