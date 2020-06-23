@@ -3,7 +3,7 @@
   "version": "0.5.1",
   "description": "Svelte plugin for Reboost",
   "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
@@ -14,6 +14,11 @@
     "watch": "tsc -p build.tsconfig.json -w"
   },
   "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarsamurmu/reboost.git",
+    "directory": "packages/plugin-svelte"
+  },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {

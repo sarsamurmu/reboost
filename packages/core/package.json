@@ -4,6 +4,12 @@
   "description": "A super fast web dev server, for faster development",
   "main": "./dist/node/index.js",
   "types": "./dist/node/index.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../rmDist",
+    "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
+    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
+  },
   "keywords": [
     "fast",
     "faster",
@@ -12,12 +18,6 @@
     "development",
     "web"
   ],
-  "scripts": {
-    "prepublishOnly": "npm run clean && npm run build",
-    "clean": "node ../../rmDist",
-    "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
-    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
-  },
   "repository": "github:sarsamurmu/reboost",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
