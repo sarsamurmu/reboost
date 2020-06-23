@@ -1,3 +1,7 @@
+## 0.5.0
+- Moved to monorepo
+- Fixed bug with `window.process`
+
 ## 0.4.3
 - Enabled decorators support
 
