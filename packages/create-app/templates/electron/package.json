@@ -12,6 +12,6 @@
     "reboost": "{{ versions.reboost }}"
   },
   "dependencies": {
-    "electron": "^9.0.4"
+    "electron": "{{ versions.electron }}"
   }
 }

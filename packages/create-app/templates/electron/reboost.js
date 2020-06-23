@@ -3,7 +3,7 @@ const { start } = require('reboost');
 
 start({
   entries: [
-    ['./src/index.js', './dist/index.js']
+    ['./src/index.js', './build/dist/index.js']
   ]
 }).then(() => {
   spawn('npm', ['start'], {

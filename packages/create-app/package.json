@@ -1,0 +1,31 @@
+{
+  "name": "@reboost/create-app",
+  "version": "0.5.1",
+  "description": "Create Reboost enabled app",
+  "main": "./dist/index.js",
+  "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../rmDist",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "bin": {
+    "create-reboost-app": "./dist/index.js"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarsamurmu/reboost.git",
+    "directory": "packages/create-app"
+  },
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "node-plop": "^0.26.0",
+    "plop-pack-npm-install": "^0.3.0"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  }
+}
