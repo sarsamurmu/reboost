@@ -1,0 +1,27 @@
+{
+  "name": "@reboost/plugin-{{ name }}",
+  "version": "{{ version }}",
+  "description": "{{ description }}",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../rmDist",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarsamurmu/reboost.git",
+    "directory": "packages/plugin-{{ name }}"
+  },
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "*"
+  }
+}

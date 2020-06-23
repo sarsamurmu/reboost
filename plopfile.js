@@ -1,0 +1,33 @@
+const fs = require('fs');
+const path = require('path');
+
+module.exports = (
+  /** @type {import('plop').NodePlopAPI} */
+  plop
+) => {
+  plop.setGenerator('plugin', {
+    description: 'Create a plugin',
+    prompts: [
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Name of the plugin'
+      },
+      {
+        type: 'input',
+        name: 'description',
+        message: 'Description of the plugin'
+      }
+    ],
+    actions: [
+      {
+        type: 'addMany',
+        destination: './packages/plugin-{{ name }}',
+        templateFiles: './plugin-template/**/*',
+        data: {
+          version: JSON.parse(fs.readFileSync(path.join(__dirname, './lerna.json'))).version
+        }
+      }
+    ]
+  });
+}
