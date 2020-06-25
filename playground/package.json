@@ -14,13 +14,15 @@
     "@reboost/plugin-babel": "file:../packages/plugin-babel",
     "@reboost/plugin-sass": "file:../packages/plugin-sass",
     "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
+    "@reboost/plugin-vue": "file:../packages/plugin-vue",
     "browser-sync": "^2.26.7",
     "node-sass": "^4.14.1",
     "postcss-nesting": "^7.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "reboost": "file:../packages/core",
-    "svelte": "^3.23.0"
+    "svelte": "^3.23.0",
+    "vue": "^3.0.0-beta.15"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT"

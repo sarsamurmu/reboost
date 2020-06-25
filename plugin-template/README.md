@@ -1,4 +1,4 @@
 ## {{ name }}
 ```
-npm i -D @reboost-{{ name }}
+npm i -D @reboost/plugin-{{ name }}
 ```
