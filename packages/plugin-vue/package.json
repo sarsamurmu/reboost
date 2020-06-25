@@ -1,7 +1,8 @@
 {
-  "name": "@reboost/plugin-svelte",
+  "private": true,
+  "name": "@reboost/plugin-vue",
   "version": "0.5.3",
-  "description": "Svelte plugin for Reboost",
+  "description": "Vue plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
@@ -17,19 +18,16 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/sarsamurmu/reboost.git",
-    "directory": "packages/plugin-svelte"
+    "directory": "packages/plugin-vue"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
-  "peerDependencies": {
-    "svelte": "^3.23.2"
+  "devDependencies": {
+    "@types/hash-sum": "^1.0.0",
+    "typescript": "*"
   },
   "dependencies": {
-    "chalk": "^4.1.0"
-  },
-  "devDependencies": {
-    "magic-string": "^0.25.7",
-    "svelte": "^3.23.2",
-    "typescript": "*"
+    "@vue/compiler-sfc": "^3.0.0-beta.15",
+    "hash-sum": "^2.0.0"
   }
 }

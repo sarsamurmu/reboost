@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-babel",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Babel plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
