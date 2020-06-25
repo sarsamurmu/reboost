@@ -7,7 +7,7 @@ so it is no longer included with this package.
 
 To use this plugin plugin, first install the plugin package
 ------------------
-npm i @reboost/plugin-${pluginPackage} -D
+npm i -D @reboost/plugin-${pluginPackage}
 ------------------
 Then in "reboost.js", instead of
 ------------------

@@ -3,20 +3,20 @@ Adds support for `.svelte` files.
 
 ## Usage
 ### Setup
-1. Install it using `npm`
+Install it using `npm`
 ```shell
-npm i @reboost/plugin-svelte -D
+npm i -D @reboost/plugin-svelte
 ```
-2. Install `svelte` package, if not already installed
+Install `svelte` package, if not already installed
 ```shell
 npm i svelte
 ```
-3. Import it from the package
+Import it from the package
 ```js
 const { start } = require('reboost');
 const SveltePlugin = require('@reboost/plugin-svelte');
 ```
-4. Add it to the plugins array
+Add it to the plugins array
 ```js
 const { start } = require('reboost');
 const SveltePlugin = require('@reboost/plugin-svelte');

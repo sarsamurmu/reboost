@@ -3,20 +3,20 @@ Adds support for transforming JavaScript or TypeScript with Babel.
 
 ## Usage
 ### Setup
-1. Install it using `npm`
+Install it using `npm`
 ```shell
-npm i @reboost/plugin-babel -D
+npm i -D @reboost/plugin-babel
 ```
-2. Install `@babel/core`, if not already installed
+Install `@babel/core`, if not already installed
 ```shell
 npm i @babel/core
 ```
-1. Import it from the package
+Import it from the package
 ```js
 const { start } = require('reboost');
 const BabelPlugin = require('@reboost/plugin-babel');
 ```
-4. Add it to the plugins array
+Add it to the plugins array
 ```js
 const { start } = require('reboost');
 const BabelPlugin = require('@reboost/plugin-babel');

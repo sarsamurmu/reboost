@@ -7,7 +7,8 @@
     }
   },
   "include": [
-    "packages/**/*"
+    "packages/**/*",
+    "plugin-template/**/*"
   ],
   "exclude": [
     "**/node_modules/**"
