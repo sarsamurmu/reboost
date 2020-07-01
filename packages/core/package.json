@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A super fast web dev server, for faster development",
   "main": "./dist/node/index.js",
   "types": "./dist/node/index.d.ts",
@@ -13,11 +13,11 @@
   "keywords": [
     "fast",
     "super-fast",
-	"hmr",
-	"esm",
-	"ecmascript-moudles",
-	"commonjs-modules",
-	"no-bundle",
+    "hmr",
+    "esm",
+    "ecmascript-moudles",
+    "commonjs-modules",
+    "no-bundle",
     "dev-server",
     "web-development"
   ],

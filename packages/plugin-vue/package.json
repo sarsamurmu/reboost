@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-vue",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Vue plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
