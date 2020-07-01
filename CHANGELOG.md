@@ -1,4 +1,4 @@
-## 0.5.3
+## 0.5.4
 - Added support for Vue.
 - Minor fixes.
 
