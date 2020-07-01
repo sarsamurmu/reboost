@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@reboost/create-app",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Create Reboost enabled app",
   "main": "./dist/index.js",
   "scripts": {
