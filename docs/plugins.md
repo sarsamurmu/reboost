@@ -22,3 +22,4 @@ manually install them in need.
 - [BabelPlugin](../packages/plugin-babel/README.md)
 - [SassPlugin](../packages/plugin-sass/README.md)
 - [SveltePlugin](../packages/plugin-svelte/README.md)
+- [VuePlugin](../packages/plugin-vue/README.md)

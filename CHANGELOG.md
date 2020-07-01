@@ -1,3 +1,7 @@
+## 0.5.3
+- Added support for Vue.
+- Minor fixes.
+
 ## 0.5.2
 - Fixed `typescript` being installed as dependency
 

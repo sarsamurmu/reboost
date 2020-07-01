@@ -25,6 +25,24 @@ start({
 ```
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
 
+## Vue
+Reboost supports Vue 3 using [VuePlugin](../packages/plugin-vue/).
+
+Change configuration to match this
+```js
+const { start } = require('reboost');
+const VuePlugin = require('@reboost/plugin-vue');
+
+start({
+  // Other options
+  plugins: [
+    // Other plugins
+    VuePlugin()
+  ]
+  // ...
+})
+```
+
 ## TypeScript
 TypeScript is supported out of the box. But, note that it just compiles
 your TypeScript code and does not do type checking. Type checking should be handled
