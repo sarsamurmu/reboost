@@ -52,6 +52,12 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   },
   chalk,
   getCompatibleSourceMap,
+  getSourceMapComment(map) {
+    let comment = '/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
+    comment += Buffer.from(JSON.stringify(map)).toString('base64');
+    comment += ' */';
+    return comment;
+  },
   MagicString,
   mergeSourceMaps,
   resolveModule

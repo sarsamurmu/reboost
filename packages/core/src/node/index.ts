@@ -32,6 +32,8 @@ import { resolveModule } from './core-plugins/resolver';
 export * as builtInPlugins from './plugins';
 export * from './plugins/removed';
 
+export { RawSourceMap }
+
 export interface LoadedData {
   code: string;
   type: string;
@@ -55,6 +57,7 @@ export interface PluginContext {
   addDependency: (dependency: string) => void;
   chalk: typeof chalk;
   getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
+  getSourceMapComment: (map: any) => string;
   MagicString: typeof MagicString;
   mergeSourceMaps: typeof mergeSourceMaps;
   resolveModule: typeof resolveModule;
@@ -296,10 +299,13 @@ export const start = (config: ReboostConfig = {} as any) => {
       setWebSocket(ctx.websocket);
     });
 
-    const setupPromises = [];
-    for (const plugin of config.plugins) {
-      if (plugin.setup) setupPromises.push(plugin.setup({ config, app, router, resolveModule, chalk }));
-    }
+    const setupPromises: Promise<void>[] = [];
+    config.plugins.forEach(({ setup }) => {
+      if (setup) {
+        const promise = setup({ config, app, router, resolveModule, chalk });
+        if (promise) setupPromises.push(promise);
+      }
+    });
     await Promise.all(setupPromises);
     deepFreeze(config);
 

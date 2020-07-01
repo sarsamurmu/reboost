@@ -3,15 +3,13 @@ import hashSum from 'hash-sum';
 
 import path from 'path';
 
-import { ReboostPlugin } from 'reboost';
+import { ReboostPlugin, RawSourceMap } from 'reboost';
 
 interface Options {
   
 }
 
 export = (options: Options = {}): ReboostPlugin => {
-  let compiler: any;
-
   return {
     name: 'vue-plugin',
     async transformContent(data, filePath) {
@@ -32,7 +30,8 @@ export = (options: Options = {}): ReboostPlugin => {
           preCode = descriptor.script.content.replace('export default', 'const __modExp =');
         }
 
-        let css = '';
+        let cssStr = '';
+        let cssMap: RawSourceMap;
         let hasScopedCSS = false;
         const promises: Promise<any>[] = [];
 
@@ -49,7 +48,8 @@ export = (options: Options = {}): ReboostPlugin => {
               preprocessLang: styleBlock.lang as any,
             });
 
-            css += result.code;
+            cssStr += result.code;
+            cssMap = await this.mergeSourceMaps(cssMap, styleBlock.map as any);
           })());
         });
 
@@ -64,9 +64,18 @@ export = (options: Options = {}): ReboostPlugin => {
           preprocessLang: descriptor.template.lang
         });
 
+        cssMap = this.getCompatibleSourceMap(cssMap);
+        cssStr += '\n\n' + this.getSourceMapComment(cssMap);
+
+        const CSSCode = `
+          const styleTag = document.createElement('style');
+          styleTag.innerHTML = ${JSON.stringify(cssStr)};
+          document.head.appendChild(styleTag);
+        `;
+
         return {
-          code: preCode + '\n' + compiled.code + '\n' + postCode,
-          map: null,
+          code: `${preCode};${compiled.code};${CSSCode};${postCode};`,
+          map: descriptor.script.map as any,
           type: 'js',
         }
       }
