@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@reboost/plugin-vue",
   "version": "0.5.3",
   "description": "Vue plugin for Reboost",
