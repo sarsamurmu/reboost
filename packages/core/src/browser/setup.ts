@@ -47,12 +47,14 @@ socket.addEventListener('message', async ({ data }) => {
         HMR_DATA_MAP.set(acceptedFile, {});
         lastUpdatedData[acceptedFile] = Date.now();
 
-        // Dynamically import with query `t` as random stuff or browser will get file from cache
+        HMR_MAP.get(acceptedFile).forEach(({ dispose }) => {
+          if (dispose) dispose(HMR_DATA_MAP.get(acceptedFile));
+        });
+
         import(`${address}/transformed?q=${encodeURI(acceptedFile)}&t=${Date.now()}`).then((mod) => {
-          for (const { accept, dispose } of HMR_MAP.get(acceptedFile).values()) {
-            if (dispose) dispose(HMR_DATA_MAP.get(acceptedFile));
+          HMR_MAP.get(acceptedFile).forEach(({ accept }) => {
             if (accept) accept(importer.All(mod));
-          }
+          });
 
           HMR_DATA_MAP.delete(acceptedFile);
         });
