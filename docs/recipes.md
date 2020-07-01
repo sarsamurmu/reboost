@@ -26,7 +26,7 @@ start({
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
 
 ## Vue
-Reboost supports Vue 3 using [VuePlugin](../packages/plugin-vue/).
+Reboost supports Vue 3 using [VuePlugin](https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-vue).
 
 Change configuration to match this
 ```js
