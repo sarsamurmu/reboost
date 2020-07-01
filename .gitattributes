@@ -1,2 +1,2 @@
-playground/* linguist-vendored
-plugin-template/* linguist-vendored
+playground/**/* linguist-vendored
+plugin-template/**/* linguist-vendored
