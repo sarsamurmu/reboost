@@ -12,7 +12,6 @@ import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
 import open from 'open';
 import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
-import MagicString from 'magic-string';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
@@ -20,7 +19,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, mergeSourceMaps, deepFreeze, clone, DeepFrozen, DeepRequire } from './utils';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
