@@ -55,14 +55,13 @@ npm i -D reboost
 ```
 Assume that file structure is like this
 ```
-Project
-  public/
-    index.html
-  src/
-    add.js
-    subtract.js
-    index.js
-  package.json
+public/
+  index.html
+src/
+  add.js
+  subtract.js
+  index.js
+package.json
 ```
 Script contents
 ```js
