@@ -13,7 +13,12 @@
     "build": "tsc -p build.tsconfig.json",
     "watch": "tsc -p build.tsconfig.json -w"
   },
-  "keywords": [],
+  "keywords": [
+    "reboost",
+    "plugin",
+    "sass",
+    "scss"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/sarsamurmu/reboost.git",

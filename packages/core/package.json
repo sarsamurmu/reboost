@@ -12,11 +12,14 @@
   },
   "keywords": [
     "fast",
-    "faster",
     "super-fast",
+	"hmr",
+	"esm",
+	"ecmascript-moudles",
+	"commonjs-modules",
+	"no-bundle",
     "dev-server",
-    "development",
-    "web"
+    "web-development"
   ],
   "repository": "github:sarsamurmu/reboost",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
