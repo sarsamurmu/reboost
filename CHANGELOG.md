@@ -1,6 +1,9 @@
+## 0.5.5
+- Updated dependencies
+
 ## 0.5.4
-- Added support for Vue.
-- Minor fixes.
+- Added support for Vue
+- Minor fixes
 
 ## 0.5.2
 - Fixed `typescript` being installed as dependency
