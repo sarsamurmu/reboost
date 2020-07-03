@@ -5,7 +5,7 @@ export default () => {
   return (
     <div class="main">
       <p>
-        Get started by editing <code>src/index.js</code>
+        Get started by editing <code>src/App.js</code>
       </p>
     </div>
   )

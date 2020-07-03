@@ -7,9 +7,10 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "reboost": "{{ versions.reboost }}"
+    "reboost": "{{ versions.reboost }}",
+    "@reboost/plugin-svelte": "{{ versions.reboostPluginSvelte }}"
   },
   "dependencies": {
-    "preact": "{{ versions.preact }}"
+    "svelte": "{{ versions.svelte }}"
   }
 }

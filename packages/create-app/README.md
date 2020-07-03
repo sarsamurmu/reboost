@@ -5,3 +5,13 @@ Easily create Reboost enabled apps.
 ```shell
 npm init @reboost/app
 ```
+
+## Available templates
+- Electron
+- Lit Element
+- Preact
+- Svelte
+- Vanilla
+
+## Todo
+- Add webpack config in templates
