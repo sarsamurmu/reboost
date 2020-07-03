@@ -8,6 +8,7 @@ Some Pros/Cons to highlight before comparing other projects
 - Supports source maps, which are helpful in the development of your app.
 - Support many tools/frameworks, like PostCSS, Sass, Svelte, etc.
 - Uses memory cache/file system cache to produce better performance.
+- With ES Modules, it also supports CommonJS modules. As far as we know, other projects only support ES modules.
 - Does not support bundling app for production. We are just focusing on the development build.
 
 ## Vite
