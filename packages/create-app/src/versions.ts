@@ -4,5 +4,7 @@ export const versions = {
   electron: '^9.0.4',
   preact: '^10.4.5',
   reboostPluginSvelte: '0.x.x',
-  svelte: '^3.23.2'
+  svelte: '^3.23.2',
+  react: '^16.13.1',
+  reactDom: '^16.13.1'
 }

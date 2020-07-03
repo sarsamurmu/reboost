@@ -10,6 +10,7 @@ npm init @reboost/app
 - Electron
 - Lit Element
 - Preact
+- React
 - Svelte
 - Vanilla
 

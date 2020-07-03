@@ -1,0 +1,16 @@
+{
+  "name": "{{ lowerCase (dashCase appName) }}",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "dev": "node reboost"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "reboost": "{{ versions.reboost }}"
+  },
+  "dependencies": {
+    "react": "{{ versions.react }}",
+    "react-dom": "{{ versions.reactDom }}"
+  }
+}
