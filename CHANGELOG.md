@@ -3,6 +3,7 @@
 - Published `@reboost/create-app`
 - Added many templates
 - Updated docs
+- Updated dependencies
 
 ## 0.5.5
 - Updated dependencies
