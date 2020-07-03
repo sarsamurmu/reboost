@@ -3,6 +3,9 @@
   "version": "0.5.7",
   "description": "Create Reboost enabled app",
   "main": "./dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "node ../../rmDist",
