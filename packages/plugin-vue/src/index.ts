@@ -75,7 +75,7 @@ export = (options: Options = {}): ReboostPlugin => {
 
         return {
           code: `${preCode};${compiled.code};${CSSCode};${postCode};`,
-          map: descriptor.script.map as any,
+          map: descriptor.script && descriptor.script.map as any,
           type: 'js',
         }
       }
