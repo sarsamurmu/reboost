@@ -42,6 +42,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Sass/SCSS
 - Babel
 - Svelte
+- Vue
 - JS/TS Decorators
 
 ## Compatibility
