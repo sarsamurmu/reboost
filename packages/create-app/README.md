@@ -13,6 +13,7 @@ npm init @reboost/app
 - React
 - Svelte
 - Vanilla
+- Vue
 
 ## Todo
 - Add webpack config in templates

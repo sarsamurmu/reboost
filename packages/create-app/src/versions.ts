@@ -6,5 +6,7 @@ export const versions = {
   reboostPluginSvelte: '0.x.x',
   svelte: '^3.23.2',
   react: '^16.13.1',
-  reactDom: '^16.13.1'
+  reactDom: '^16.13.1',
+  vue: '^3.0.0-beta.18',
+  reboostPluginVue: '0.x.x'
 }

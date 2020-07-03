@@ -7,9 +7,10 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "reboost": "{{ versions.reboost }}"
+    "reboost": "{{ versions.reboost }}",
+    "@reboost/plugin-vue": "{{ versions.reboostPluginVue }}"
   },
   "dependencies": {
-    "lit-element": "{{ versions.litElement }}"
+    "vue": "{{ versions.vue }}"
   }
 }
