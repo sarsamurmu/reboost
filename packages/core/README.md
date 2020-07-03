@@ -37,22 +37,39 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - JSON
 - CSS Modules
 - JSX
-- PostCSS
-- TypeScript
-- Sass/SCSS
-- Babel
-- Svelte
-- Vue
 - JS/TS Decorators
+- Babel
+- PostCSS
+- Preact
+- React
+- Sass/SCSS
+- Svelte
+- TypeScript
+- Vue
 
 ## Compatibility
 Reboost works with both CommonJS and ES modules, so you can try it even
 if you are not using ES modules, though using ES modules is recommended.
 
 ## Quickstart
-First, install it using npm as devDependency
+### Using `npm init`
+Run this command in your terminal
 ```shell
+npm init @reboost/create
+```
+Open the directory where your app is extracted, install dependencies,
+then run
+```shell
+node reboost
+```
+### Manually creating app
+First, install it
+```shell
+# Using npm
 npm i -D reboost
+
+# Using yarn
+yarn add -D reboost
 ```
 Assume that file structure is like this
 ```
@@ -64,7 +81,7 @@ src/
   index.js
 package.json
 ```
-Script contents
+Scripts content
 ```js
 // src/add.js
 export const add = (a, b) => a + b;
@@ -123,13 +140,12 @@ Reboost will handle the rest.
 [Plugins](https://github.com/sarsamurmu/reboost/blob/primary/docs/plugins.md)\
 [HMR API](https://github.com/sarsamurmu/reboost/blob/primary/docs/hmr.md)\
 [Recipes](https://github.com/sarsamurmu/reboost/blob/primary/docs/recipes.md)\
-[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/primary/docs/supporting-old-browsers.md)
-
----
+[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/primary/docs/supporting-old-browsers.md)\
+[Comparison with Vite and Snowpack](https://github.com/sarsamurmu/reboost/blob/primary/docs/comparison.md)
 
 ## Inspired by
 Reboost is highly inspired by these awesome projects
-- [Vite](https://github.com/vuejs/vite)
+- [Vite](https://github.com/vitejs/vite)
 - [Snowpack](https://github.com/pikapkg/snowpack)
 - [esbuild](https://github.com/evanw/esbuild)
 

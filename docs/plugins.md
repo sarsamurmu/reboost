@@ -16,8 +16,8 @@ are available in exported `builtInPlugins` object.
 - [UsePlugin](./built-in-plugins/use.md)
 
 ## Other plugins
-These plugins are not included with Reboost package. You have to
-manually install them in need.
+These plugins don't come out of the box with Reboost package.
+You have to manually install them when necessary.
 
 - [BabelPlugin](../packages/plugin-babel/README.md)
 - [SassPlugin](../packages/plugin-sass/README.md)
