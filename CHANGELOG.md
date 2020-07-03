@@ -1,7 +1,8 @@
 ## 0.5.6
 - Fixed Vue plugin
 - Published `@reboost/create-app`
-- Add many templates
+- Added many templates
+- Updated docs
 
 ## 0.5.5
 - Updated dependencies
