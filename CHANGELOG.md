@@ -1,4 +1,4 @@
-## 0.5.6
+## 0.5.7
 - Fixed Vue plugin
 - Published `@reboost/create-app`
 - Added many templates
