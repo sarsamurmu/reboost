@@ -1,16 +1,30 @@
-# Reboost
-[![npm](https://img.shields.io/npm/v/reboost?style=flat-square)](https://www.npmjs.com/package/reboost)
-[![license](https://img.shields.io/npm/l/reboost?style=flat-square)](https://github.com/sarsamurmu/reboost/blob/primary/LICENSE)
+<p align="center">
+  <img
+    src="https://user-images.githubusercontent.com/44255990/87145104-73c7ab80-c2c6-11ea-9174-e90a5f71c811.png"
+    alt="Reboost"
+    width="300">
+</p>
+<p align="center">Reboost is a <i>super fast</i> web dev server for faster development.</p>
 
-Reboost is a *super fast* web dev server for faster development.
+<p align="center">
+  <a href="https://www.npmjs.com/package/reboost">
+    <img alt="npm" src="https://img.shields.io/npm/v/reboost?style=flat-square">
+  </a>
+  <a href="/LICENSE">
+    <img alt="license" src="https://img.shields.io/npm/l/reboost?style=flat-square">
+  </a>
+</p>
 
-> ***Experimental***\
-> Reboost is in early development, and some things may
-> change/break before we hit version 1.0
+<blockquote align="center">
+  <h4><i><b>Experimental</b></i></h4>
+  Reboost is in early development, and some things may change/break before we hit version 1.0
+</blockquote>
 
-**NOTE:**
-Reboost is intended to use only on development, for production you've to
-bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
+<blockquote align="center">
+  <h4><i><b>NOTE</b></i></h4>
+  Reboost is intended to use only on development, for production you've to <br>
+  bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
+</blockquote>
 
 ## Features
 - **No bundling**. So the server start time is *fast*.
@@ -21,7 +35,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Support for Plugins.
 - Import resolving.
 - Hot Module Replacement.
-- Comes with out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
+- Out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
 - Preprocessor support.
 - **Works with [Electron](https://www.electronjs.org/)**.
 
@@ -52,7 +66,7 @@ Run this command in your terminal
 ```shell
 npm init @reboost/create
 ```
-Then it will ask you to choose template from
+Then it will ask you to choose a template from
 [available templates](/packages/create-app/README.md#available-templates).
 
 After that, open the directory where your app is extracted, install dependencies,
@@ -60,7 +74,7 @@ then run
 ```shell
 node reboost
 ```
-### Manually creating app
+### Manually creating an app
 First, install it
 ```shell
 # Using npm
@@ -124,10 +138,10 @@ after that run the script using `node`, open your terminal in that directory and
 ```shell
 node reboost
 ```
-You can see your code is working without any problem!
+You can see your code is working without any problem
 
 ### What if I want to use any other server?
-Reboost's content server is basically static, it just serves the file. If you want
+Reboost's content server is static, it just serves the file. If you want
 to use any other server (like browser-sync or your own http server) you can do that,
 you've to just serve the generated scripts which are in your output directory.
 Reboost will handle the rest.
@@ -142,7 +156,7 @@ Reboost will handle the rest.
 
 ## Motivation
 When developing a web app, as your number of modules increases,
-your compile-time slows down, it's really a big problem, it takes a lot of precious
+your compile-time slows down, it's a big problem, it takes a lot of precious
 time which you could have used to develop your app. Since ES2015 (aka ES6) modules
 are supported natively by browsers. If you can connect (or you can say serve) them
 up correctly, it will work on browsers without the need for bundling. Here, Reboost
