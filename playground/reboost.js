@@ -14,6 +14,7 @@ const VuePlugin = require('@reboost/plugin-vue');
 start({
   entries: [
     ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
+    ['./src/react/index.js', './public/dist/react.js'],
     ['./src/svelte/index.js', './public/dist/svelte.js'],
     ['./src/babel/index.js', './public/dist/babel.js'],
     ['./src/vue/index.js', './public/dist/vue.js']
