@@ -21,7 +21,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Support for Plugins.
 - Import resolving.
 - Hot Module Replacement.
-- Out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
+- Comes with out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
 - Preprocessor support.
 - **Works with [Electron](https://www.electronjs.org/)**.
 
