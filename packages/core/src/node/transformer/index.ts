@@ -10,7 +10,7 @@ import path from 'path';
 import { PluginContext } from '../index';
 import { getConfig, getAddress } from '../shared';
 import { mergeSourceMaps } from '../utils';
-import { resolveModule } from '../core-plugins/resolver';
+import { resolve } from '../core-plugins/resolver';
 import { process } from './processor';
 import { resolveImports } from './import-resolver';
 
@@ -58,7 +58,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   },
   MagicString,
   mergeSourceMaps,
-  resolveModule
+  resolve
 })
 
 export const transformFile = async (filePath: string): Promise<{

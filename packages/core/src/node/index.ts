@@ -27,7 +27,7 @@ import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
 import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
-import { resolveModule } from './core-plugins/resolver';
+import { resolve } from './core-plugins/resolver';
 
 export * as builtInPlugins from './plugins';
 export * from './plugins/removed';
@@ -60,7 +60,7 @@ export interface PluginContext {
   getSourceMapComment: (map: any) => string;
   MagicString: typeof MagicString;
   mergeSourceMaps: typeof mergeSourceMaps;
-  resolveModule: typeof resolveModule;
+  resolve: typeof resolve;
 }
 
 export interface ReboostPlugin {
@@ -70,7 +70,7 @@ export interface ReboostPlugin {
       config: ReboostConfig;
       app: Koa;
       router: Router;
-      resolveModule: typeof resolveModule;
+      resolve: typeof resolve;
       chalk: typeof chalk;
     }
   ) => void | Promise<void>;
@@ -152,7 +152,7 @@ export interface ReboostConfig {
     mainFiles?: string[];
     /**
      * Module directories to use while resolving modules
-     * @default ['node_modules']
+     * @default ['./node_modules']
      */
     modules?: string[];
   };
@@ -302,7 +302,7 @@ export const start = (config: ReboostConfig = {} as any) => {
     const setupPromises: Promise<void>[] = [];
     config.plugins.forEach(({ setup }) => {
       if (setup) {
-        const promise = setup({ config, app, router, resolveModule, chalk });
+        const promise = setup({ config, app, router, resolve, chalk });
         if (promise) setupPromises.push(promise);
       }
     });
