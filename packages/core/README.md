@@ -1,34 +1,29 @@
 # Reboost
-A *super fast* web dev server, for faster development.
+[![npm](https://img.shields.io/npm/v/reboost?style=flat-square)](https://www.npmjs.com/package/reboost)
+[![license](https://img.shields.io/npm/l/reboost?style=flat-square)](https://github.com/sarsamurmu/reboost/blob/primary/LICENSE)
+
+Reboost is a *super fast* web dev server for faster development.
 
 > ***Experimental***\
 > Reboost is in early development, and some things may
 > change/break before we hit version 1.0
 
-## Motivation
-When developing a web app, as your number of modules increases,
-your compile-time slows down, it's really a big problem, it takes a lot of precious
-time which you could have used to develop your app. Since ES2015 (aka ES6) modules
-are supported natively by browsers. If you can connect (or you can say serve) them
-up correctly, it will work on browsers without the need for bundling. Here, Reboost
-does that for you - the serving part. So you can develop your app faster.
-
 **NOTE:**
-Reboost is only for use while you are developing your app, for production you've to
+Reboost is intended to use only on development, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 
 ## Features
-- No bundling. So the server start time is fast.
-- Transforms only the required/changed files.
-- Uses advanced filesystem cache + memory cache. It will stay fast even after restarting.
+- **No bundling**. So the server start time is fast.
+- Transforms only the **required/changed files**.
+- Uses advanced **filesystem cache + memory cache**. It will stay fast even after restarting.
 - Source maps support for better developer experience.
-- Supports CommonJS modules.
+- Supports **CommonJS modules**.
 - Support for Plugins.
 - Import resolving.
 - Hot Module Replacement.
 - Out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
 - Preprocessor support.
-- Works with [Electron](https://www.electronjs.org/).
+- **Works with [Electron](https://www.electronjs.org/)**.
 
 ## What are supported
 - ES Modules
@@ -57,7 +52,10 @@ Run this command in your terminal
 ```shell
 npm init @reboost/create
 ```
-Open the directory where your app is extracted, install dependencies,
+Then it will ask you to choose template from
+[available templates](/packages/create-app/README.md#available-templates).
+
+After that, open the directory where your app is extracted, install dependencies,
 then run
 ```shell
 node reboost
@@ -135,19 +133,23 @@ you've to just serve the generated scripts which are in your output directory.
 Reboost will handle the rest.
 
 ## Docs
-[Changelog](https://github.com/sarsamurmu/reboost/blob/primary/CHANGELOG.md)\
-[Configurations](https://github.com/sarsamurmu/reboost/blob/primary/docs/configurations.md)\
-[Plugins](https://github.com/sarsamurmu/reboost/blob/primary/docs/plugins.md)\
-[HMR API](https://github.com/sarsamurmu/reboost/blob/primary/docs/hmr.md)\
-[Recipes](https://github.com/sarsamurmu/reboost/blob/primary/docs/recipes.md)\
-[Supporting old browsers while using `script type="module"`](https://github.com/sarsamurmu/reboost/blob/primary/docs/supporting-old-browsers.md)\
-[Comparison with Vite and Snowpack](https://github.com/sarsamurmu/reboost/blob/primary/docs/comparison.md)
+[Changelog](/CHANGELOG.md)\
+[Configurations](/docs/configurations.md)\
+[Plugins](/docs/plugins.md)\
+[HMR API](/docs/hmr.md)\
+[Recipes](/docs/recipes.md)\
+[Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
 
-## Inspired by
-Reboost is highly inspired by these awesome projects
-- [Vite](https://github.com/vitejs/vite)
-- [Snowpack](https://github.com/pikapkg/snowpack)
-- [esbuild](https://github.com/evanw/esbuild)
+## Motivation
+When developing a web app, as your number of modules increases,
+your compile-time slows down, it's really a big problem, it takes a lot of precious
+time which you could have used to develop your app. Since ES2015 (aka ES6) modules
+are supported natively by browsers. If you can connect (or you can say serve) them
+up correctly, it will work on browsers without the need for bundling. Here, Reboost
+does that for you - the serving part. So you can develop your app faster.
+
+Reboost is highly inspired by these awesome projects - [Vite](https://github.com/vitejs/vite),
+[Snowpack](https://github.com/pikapkg/snowpack), [esbuild](https://github.com/evanw/esbuild).
 
 # License
-Licensed under the [MIT License](https://github.com/sarsamurmu/reboost/blob/primary/LICENSE).
+Licensed under the [MIT License](/LICENSE).

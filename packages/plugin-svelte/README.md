@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/@reboost/plugin-svelte?style=flat-square)](https://www.npmjs.com/package/@reboost/plugin-svelte)
+[![license](https://img.shields.io/npm/l/@reboost/plugin-svelte?style=flat-square)](/LICENSE)
+
 # Svelte Plugin
 Adds support for `.svelte` files.
 
@@ -128,3 +131,6 @@ instead of
 ```js
 import App from './file.svelte';
 ```
+
+# License
+Licensed under the [MIT License](/LICENSE).

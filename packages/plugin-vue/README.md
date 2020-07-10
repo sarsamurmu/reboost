@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/@reboost/plugin-vue?style=flat-square)](https://www.npmjs.com/package/@reboost/plugin-vue)
+[![license](https://img.shields.io/npm/l/@reboost/plugin-vue?style=flat-square)](/LICENSE)
+
 # Vue Plugin
 Adds support for `.vue` files, using [Vue 3 SFC compiler](https://www.npmjs.com/package/@vue/compiler-sfc).
 
@@ -27,3 +30,6 @@ start({
 ```js
 import Component from './file.vue';
 ```
+
+# License
+Licensed under the [MIT License](/LICENSE).

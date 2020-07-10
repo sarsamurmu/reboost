@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/@reboost/plugin-babel?style=flat-square)](https://www.npmjs.com/package/@reboost/plugin-babel)
+[![license](https://img.shields.io/npm/l/@reboost/plugin-babel?style=flat-square)](/LICENSE)
+
 # Babel Plugin
 Adds support for transforming JavaScript or TypeScript with Babel.
 
@@ -79,3 +82,6 @@ start({
   ]
 })
 ```
+
+# License
+Licensed under the [MIT License](/LICENSE).

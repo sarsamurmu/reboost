@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/@reboost/plugin-sass?style=flat-square)](https://www.npmjs.com/package/@reboost/plugin-sass)
+[![license](https://img.shields.io/npm/l/@reboost/plugin-sass?style=flat-square)](/LICENSE)
+
 # Sass Plugin
 Transform Sass/SCSS files to CSS on the fly.
 
@@ -44,3 +47,6 @@ Type: `Sass.Options | object`
 
 Options to use when rendering Sass/SCSS files. You can read about all Sass options
 in `node-sass`'s [npm package](https://www.npmjs.com/package/node-sass#options) page.
+
+# License
+Licensed under the [MIT License](/LICENSE).

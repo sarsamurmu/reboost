@@ -17,3 +17,6 @@ npm init @reboost/app
 
 ## Todo
 - Add webpack config in templates
+
+# License
+Licensed under the [MIT License](/LICENSE).
