@@ -10,7 +10,7 @@
   <a href="https://www.npmjs.com/package/reboost">
     <img alt="npm" src="https://img.shields.io/npm/v/reboost?style=flat-square">
   </a>
-  <a href="/LICENSE">
+  <a href="https://github.com/sarsamurmu/reboost/blob/primary/LICENSE">
     <img alt="license" src="https://img.shields.io/npm/l/reboost?style=flat-square">
   </a>
 </p>
