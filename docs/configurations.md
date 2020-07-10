@@ -244,7 +244,7 @@ import main from './subdir/index';
 
 ##### `resolve.modules`
 Type: `string[]`\
-Default: `['node_modules']`
+Default: `['./node_modules']`
 
 Directories to use while resolving modules.
 
