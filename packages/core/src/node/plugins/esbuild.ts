@@ -22,7 +22,7 @@ export interface esbuildPluginOptions {
     fragment?: string;
   }
   /** ECMAScript version to target */
-  target?: esbuild.Target;
+  target?: 'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020';
   /**
    * Minify code
    * @default true
