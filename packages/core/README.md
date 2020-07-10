@@ -13,7 +13,7 @@ Reboost is intended to use only on development, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 
 ## Features
-- **No bundling**. So the server start time is fast.
+- **No bundling**. So the server start time is *fast*.
 - Transforms only the **required/changed files**.
 - Uses advanced **filesystem cache + memory cache**. It will stay fast even after restarting.
 - Source maps support for better developer experience.

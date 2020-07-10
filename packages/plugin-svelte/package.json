@@ -23,6 +23,7 @@
     "url": "https://github.com/sarsamurmu/reboost.git",
     "directory": "packages/plugin-svelte"
   },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-svelte",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {

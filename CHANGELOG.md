@@ -1,3 +1,6 @@
+## 0.5.8
+- Fixed module resolving algorithm
+
 ## 0.5.7
 - Fixed Vue plugin
 - Published `@reboost/create-app`

@@ -24,6 +24,7 @@
     "url": "https://github.com/sarsamurmu/reboost.git",
     "directory": "packages/plugin-sass"
   },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-sass",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {

@@ -21,6 +21,7 @@
     "url": "https://github.com/sarsamurmu/reboost.git",
     "directory": "packages/create-app"
   },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/create-app",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "dependencies": {

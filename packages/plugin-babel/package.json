@@ -23,6 +23,7 @@
     "url": "https://github.com/sarsamurmu/reboost.git",
     "directory": "packages/plugin-babel"
   },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-babel",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
