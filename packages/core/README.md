@@ -25,7 +25,7 @@
 
 <blockquote align="center">
   <h4><i><b>NOTE</b></i></h4>
-  Reboost is intended to use only on development, for production you've to <br>
+  Reboost is intended to use only on development, for production you've to 
   bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 </blockquote>
 
