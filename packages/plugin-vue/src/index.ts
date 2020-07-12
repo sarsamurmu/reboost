@@ -1,4 +1,4 @@
-import { parse, compileTemplate, compileStyleAsync } from '@vue/compiler-sfc';
+import * as Compiler from '@vue/compiler-sfc';
 import hashSum from 'hash-sum';
 
 import path from 'path';
@@ -6,15 +6,19 @@ import path from 'path';
 import { ReboostPlugin, RawSourceMap } from 'reboost';
 
 interface Options {
-  
+  compiler?: any;
 }
 
 export = (options: Options = {}): ReboostPlugin => {
+  let compiler = Compiler;
+
+  if (options.compiler) compiler = options.compiler;
+
   return {
     name: 'vue-plugin',
     async transformContent(data, filePath) {
       if (data.type === 'vue') {
-        const { descriptor } = parse(data.code, {
+        const { descriptor } = compiler.parse(data.code, {
           sourceMap: true,
           filename: filePath
         });
@@ -39,7 +43,7 @@ export = (options: Options = {}): ReboostPlugin => {
           promises.push((async () => {
             if (!hasScopedCSS) hasScopedCSS = styleBlock.scoped;
 
-            const result = await compileStyleAsync({
+            const result = await compiler.compileStyleAsync({
               filename: filePath,
               source: styleBlock.content,
               id: `data-v-${id}`,
@@ -55,7 +59,7 @@ export = (options: Options = {}): ReboostPlugin => {
 
         await Promise.all(promises);
 
-        const compiled = compileTemplate({
+        const compiled = compiler.compileTemplate({
           filename: filePath,
           compilerOptions: {
             scopeId: hasScopedCSS ? `data-v-${id}` : null
