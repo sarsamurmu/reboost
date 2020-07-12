@@ -1,10 +1,10 @@
 const getOS = () => {
   const platform = process.platform;
-  if (platform == 'darwin') {
+  if (platform === 'darwin') {
     return 'MacOS';
-  } else if (platform == 'win32' || platform == 'win64') {
+  } else if (platform === 'win32' || platform === 'win64') {
     return 'Windows';
-  } else if (platform == 'linux') {
+  } else if (platform === 'linux') {
     return 'Linux';
   }
 }

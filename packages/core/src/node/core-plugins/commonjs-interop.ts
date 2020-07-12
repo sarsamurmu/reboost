@@ -80,7 +80,7 @@ export const CommonJSInteropPlugin: ReboostPlugin = {
       program.node.body.unshift(
         t.importDeclaration([
           t.importDefaultSpecifier(importerIdentifier)
-        ], t.stringLiteral(`#/importer`))
+        ], t.stringLiteral('#/importer'))
       );
     }
   }

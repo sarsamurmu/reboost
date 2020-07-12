@@ -18,7 +18,7 @@ export = (plop: NodePlopAPI) => {
     {
       type: 'input',
       name: 'appName',
-      message: `What is your app's name`,
+      message: "What is your app's name",
       validate: (val: string) => val.trim() !== ''
     },
     {

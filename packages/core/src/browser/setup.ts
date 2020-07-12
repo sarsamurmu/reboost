@@ -17,7 +17,7 @@ const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
 if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
 if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
 const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
-const HMR_DATA_MAP: Map<string, {}> = aWindow.$_HMR_DATA_MAP_;
+const HMR_DATA_MAP: Map<string, any> = aWindow.$_HMR_DATA_MAP_;
 
 const lastUpdatedData = {} as Record<string, number>;
 

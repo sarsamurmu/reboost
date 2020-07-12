@@ -53,8 +53,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
           {
             stopDir: this.config.rootDir
           }
-        )
-        .then(({ plugins, options }) => {
+        ).then(({ plugins, options }) => {
           postcss(plugins)
             .process(data.code, Object.assign(
               {},
@@ -103,8 +102,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
             }, (err) => {
               resolve(postcssError('PostCSSPlugin', err, this.config));
             })
-        })
-        .catch(() => resolve());
+        }).catch(() => resolve());
       });
     }
 

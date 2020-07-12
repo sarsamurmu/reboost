@@ -92,7 +92,7 @@ export const transformFile = async (filePath: string): Promise<{
   const sourceMapsConfig = getConfig().sourceMaps;
   const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);
   const { debugMode } = getConfig();
-  let generatorOptions: GeneratorOptions = {
+  const generatorOptions: GeneratorOptions = {
     sourceMaps: true,
     sourceFileName: fixPath(path.relative(getConfig().rootDir, filePath)),
     sourceRoot: 'reboost:///',

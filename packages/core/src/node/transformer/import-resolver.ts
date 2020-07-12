@@ -98,7 +98,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
           const identifier = astPath.scope.generateUidIdentifier('$importer');
           importerDeclaration = t.importDeclaration([
             t.importDefaultSpecifier(identifier)
-          ], t.stringLiteral(`#/importer`));
+          ], t.stringLiteral('#/importer'));
           astProgram.node.body.unshift(importerDeclaration);
         }
         const importerIdentifierName = importerDeclaration.specifiers[0].local.name;

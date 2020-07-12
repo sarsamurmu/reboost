@@ -10,7 +10,7 @@ export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
 
   return {
     name: 'babel-plugin',
-    async setup({ resolve, chalk }) {
+    setup({ resolve, chalk }) {
       const babelPath = resolve('', '@babel/core', { mainFields: ['main'] });
       if (babelPath) {
         babel = require(babelPath);

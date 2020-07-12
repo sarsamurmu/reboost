@@ -35,6 +35,7 @@ export = (options: SveltePluginOptions = {}): ReboostPlugin => {
           }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const Compiler: typeof SvelteCompiler = require(sveltePath);
 
         const {
@@ -54,6 +55,7 @@ export = (options: SveltePluginOptions = {}): ReboostPlugin => {
           this.addDependency(normalizedPath);
         });
 
+        /* eslint-disable prefer-const */
         let {
           js: { code, map },
           warnings
@@ -62,6 +64,8 @@ export = (options: SveltePluginOptions = {}): ReboostPlugin => {
           ...svelteConfig,
           filename: filePath,
         });
+
+        /* eslint-enable */
 
         warnings.forEach((warning) => {
           console.log(this.chalk.yellow(`Svelte: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n${warning.toString()}\n`));
@@ -75,6 +79,7 @@ export = (options: SveltePluginOptions = {}): ReboostPlugin => {
 
           code.replace(
             regex,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             ((match: any, p1: string, offset: any, string: any) => {
               replacePromise = (async () => {
                 const sourceMap = JSON.parse(Buffer.from(p1, 'base64').toString());

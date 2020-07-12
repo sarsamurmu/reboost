@@ -12,5 +12,5 @@ const plop = nodePlop(path.join(__dirname, './plop.js'));
   const answers = await generator.runPrompts();
   await generator.runActions(answers);
 
-  console.log(chalk.green(`\nDone!`));
+  console.log(chalk.green('\nDone!'));
 })();

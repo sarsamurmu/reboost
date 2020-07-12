@@ -154,6 +154,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
 
               script += getScript(cssString);
 
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               script += 'export default ' + JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (match, p1: string, p2: string, offset, string) => {
                 const transformed = p2.split(' ').map((className) => {
                   const classNameData = importedClassMap[className];

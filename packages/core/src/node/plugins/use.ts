@@ -15,8 +15,8 @@ export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> =>
   const aOpt = options as any;
   if (aOpt.test) {
     if (!options.include) options.include = aOpt.test;
-    let message = `UsePlugin: options.test is deprecated and will be removed in next major release. `;
-    message += `Use options.include instead.`
+    let message = 'UsePlugin: options.test is deprecated and will be removed in next major release. ';
+    message += 'Use options.include instead.'
     console.log(chalk.yellow(message));
   }
 
@@ -81,7 +81,7 @@ export const UsePlugin = (options: UsePluginOptions): Required<ReboostPlugin> =>
 
       return null;
     },
-    async transformAST(ast, babel, filePath) {
+    transformAST(ast, babel, filePath) {
       if (test(filePath)) {
         for (const hook of transformASTHooks) {
           bind(hook, this)(ast, babel, filePath);

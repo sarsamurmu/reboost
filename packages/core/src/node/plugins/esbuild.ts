@@ -60,7 +60,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
 
   return {
     name: PluginName,
-    async setup({ config, chalk }) {
+    setup({ config, chalk }) {
       if (!esbuildServicePromise) esbuildServicePromise = esbuild.startService();
 
       defaultOptions.minify = !config.debugMode;

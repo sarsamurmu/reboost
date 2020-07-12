@@ -59,7 +59,7 @@ export const getFilesData = () => {
   }
   return filesData;
 }
-export const saveFilesData = async () => {
+export const saveFilesData = () => {
   if (filesData) {
     fs.promises.writeFile(filesDataPath(), JSON.stringify(filesData, null, getConfig().debugMode ? 2 : 0));
   }

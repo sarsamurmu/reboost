@@ -108,7 +108,7 @@ let gitignoreCreated = false;
 let watcher: ReturnType<typeof createWatcher>;
 const memoizedFiles = new Map();
 
-export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterParamContext<any, {}>>) => {
+export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterParamContext<any, any>>) => {
   const config = getConfig();
   const filesDir = getFilesDir();
   ensureDir(config.cacheDir);
@@ -238,7 +238,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
       watcher.setDependencies(filePath, dependencies);
     }
   } else {
-    let message = `[reboost] The requested file does not exist: ${filePath}.`;
+    const message = `[reboost] The requested file does not exist: ${filePath}.`;
     transformedCode = `console.error(${JSON.stringify(message)})`;
   }
 

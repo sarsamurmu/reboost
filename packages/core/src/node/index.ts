@@ -210,173 +210,174 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
 deepFreeze(DefaultConfig);
 
 export const start = (config: ReboostConfig = {} as any) => {
-  return new Promise(async (resolvePromise) => {
-    config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
+  return new Promise((resolvePromise) => {
+    (async () => {
+      config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
 
-    if (!config.entries) {
-      console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
-      process.exit(1);
-    }
+      if (!config.entries) {
+        console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
+        process.exit(1);
+      }
 
-    if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
-    if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
-    if (!config.watchOptions.include) {
-      config.watchOptions.include = /.*/;
-    }
-    if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
-      config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
-    }
+      if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
+      if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
+      if (!config.watchOptions.include) {
+        config.watchOptions.include = /.*/;
+      }
+      if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
+        config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
+      }
 
-    config.plugins.push(...CorePlugins);
-    const pluginNames = config.plugins.map(({ name }) => name);
+      config.plugins.push(...CorePlugins);
+      const pluginNames = config.plugins.map(({ name }) => name);
 
-    if (!pluginNames.includes(esbuildPluginName)) {
-      config.plugins.push(esbuildPlugin());
-    }
-    if (!pluginNames.includes(CSSPluginName)) {
-      config.plugins.unshift(CSSPlugin());
-    }
-    if (!pluginNames.includes(PostCSSPluginName)) {
-      config.plugins.unshift(PostCSSPlugin());
-    }
+      if (!pluginNames.includes(esbuildPluginName)) {
+        config.plugins.push(esbuildPlugin());
+      }
+      if (!pluginNames.includes(CSSPluginName)) {
+        config.plugins.unshift(CSSPlugin());
+      }
+      if (!pluginNames.includes(PostCSSPluginName)) {
+        config.plugins.unshift(PostCSSPlugin());
+      }
 
-    if (config.dumpCache) rmDir(config.cacheDir);
+      if (config.dumpCache) rmDir(config.cacheDir);
 
-    if (getFilesData().version < INCOMPATIBLE_BELOW) {
-      console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
-      rmDir(config.cacheDir);
-      console.log(chalk.cyan('[reboost] Clear cache complete'));
-    }
+      if (getFilesData().version < INCOMPATIBLE_BELOW) {
+        console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
+        rmDir(config.cacheDir);
+        console.log(chalk.cyan('[reboost] Clear cache complete'));
+      }
 
-    if (fs.existsSync(config.cacheDir)) {
-      console.log(chalk.cyan('[reboost] Refreshing cache...'));
-      verifyFiles();
-      console.log(chalk.cyan('[reboost] Refresh cache complete'));
-    }
+      if (fs.existsSync(config.cacheDir)) {
+        console.log(chalk.cyan('[reboost] Refreshing cache...'));
+        verifyFiles();
+        console.log(chalk.cyan('[reboost] Refresh cache complete'));
+      }
 
-    console.log(chalk.green('[reboost] Starting proxy server...'));
+      console.log(chalk.green('[reboost] Starting proxy server...'));
 
-    const app = withWebSocket(new Koa());
-    const router = createRouter();
-    const interfaces = networkInterfaces();
-    let host: string;
-    let port: number;
-    let fullAddress: string;
+      const app = withWebSocket(new Koa());
+      const router = createRouter();
+      const interfaces = networkInterfaces();
+      let host: string;
+      let port: number;
 
-    loop: for (const dev in interfaces) {
-      for (const details of interfaces[dev]) {
-        if (details.family === 'IPv4' && details.internal === false) {
-          host = details.address;
-          port = await portFinder.getPortPromise({ host });
-          break loop;
+      loop: for (const dev in interfaces) {
+        for (const details of interfaces[dev]) {
+          if (details.family === 'IPv4' && !details.internal) {
+            host = details.address;
+            port = await portFinder.getPortPromise({ host });
+            break loop;
+          }
         }
       }
-    }
 
-    if (!host && !port) {
-      host = 'localhost';
-      port = await portFinder.getPortPromise();
-    }
-
-    fullAddress = `http://${host}:${port}`;
-    setAddress(fullAddress);
-
-    for (const [input, output, libName] of config.entries) {
-      const outputPath = path.join(config.rootDir, output);
-      ensureDir(path.dirname(outputPath));
-
-      let fileContent = `import '${fullAddress}/setup';\n`;
-      fileContent += 'import';
-      if (libName) fileContent += ' * as _$lib$_ from';
-      fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
-      if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
-
-      fs.promises.writeFile(outputPath, fileContent);
-      console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
-    }
-
-    app.ws.use((ctx) => {
-      setWebSocket(ctx.websocket);
-    });
-
-    const setupPromises: Promise<void>[] = [];
-    config.plugins.forEach(({ setup }) => {
-      if (setup) {
-        const promise = setup({ config, app, router, resolve, chalk });
-        if (promise) setupPromises.push(promise);
+      if (!host && !port) {
+        host = 'localhost';
+        port = await portFinder.getPortPromise();
       }
-    });
-    await Promise.all(setupPromises);
-    deepFreeze(config);
 
-    app
-      .use(cors({ origin: '*' }))
-      .use(router.routes())
-      .use(router.allowedMethods())
-      .listen(port, host, async () => {
-        console.log(chalk.green('[reboost] Proxy server started'));
+      const fullAddress = `http://${host}:${port}`;
+      setAddress(fullAddress);
 
-        if (config.contentServer) {
-          const contentServer = new Koa();
+      for (const [input, output, libName] of config.entries) {
+        const outputPath = path.join(config.rootDir, output);
+        ensureDir(path.dirname(outputPath));
 
-          contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
+        let fileContent = `import '${fullAddress}/setup';\n`;
+        fileContent += 'import';
+        if (libName) fileContent += ' * as _$lib$_ from';
+        fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
+        if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
 
-          const proxyObject = config.contentServer.proxy;
-          if (proxyObject) {
-            for (const key in proxyObject) {
-              const proxyOptions: ProxyOptions = typeof proxyObject[key] === 'string'
-                ? { target: proxyObject[key] as string }
-                : proxyObject[key] as ProxyOptions;
-              
-              contentServer.use(proxy(key, proxyOptions));
+        fs.promises.writeFile(outputPath, fileContent);
+        console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
+      }
+
+      app.ws.use((ctx) => {
+        setWebSocket(ctx.websocket);
+      });
+
+      const setupPromises: Promise<void>[] = [];
+      config.plugins.forEach(({ setup }) => {
+        if (setup) {
+          const promise = setup({ config, app, router, resolve, chalk });
+          if (promise) setupPromises.push(promise);
+        }
+      });
+      await Promise.all(setupPromises);
+      deepFreeze(config);
+
+      app
+        .use(cors({ origin: '*' }))
+        .use(router.routes())
+        .use(router.allowedMethods())
+        .listen(port, host, async () => {
+          console.log(chalk.green('[reboost] Proxy server started'));
+
+          if (config.contentServer) {
+            const contentServer = new Koa();
+
+            contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
+
+            const proxyObject = config.contentServer.proxy;
+            if (proxyObject) {
+              for (const key in proxyObject) {
+                const proxyOptions: ProxyOptions = typeof proxyObject[key] === 'string'
+                  ? { target: proxyObject[key] as string }
+                  : proxyObject[key] as ProxyOptions;
+
+                contentServer.use(proxy(key, proxyOptions));
+              }
             }
-          }
 
-          if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
+            if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
 
-          const startedAt = (address: string) => {
-            console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
-          }
+            const startedAt = (address: string) => {
+              console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
+            }
 
-          const localPort = await portFinder.getPortPromise();
-          http.createServer(contentServer.callback()).listen(
-            localPort,
-            () => startedAt(`localhost:${localPort}`)
-          );
-
-          const openOptions = config.contentServer.open;
-          if (openOptions) {
-            open(`http://localhost:${localPort}`, typeof openOptions === 'object' ? openOptions : undefined);
-          }
-
-          if (host !== 'localhost') {
-            const ipPort = await portFinder.getPortPromise({ host });
+            const localPort = await portFinder.getPortPromise();
             http.createServer(contentServer.callback()).listen(
-              ipPort,
-              host,
-              () => startedAt(`${host}:${ipPort}`)
+              localPort,
+              () => startedAt(`localhost:${localPort}`)
             );
+
+            const openOptions = config.contentServer.open;
+            if (openOptions) {
+              open(`http://localhost:${localPort}`, typeof openOptions === 'object' ? openOptions : undefined);
+            }
+
+            if (host !== 'localhost') {
+              const ipPort = await portFinder.getPortPromise({ host });
+              http.createServer(contentServer.callback()).listen(
+                ipPort,
+                host,
+                () => startedAt(`${host}:${ipPort}`)
+              );
+
+              return resolvePromise({
+                proxyServer: fullAddress,
+                contentServer: {
+                  local: `http://localhost:${localPort}`,
+                  ip: `http://${host}:${ipPort}`
+                }
+              });
+            }
 
             return resolvePromise({
               proxyServer: fullAddress,
               contentServer: {
-                local: `http://localhost:${localPort}`,
-                ip: `http://${host}:${ipPort}`
+                local: `http://localhost:${localPort}`
               }
             });
           }
 
-          return resolvePromise({
-            proxyServer: fullAddress,
-            contentServer: {
-              local: `http://localhost:${localPort}`
-            }
+          resolvePromise({
+            proxyServer: fullAddress
           });
-        }
-
-        resolvePromise({
-          proxyServer: fullAddress
         });
-      });
+    })();
   });
 }

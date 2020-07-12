@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/require-await */
+
 import Router from '@koa/router';
 
 import fs from 'fs';

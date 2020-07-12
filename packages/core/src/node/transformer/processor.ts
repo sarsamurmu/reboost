@@ -65,7 +65,7 @@ export const process = async (
   let type: string;
 
   for (const hook of loadHooks) {
-    let result = await bind(hook, pluginContext)(filePath);
+    const result = await bind(hook, pluginContext)(filePath);
     if (result) {
       ({ code } = result);
       ({ type } = result);
@@ -117,7 +117,7 @@ export const process = async (
   } catch (e) {
     let message = '';
     let consoleMessage = '';
-    let frameMessage = e.message.replace(/\s*\(.*\)$/, '');
+    const frameMessage = e.message.replace(/\s*\(.*\)$/, '');
     let rawCode = code;
     let location: SourceLocation['start'] = e.loc;
     let unableToLocateFile = false;

@@ -3,13 +3,13 @@ import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 import fs from 'fs';
 import path from 'path';
 
-export type DeepRequire<T> = T extends object ? {
+export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
 } : T;
 
-export type DeepFrozen<T> = T extends object | any[] ? {
+export type DeepFrozen<T> = T extends Record<string, any> ? {
   readonly [P in keyof T]: DeepFrozen<T[P]>;
-} : T;
+} : T extends any[] ? readonly T[] : T;
 
 export const uniqueID = (length = 32) => Array(length).fill(0).map(() => (Math.random() * 16 | 0).toString(16)).join('');
 
@@ -63,12 +63,15 @@ export const deepFreeze = (obj: any) => {
   return Object.freeze(obj);
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>): OmitThisParameter<T> => func.bind(bindTo);
 
 export const diff = <T>(oldA: T[], newA: T[]) => ({
   added: newA.filter((a) => !oldA.includes(a)),
   removed: oldA.filter((a) => !newA.includes(a))
 })
+
+const isUndefOrNull = (d: any) => d === null || d === undefined;
 
 /**
  * Forked version of merge-source-map
@@ -84,14 +87,14 @@ export const mergeSourceMaps = async (oldMap: RawSourceMap, newMap: RawSourceMap
   const mergedMapGenerator = new SourceMapGenerator();
 
   newMapConsumer.eachMapping((m) => {
-    if (m.originalLine == null) return;
+    if (isUndefOrNull(m.originalLine)) return;
 
     const origPosInOldMap = oldMapConsumer.originalPositionFor({
       line: m.originalLine,
       column: m.originalColumn
     });
 
-    if (origPosInOldMap.source == null) return;
+    if (isUndefOrNull(origPosInOldMap.source)) return;
 
     mergedMapGenerator.addMapping({
       original: {
@@ -111,7 +114,7 @@ export const mergeSourceMaps = async (oldMap: RawSourceMap, newMap: RawSourceMap
   consumers.forEach((consumer) => {
     consumer.sources.forEach((sourceFile) => {
       const sourceContent = consumer.sourceContentFor(sourceFile);
-      if (sourceContent != null) {
+      if (!isUndefOrNull(sourceContent)) {
         mergedMapGenerator.setSourceContent(sourceFile, sourceContent);
       }
     });

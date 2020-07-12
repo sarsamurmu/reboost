@@ -7,9 +7,13 @@
     "build:core": "lerna run --scope reboost build",
     "build:plugins": "lerna run --scope @reboost/plugin-* build",
     "watch": "lerna run --parallel watch",
-    "check-updates": "lerna exec --concurrency 1 -- ncu"
+    "check-updates": "lerna exec --concurrency 1 -- ncu",
+    "lint": "eslint \"packages/**/src/**/*\""
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
+    "eslint": "^7.4.0",
     "lerna": "^3.22.1",
     "plop": "^2.7.1",
     "typescript": "^3.9.5"
