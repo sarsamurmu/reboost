@@ -6,7 +6,8 @@
     "build": "npm run build:core && npm run build:plugins",
     "build:core": "lerna run --scope reboost build",
     "build:plugins": "lerna run --scope @reboost/plugin-* build",
-    "watch": "lerna run --parallel watch"
+    "watch": "lerna run --parallel watch",
+    "check-updates": "lerna exec --concurrency 1 -- ncu"
   },
   "devDependencies": {
     "lerna": "^3.22.1",
