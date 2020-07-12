@@ -1,3 +1,8 @@
+## 0.5.9
+- Vue plugin: New option `compiler`
+- Update dependencies
+- Minor fixes
+
 ## 0.5.8
 - Fixed module resolving algorithm
 
