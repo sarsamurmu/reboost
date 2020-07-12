@@ -1,14 +1,17 @@
 <p align="center">
   <img
-    src="https://user-images.githubusercontent.com/44255990/87145104-73c7ab80-c2c6-11ea-9174-e90a5f71c811.png"
+    src="https://user-images.githubusercontent.com/44255990/87241868-d941a680-c444-11ea-8dbb-8abc674f3911.png"
     alt="Reboost"
     width="300">
 </p>
-<p align="center">Reboost is a <i>super fast</i> web dev server for faster development.</p>
+<p align="center">Reboost is a <i>super fast</i> dev server for rapid web development.</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/reboost">
     <img alt="npm" src="https://img.shields.io/npm/v/reboost?style=flat-square">
+  </a>
+  <a href="https://github.com/sarsamurmu/reboost/blob/primary/LICENSE">
+    <img alt="maintained with lerna" src="https://img.shields.io/badge/maintained%20with-lerna-cc00ff?style=flat-square">
   </a>
   <a href="https://github.com/sarsamurmu/reboost/blob/primary/LICENSE">
     <img alt="license" src="https://img.shields.io/npm/l/reboost?style=flat-square">

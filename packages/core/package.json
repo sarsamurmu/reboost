@@ -1,7 +1,7 @@
 {
   "name": "reboost",
   "version": "0.5.8",
-  "description": "A super fast web dev server for faster development",
+  "description": "A super fast dev server for rapid web development",
   "main": "./dist/node/index.js",
   "types": "./dist/node/index.d.ts",
   "scripts": {
@@ -19,7 +19,8 @@
     "commonjs-modules",
     "no-bundle",
     "dev-server",
-    "web-development"
+    "web-development",
+    "rapid-development"
   ],
   "repository": "github:sarsamurmu/reboost",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
