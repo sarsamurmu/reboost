@@ -1,3 +1,6 @@
+## 0.5.10
+- Improved Plugin API
+
 ## 0.5.9
 - Vue plugin: New option `compiler`
 - Update dependencies
