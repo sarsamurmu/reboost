@@ -3,12 +3,13 @@ import { Context } from 'koa';
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostConfig } from './index';
+import { ReboostConfig, DefaultConfig } from './index';
 
 let address: string;
-let config: ReboostConfig;
+let config = DefaultConfig as ReboostConfig;
 let filesData: {
-  version: number;
+  version: string;
+  usedPlugins: string;
   files: Record<string, {
     /** Unique ID of the file */
     uid: string;
@@ -38,12 +39,25 @@ export const setConfig = (aConfig: ReboostConfig) => config = aConfig;
 
 export const getFilesDir = () => path.join(getConfig().cacheDir, 'files');
 
-export const getVersion = () => {
-  const pkgJSON = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json')).toString());
-  return parseInt(pkgJSON.version.replace(/\./g, ''));
+export const getVersion = (): string => {
+  const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json')).toString());
+  return version;
 }
 
-const filesDataPath = () => path.join(getConfig().cacheDir, 'files_data.json');
+export const getUsedPlugins = () => {
+  return getConfig().plugins
+    .filter((p) => p && p.name)
+    .map((p) => {
+      let id = p.name;
+      if (typeof p.getId !== 'undefined') {
+        id += '@' + p.getId();
+      }
+      return id;
+    })
+    .join(' && ');
+}
+
+const filesDataPath = () => path.join(getConfig().cacheDir, 'cache_data.json');
 export const getFilesData = () => {
   const filePath = filesDataPath();
   if (!filesData) {
@@ -52,6 +66,7 @@ export const getFilesData = () => {
     } else {
       filesData = {
         version: getVersion(),
+        usedPlugins: getUsedPlugins(),
         files: {},
         dependents: {}
       };

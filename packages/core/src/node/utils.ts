@@ -71,6 +71,17 @@ export const diff = <T>(oldA: T[], newA: T[]) => ({
   removed: oldA.filter((a) => !newA.includes(a))
 })
 
+export const isVersionLessThan = (version: string, toCompareWith: string) => {
+  const [aMajor, aMinor, aPatch] = version.split('.').map(Number);
+  const [bMajor, bMinor, bPatch] = toCompareWith.split('.').map(Number);
+
+  if (aMajor < bMajor) return true;
+  if (aMinor < bMinor) return true;
+  if (aPatch < bPatch) return true;
+
+  return false;
+}
+
 const isUndefOrNull = (d: any) => d === null || d === undefined;
 
 /**

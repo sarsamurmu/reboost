@@ -20,8 +20,8 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps } from './utils';
-import { setAddress, setConfig, setWebSocket, getFilesData } from './shared';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
+import { setAddress, setConfig, setWebSocket, getFilesData, getUsedPlugins } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
@@ -65,6 +65,7 @@ export interface PluginContext {
 
 export interface ReboostPlugin {
   name: string;
+  getId?: () => string | number;
   setup?: (
     data: {
       config: ReboostConfig;
@@ -176,7 +177,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = 31;
+const INCOMPATIBLE_BELOW = '0.5.10';
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
@@ -243,8 +244,18 @@ export const start = (config: ReboostConfig = {} as any) => {
 
       if (config.dumpCache) rmDir(config.cacheDir);
 
-      if (getFilesData().version < INCOMPATIBLE_BELOW) {
-        console.log(chalk.cyan('[reboost] Cache version is incompatible, clearing cached files...'));
+      // TODO: Remove in v1.0
+      const oldCacheFilesDir = path.join(config.cacheDir, 'files_data.json');
+      if (fs.existsSync(oldCacheFilesDir)) rmDir(oldCacheFilesDir);
+
+      const isCacheIncompatible = isVersionLessThan(getFilesData().version, INCOMPATIBLE_BELOW);
+      const isPluginsChanged = getFilesData().usedPlugins !== getUsedPlugins();
+      if (isCacheIncompatible || isPluginsChanged) {
+        console.log(chalk.cyan(
+          isCacheIncompatible
+            ? '[reboost] Cache version is incompatible, clearing cached files...'
+            : '[reboost] Plugin change detected, clearing cached files...'
+        ));
         rmDir(config.cacheDir);
         console.log(chalk.cyan('[reboost] Clear cache complete'));
       }
