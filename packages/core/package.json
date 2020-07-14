@@ -8,7 +8,9 @@
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "node ../../rmDist",
     "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
-    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
+    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\"",
+    "test": "mocha -r ts-node/register/transpile-only --recursive tests/**/*.test.ts",
+    "coverage": "nyc npm run test"
   },
   "keywords": [
     "fast",
@@ -64,13 +66,19 @@
     "@types/koa-websocket": "^5.0.4",
     "@types/koa__cors": "^3.0.1",
     "@types/koa__router": "^8.0.2",
+    "@types/mock-fs": "^4.10.0",
     "@types/node": "^14.0.22",
     "@types/postcss-load-config": "^2.0.1",
     "@types/postcss-modules-extract-imports": "^2.0.0",
     "@types/postcss-modules-local-by-default": "^1.2.0",
     "@types/postcss-modules-scope": "^1.1.0",
     "@types/postcss-modules-values": "^3.0.0",
+    "chai": "*",
     "concurrently": "^5.2.0",
+    "mocha": "*",
+    "mock-fs": "^4.12.0",
+    "nyc": "*",
+    "ts-node": "*",
     "typescript": "*"
   }
 }

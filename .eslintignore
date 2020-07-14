@@ -1,2 +1,3 @@
-packages/create-app/templates/**
-playground/**
+packages/create-app/templates
+playground
+coverage

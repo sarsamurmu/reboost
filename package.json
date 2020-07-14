@@ -8,14 +8,20 @@
     "build:plugins": "lerna run --scope @reboost/plugin-* build",
     "watch": "lerna run --parallel watch",
     "check-updates": "lerna exec --concurrency 1 -- ncu",
-    "lint": "eslint \"packages/**/src/**/*\""
+    "lint": "eslint \"packages/**/src/**/*.{js,ts}\""
   },
   "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
+    "chai": "^4.2.0",
     "eslint": "^7.4.0",
     "lerna": "^3.22.1",
+    "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
     "plop": "^2.7.1",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.5"
   }
 }

@@ -1,3 +1,5 @@
 node_modules
 dist
 types
+coverage
+.nyc_output

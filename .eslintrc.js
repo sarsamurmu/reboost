@@ -63,8 +63,13 @@ module.exports = {
       ...defaultTSOptions
     },
     {
-      files: ['packages/create-app/templates/**'],
-      
+      files: ['*.test.ts'],
+      ...defaultTSOptions,
+      env: {
+        es2020: true,
+        node: true,
+        mocha: true
+      }
     }
   ]
 };
