@@ -13,12 +13,17 @@
     "build": "tsc -p build.tsconfig.json",
     "watch": "tsc -p build.tsconfig.json -w"
   },
-  "keywords": [],
+  "keywords": [
+    "reboost",
+    "plugin",
+    "{{ name }}"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/sarsamurmu/reboost.git",
     "directory": "packages/plugin-{{ name }}"
   },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-{{ name }}",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "devDependencies": {
