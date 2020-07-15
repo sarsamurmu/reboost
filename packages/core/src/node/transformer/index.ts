@@ -11,7 +11,7 @@ import { PluginContext } from '../index';
 import { getConfig, getAddress } from '../shared';
 import { mergeSourceMaps } from '../utils';
 import { resolve } from '../core-plugins/resolver';
-import { process, runTransformContentHooks, getPluginHooks } from './processor';
+import { process } from './processor';
 import { resolveImports } from './import-resolver';
 
 const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
@@ -97,27 +97,16 @@ export const transformFile = async (filePath: string): Promise<{
     minified: !debugMode
   }
 
-  const { code: gCode, map: gMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
+  const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
   let map;
 
-  const finalProcessed = await runTransformContentHooks({
-    code: gCode,
-    type: 'js',
-    map: gMap,
-    hooks: getPluginHooks().finalTransformContentHooks,
-    filePath,
-    pluginContext
-  });
-
-  if (finalProcessed.error) return getErrorObj(finalProcessed.error);
-
   if (sourceMap && sourceMapsEnabled) {
-    const merged = await mergeSourceMaps(sourceMap, finalProcessed.map);
+    const merged = await mergeSourceMaps(sourceMap, generatedMap);
     map = getCompatibleSourceMap(merged);
   }
 
   return {
-    code: finalProcessed.code,
+    code: generatedCode,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
     imports,
     dependencies,

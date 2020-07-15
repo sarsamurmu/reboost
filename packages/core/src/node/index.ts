@@ -95,6 +95,7 @@ export interface ReboostPlugin {
     },
     filePath: string
   ) => JSContent | Error | Promise<JSContent | Error>;
+  transformJSContent?: ReboostPlugin['transformContent'];
   transformAST?: (
     this: PluginContext,
     ast: babelTypes.Node,
@@ -104,7 +105,6 @@ export interface ReboostPlugin {
     },
     filePath: string
   ) => void | Promise<void>;
-  finalTransformContent?: ReboostPlugin['transformContent'];
 }
 
 export interface ReboostConfig {
