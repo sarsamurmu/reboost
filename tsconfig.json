@@ -1,7 +1,7 @@
 {
   "extends": "./base.tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "/",
     "paths": {
       "reboost": ["./packages/core/src/node"]
     }
@@ -11,6 +11,7 @@
     "plugin-template/**/*"
   ],
   "exclude": [
-    "**/node_modules/**"
+    "**/node_modules/**",
+    "**/dist/**"
   ]
 }
