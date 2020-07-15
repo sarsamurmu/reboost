@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@reboost/plugin-{{ name }}",
   "version": "{{ version }}",
   "description": "{{ description }}",
