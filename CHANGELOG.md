@@ -1,3 +1,7 @@
+## 0.5.11
+- Removed unused codes
+- Minor fixes
+
 ## 0.5.10
 - Improved Plugin API
 
