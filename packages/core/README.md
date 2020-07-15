@@ -10,7 +10,7 @@
   <a href="https://www.npmjs.com/package/reboost">
     <img alt="npm" src="https://img.shields.io/npm/v/reboost?style=flat-square">
   </a>
-  <a href="https://github.com/sarsamurmu/reboost/blob/primary/LICENSE">
+  <a href="https://lerna.js.org">
     <img alt="maintained with lerna" src="https://img.shields.io/badge/maintained%20with-lerna-cc00ff?style=flat-square">
   </a>
   <a href="https://github.com/sarsamurmu/reboost/blob/primary/LICENSE">
