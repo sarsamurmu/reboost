@@ -35,6 +35,7 @@ export const UsePlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugi
   const transformContentHooks = getHooks('transformContent');
   const transformIntoJSHooks = getHooks('transformIntoJS');
   const transformASTHooks = getHooks('transformAST');
+  const finalTransformContent = getHooks('finalTransformContent');
 
   return {
     name: 'core-use-plugin',
@@ -81,12 +82,22 @@ export const UsePlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugi
 
       return null;
     },
-    transformAST(ast, babel, filePath) {
+    async transformAST(ast, babel, filePath) {
       if (test(filePath)) {
         for (const hook of transformASTHooks) {
-          bind(hook, this)(ast, babel, filePath);
+          await bind(hook, this)(ast, babel, filePath);
         }
       }
+    },
+    async finalTransformContent(data, filePath) {
+      if (test(filePath)) {
+        for (const hook of finalTransformContent) {
+          const result = await bind(hook, this)(data, filePath);
+          if (result) return result;
+        }
+      }
+
+      return null;
     }
   }
 }

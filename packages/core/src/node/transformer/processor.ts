@@ -18,23 +18,28 @@ let loadHooks: ReboostPlugin['load'][];
 let transformContentHooks: ReboostPlugin['transformContent'][];
 let transformIntoJSHooks: ReboostPlugin['transformIntoJS'][];
 let transformASTHooks: ReboostPlugin['transformAST'][];
+let finalTransformContentHooks: ReboostPlugin['finalTransformContent'][];
 
 const handleError = ({ message }: Error) => {
   console.log(chalk.red(message));
 
-  return { error: message }
+  return { error: message };
 }
 
 export const getPluginHooks = () => {
   if (!pluginsInitiated) {
     const def = (a: any) => !!a;
     const plugins = getConfig().plugins.filter(def);
+    const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
+      return plugins.map((plugin) => plugin[hookName]).filter(def);
+    }
 
-    resolveHooks = plugins.map((plugin) => plugin.resolve).filter(def);
-    loadHooks = plugins.map((plugin) => plugin.load).filter(def);
-    transformContentHooks = plugins.map((plugin) => plugin.transformContent).filter(def);
-    transformIntoJSHooks = plugins.map((plugin) => plugin.transformIntoJS).filter(def);
-    transformASTHooks = plugins.map((plugin) => plugin.transformAST).filter(def);
+    resolveHooks = getHooks('resolve');
+    loadHooks = getHooks('load');
+    transformContentHooks = getHooks('transformContent');
+    transformIntoJSHooks = getHooks('transformIntoJS');
+    transformASTHooks = getHooks('transformAST');
+    finalTransformContentHooks = getHooks('finalTransformContent');
 
     pluginsInitiated = true;
   }
@@ -44,7 +49,51 @@ export const getPluginHooks = () => {
     loadHooks,
     transformContentHooks,
     transformIntoJSHooks,
-    transformASTHooks
+    transformASTHooks,
+    finalTransformContentHooks
+  }
+}
+
+export const runTransformContentHooks = async (data: {
+  code: string;
+  type: string;
+  map: RawSourceMap;
+  hooks: ReboostPlugin['transformContent'][],
+  pluginContext: PluginContext;
+  filePath: string;
+}): Promise<{
+  code?: string;
+  type?: string;
+  map?: RawSourceMap;
+  error?: string;
+  didProcess?: boolean;
+}> => {
+  let { code, type, map } = data;
+  let didProcess = false;
+
+  for (const hook of data.hooks) {
+    didProcess = true;
+
+    const result = await bind(hook, data.pluginContext)({ code, type, map }, data.filePath);
+
+    if (result) {
+      if (result instanceof Error) return handleError(result);
+
+      ({ code } = result);
+      if (result.map) {
+        // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
+        result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? data.filePath : sourcePath);
+        map = map ? await mergeSourceMaps(map, result.map) : result.map;
+      }
+      type = result.type || type;
+    }
+  }
+
+  return {
+    code,
+    type,
+    map,
+    didProcess
   }
 }
 
@@ -74,19 +123,19 @@ export const process = async (
     }
   }
 
-  for (const hook of transformContentHooks) {
-    const result = await bind(hook, pluginContext)({ code, type, map: sourceMap }, filePath);
-    if (result) {
-      if (result instanceof Error) return handleError(result);
+  {
+    const result = await runTransformContentHooks({
+      code,
+      map: sourceMap,
+      type,
+      hooks: transformContentHooks,
+      pluginContext,
+      filePath
+    });
 
-      ({ code } = result);
-      if (result.map) {
-        // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
-        result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
-        sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
-      }
-      if (result.type) ({ type } = result);
-    }
+    if (result.error) return { error: result.error };
+
+    ({ code, map: sourceMap, type } = result);
   }
 
   for (const hook of transformIntoJSHooks) {
@@ -187,3 +236,35 @@ export const process = async (
     sourceMap
   }
 }
+
+// export const finalProcess = async (
+//   filePath: string,
+//   pluginContext: PluginContext,
+//   code: string,
+//   sourceMap: RawSourceMap,
+// ): Promise<{
+//   code?: string;
+//   sourceMap?: RawSourceMap;
+//   error?: string;
+// }> => {
+//   getPluginHooks();
+
+//   for (const hook of finalTransformContentHooks) {
+//     const result = await bind(hook, pluginContext)({ code, type: 'js', map: sourceMap }, filePath);
+//     if (result) {
+//       if (result instanceof Error) return handleError(result);
+
+//       ({ code } = result);
+//       if (result.map) {
+//         // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
+//         result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
+//         sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
+//       }
+//     }
+//   }
+
+//   return {
+//     code,
+//     sourceMap
+//   }
+// }

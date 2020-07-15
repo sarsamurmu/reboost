@@ -32,7 +32,7 @@ import { resolve } from './core-plugins/resolver';
 export * as builtInPlugins from './plugins';
 export * from './plugins/removed';
 
-export { RawSourceMap }
+export type { babelTypes, RawSourceMap }
 
 export interface LoadedData {
   code: string;
@@ -104,6 +104,7 @@ export interface ReboostPlugin {
     },
     filePath: string
   ) => void | Promise<void>;
+  finalTransformContent?: ReboostPlugin['transformContent'];
 }
 
 export interface ReboostConfig {

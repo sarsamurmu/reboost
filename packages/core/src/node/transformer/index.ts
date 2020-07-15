@@ -11,7 +11,7 @@ import { PluginContext } from '../index';
 import { getConfig, getAddress } from '../shared';
 import { mergeSourceMaps } from '../utils';
 import { resolve } from '../core-plugins/resolver';
-import { process } from './processor';
+import { process, runTransformContentHooks, getPluginHooks } from './processor';
 import { resolveImports } from './import-resolver';
 
 const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
@@ -71,19 +71,17 @@ export const transformFile = async (filePath: string): Promise<{
   let errorOccurred = false;
   const imports: string[] = [];
   const dependencies: string[] = [];
+  const pluginContext = getPluginContext(filePath, dependencies);
 
-  const processed = await process(
-    filePath,
-    getPluginContext(filePath, dependencies)
-  );
+  const getErrorObj = (msg: string) => ({
+    code: `console.error('[reboost] ' + ${JSON.stringify(msg)})`,
+    error: true,
+    dependencies
+  });
 
-  if (processed.error) {
-    return {
-      code: `console.error('[reboost] ' + ${JSON.stringify(processed.error)})`,
-      error: true,
-      dependencies
-    }
-  }
+  const processed = await process(filePath, pluginContext);
+
+  if (processed.error) return getErrorObj(processed.error);
 
   const { ast, sourceMap } = processed;
 
@@ -99,16 +97,27 @@ export const transformFile = async (filePath: string): Promise<{
     minified: !debugMode
   }
 
-  const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
+  const { code: gCode, map: gMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
   let map;
 
+  const finalProcessed = await runTransformContentHooks({
+    code: gCode,
+    type: 'js',
+    map: gMap,
+    hooks: getPluginHooks().finalTransformContentHooks,
+    filePath,
+    pluginContext
+  });
+
+  if (finalProcessed.error) return getErrorObj(finalProcessed.error);
+
   if (sourceMap && sourceMapsEnabled) {
-    const merged = await mergeSourceMaps(sourceMap, generatedMap);
+    const merged = await mergeSourceMaps(sourceMap, finalProcessed.map);
     map = getCompatibleSourceMap(merged);
   }
 
   return {
-    code: generatedCode,
+    code: finalProcessed.code,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
     imports,
     dependencies,
