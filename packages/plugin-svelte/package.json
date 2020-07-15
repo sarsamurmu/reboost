@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-svelte",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "description": "Svelte plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
