@@ -66,23 +66,48 @@ function resolveDirectory(
   return null;
 }
 
-function resolveModule(modulePath: string, resolveOptions: ReboostConfig['resolve']) {
-  const { rootDir } = getConfig();
-  const [firstPart, ...restPart] = modulePath.split('/').filter((s) => s !== '');
+function resolvePackagePath(
+  packagePath: string,
+  modulesDir: string,
+  resolveOptions: ReboostConfig['resolve']
+) {
+  const [moduleName, ...restPart] = packagePath.split(/[/\\]/).filter((s) => s !== '');
+  let moduleDirPath = path.join(modulesDir, moduleName);
 
-  for (const modulesDir of resolveOptions.modules) {
-    const modulesDirPath = path.join(rootDir, modulesDir);
+  // Scooped package
+  if (moduleName.startsWith('@')) {
+    moduleDirPath = path.join(moduleDirPath, restPart.shift());
+  }
 
-    if (fs.existsSync(modulesDirPath)) {
-      const moduleName = firstPart;
-      let moduleDirPath = path.join(modulesDirPath, moduleName);
+  return resolveUnknown(path.join(moduleDirPath, ...restPart), resolveOptions);
+}
 
-      // Scooped package
-      if (moduleName.startsWith('@')) {
-        moduleDirPath = path.join(modulesDirPath, moduleName, restPart.shift());
+function resolveModule(
+  basePath: string,
+  packagePath: string,
+  resolveOptions: ReboostConfig['resolve']
+) {
+  const absoluteModulesDirs = resolveOptions.modules.filter((p) => path.isAbsolute(p));
+  const modulesDirNames = resolveOptions.modules.filter((p) => !path.isAbsolute(p));
+
+  for (const modulesDir of absoluteModulesDirs) {
+    const resolved = resolvePackagePath(packagePath, modulesDir, resolveOptions);
+    if (resolved) return resolved;
+  }
+
+  const split = basePath.split(/[/\\]/);
+  let currentDir: string;
+  while (split.length > 1) {
+    split.pop();
+
+    currentDir = split.join('/');
+
+    for (const moduleDirName of modulesDirNames) {
+      const modulesDir = path.join(currentDir, moduleDirName);
+      if (fs.existsSync(modulesDir)) {
+        const resolved = resolvePackagePath(packagePath, modulesDir, resolveOptions);
+        if (resolved) return resolved;
       }
-
-      return resolveUnknown(path.join(moduleDirPath, ...restPart), resolveOptions);
     }
   }
 
@@ -105,7 +130,7 @@ export function resolve(
     return resolveUnknown(path.join(path.dirname(basePath), pathToResolve), resolveOptions);
   }
 
-  return resolveModule(pathToResolve, resolveOptions);
+  return resolveModule(basePath, pathToResolve, resolveOptions);
 }
 
 export const ResolverPlugin: ReboostPlugin = {
