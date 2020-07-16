@@ -187,5 +187,34 @@ describe('Module Resolver', () => {
     assert.equal(resolve(main, './mod', {
       mainFields: ['oField']
     }), imported);
+    assert.equal(resolve(main, './mod', {
+      mainFields: ['main', 'other', 'oField']
+    }), imported);
+  });
+
+  it('resolves package.json with `main: "."` or `main: "./"`', () => {
+    const main = f('main.js');
+    const pkgJSON = f('mod/package.json');
+    const indexFile = f('mod/index.js');
+
+    const structure = {
+      [main]: '',
+      [indexFile]: '',
+      [pkgJSON]: JSON.stringify({
+        main: '.'
+      })
+    };
+
+    mockFS(structure);
+
+    assert.equal(resolve(main, './mod'), indexFile);
+
+    mockFS(Object.assign({}, structure, {
+      [pkgJSON]: JSON.stringify({
+        main: './'
+      })
+    }));
+
+    assert.equal(resolve(main, './mod'), indexFile);
   });
 });

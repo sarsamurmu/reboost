@@ -53,7 +53,7 @@ function resolveDirectory(
     const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
     for (const field of resolveOptions.mainFields) {
       const fieldValue = pkgJSON[field];
-      if (fieldValue) return resolveUnknown(path.join(dirPath, fieldValue), resolveOptions, skippedPkgJSON);
+      if (fieldValue) return resolveUnknown(path.join(dirPath, fieldValue), resolveOptions, pkgJSONPath);
     }
   }
 
