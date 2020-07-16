@@ -63,6 +63,14 @@
 Reboost works with both CommonJS and ES modules, so you can try it even
 if you are not using ES modules, though using ES modules is recommended.
 
+## Docs
+[Changelog](/CHANGELOG.md)\
+[Configurations](/docs/configurations.md)\
+[Plugins](/docs/plugins.md)\
+[HMR API](/docs/hmr.md)\
+[Recipes](/docs/recipes.md)\
+[Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
+
 ## Quickstart
 ### Using `npm init`
 Run this command in your terminal
@@ -148,14 +156,6 @@ Reboost's content server is static, it just serves the file. If you want
 to use any other server (like browser-sync or your own http server) you can do that,
 you've to just serve the generated scripts which are in your output directory.
 Reboost will handle the rest.
-
-## Docs
-[Changelog](/CHANGELOG.md)\
-[Configurations](/docs/configurations.md)\
-[Plugins](/docs/plugins.md)\
-[HMR API](/docs/hmr.md)\
-[Recipes](/docs/recipes.md)\
-[Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
 
 ## Motivation
 When developing a web app, as your number of modules increases,

@@ -154,7 +154,7 @@ export interface ReboostConfig {
     mainFiles?: string[];
     /**
      * Module directories to use while resolving modules
-     * @default ['./node_modules']
+     * @default ['node_modules']
      */
     modules?: string[];
   };
