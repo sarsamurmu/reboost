@@ -20,7 +20,7 @@ let transformIntoJSHooks: ReboostPlugin['transformIntoJS'][];
 let transformJSContentHooks: ReboostPlugin['transformJSContent'][];
 let transformASTHooks: ReboostPlugin['transformAST'][];
 
-const handleError = ({ message }: Error) => {
+const handleError = ({ message }: { message: string }) => {
   console.log(chalk.red(message));
 
   return { error: message };
@@ -80,22 +80,24 @@ export const process = async (
     }
   }
 
-  // Same code used for transformJSContent hook
-  // If you are making change here, please change that too
-  for (const hook of transformContentHooks) {
-    const result = await bind(hook, pluginContext)({ code, type, map: sourceMap }, filePath);
-    if (result) {
-      if (result instanceof Error) return handleError(result);
+  const runTransformContentHooks = async (hooks: ReboostPlugin['transformContent'][]) => {
+    for (const hook of hooks) {
+      const result = await bind(hook, pluginContext)({ code, type, map: sourceMap }, filePath);
+      if (result) {
+        if (result instanceof Error) return handleError(result);
 
-      ({ code } = result);
-      if (result.map) {
-        // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
-        result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
-        sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
+        ({ code } = result);
+        if (result.map) {
+          // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
+          result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
+          sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
+        }
+        type = result.type || type;
       }
-      type = result.type || type;
     }
   }
+
+  runTransformContentHooks(transformContentHooks);
 
   for (const hook of transformIntoJSHooks) {
     const result = await bind(hook, pluginContext)({
@@ -114,24 +116,13 @@ export const process = async (
     }
   }
 
-  for (const hook of transformJSContentHooks) {
-    const result = await bind(hook, pluginContext)({ code, type, map: sourceMap }, filePath);
-    if (result) {
-      if (result instanceof Error) return handleError(result);
-
-      ({ code } = result);
-      if (result.map) {
-        // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
-        result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
-        sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
-      }
-      type = result.type || type;
-    }
-  }
-
   if (type !== 'js') {
-    console.log(chalk.red(`File with type "${type}" is not supported. You may need proper loader to transform this kind of files into JS.`));
+    let message = `[reboost] ${filePath}: File with type "${type}" is not supported. `;
+    message += 'You may need proper loader to transform this kind of files into JS.';
+    return handleError({ message });
   }
+
+  runTransformContentHooks(transformJSContentHooks);
 
   try {
     ast = parse(code, {
