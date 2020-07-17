@@ -6,17 +6,23 @@ import { getConfig } from '../shared';
 import { isDir } from '../utils';
 
 function resolveUnknown(
-  toResolve: string,
+  requestedPath: string,
   resolveOptions: ReboostConfig['resolve'],
   skippedPkgJSON = ''
 ): string {
-  if (fs.existsSync(toResolve)) {
-    if (isDir(toResolve)) return resolveDirectory(toResolve, resolveOptions, skippedPkgJSON);
-    return toResolve;
+  const aliasFieldResolved = resolveAliasFieldFromPackageJSON(requestedPath, resolveOptions);
+  if (aliasFieldResolved) return aliasFieldResolved;
+
+  if (fs.existsSync(requestedPath)) {
+    if (isDir(requestedPath)) return resolveDirectory(requestedPath, resolveOptions, skippedPkgJSON);
+    return requestedPath;
   }
 
-  const resolved = resolveExtension(toResolve, resolveOptions.extensions);
-  if (resolved) return resolved;
+  const resolved = resolveExtension(requestedPath, resolveOptions.extensions);
+  if (resolved) {
+    const eAliasFieldResolved = resolveAliasFieldFromPackageJSON(resolved, resolveOptions);
+    return eAliasFieldResolved || resolved;
+  }
 
   return null;
 }
@@ -46,14 +52,19 @@ function resolveAlias(toResolve: string, aliases: Record<string, string>) {
 function resolveDirectory(
   dirPath: string,
   resolveOptions: ReboostConfig['resolve'],
-  skippedPkgJSON = ''
+  skippedPkgJSON: string
 ) {
   const pkgJSONPath = path.join(dirPath, './package.json');
   if (pkgJSONPath !== skippedPkgJSON && fs.existsSync(pkgJSONPath)) {
     const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
     for (const field of resolveOptions.mainFields) {
       const fieldValue = pkgJSON[field];
-      if (fieldValue) return resolveUnknown(path.join(dirPath, fieldValue), resolveOptions, pkgJSONPath);
+      if (fieldValue && typeof fieldValue === 'string') {
+        const fullFilePath = path.join(dirPath, fieldValue);
+        const aliasFieldResolved = resolveAliasField(pkgJSON, fullFilePath, dirPath, field, resolveOptions);
+        if (aliasFieldResolved) return aliasFieldResolved;
+        return resolveUnknown(fullFilePath, resolveOptions, pkgJSONPath);
+      }
     }
   }
 
@@ -61,6 +72,58 @@ function resolveDirectory(
     const filePath = path.join(dirPath, mainFile);
     const resolved = resolveExtension(filePath, resolveOptions.extensions);
     if (resolved) return resolved;
+  }
+
+  return null;
+}
+
+function resolveAliasField(
+  pkgJSON: Record<string, any>,
+  requestedPath: string,
+  currentDir: string,
+  field: string,
+  resolveOptions: ReboostConfig['resolve']
+) {
+  const browserFieldIndex = resolveOptions.mainFields.indexOf('browser');
+  const currentFieldIndex = resolveOptions.mainFields.indexOf(field);
+  const browserField: Record<string, string> = pkgJSON['browser'];
+  
+  if (
+    browserFieldIndex > -1 &&
+    (
+      browserFieldIndex < currentFieldIndex ||
+      currentFieldIndex === -1
+    ) &&
+    typeof browserField === 'object'
+  ) {
+    for (const key in browserField) {
+      const filePath = path.join(currentDir, key);
+      if (filePath === requestedPath) {
+        return resolveUnknown(path.join(currentDir, browserField[key]), resolveOptions);
+      }
+    }
+  }
+
+  return null;
+}
+
+function resolveAliasFieldFromPackageJSON(
+  requestedPath: string,
+  resolveOptions: ReboostConfig['resolve']
+) {
+  const split = path.dirname(requestedPath).split(/[/\\]/);
+  const currentSplit = [];
+  
+  for (const part of split) {
+    currentSplit.push(part);
+
+    const currentDir = currentSplit.join('/');
+    const pkgJSONPath = path.join(currentDir, './package.json');
+    if (fs.existsSync(pkgJSONPath)) {
+      const pkgJSON = JSON.parse(fs.readFileSync(pkgJSONPath).toString());
+      const resolved = resolveAliasField(pkgJSON, requestedPath, currentDir, '', resolveOptions);
+      if (resolved) return resolved;
+    }
   }
 
   return null;
@@ -96,11 +159,10 @@ function resolveModule(
   }
 
   const split = basePath.split(/[/\\]/);
-  let currentDir: string;
   while (split.length > 1) {
     split.pop();
 
-    currentDir = split.join('/');
+    const currentDir = split.join('/');
 
     for (const moduleDirName of modulesDirNames) {
       const modulesDir = path.join(currentDir, moduleDirName);
@@ -116,21 +178,25 @@ function resolveModule(
 
 export function resolve(
   basePath: string,
-  pathToResolve: string,
+  requestedPath: string,
   overrides?: ReboostConfig['resolve']
 ) {
   const config = getConfig();
   const resolveOptions = overrides ? Object.assign({}, config.resolve, overrides) : config.resolve;
 
-  pathToResolve = resolveAlias(pathToResolve, resolveOptions.alias);
+  requestedPath = resolveAlias(requestedPath, resolveOptions.alias);
 
-  if (path.isAbsolute(pathToResolve) && fs.existsSync(pathToResolve)) return pathToResolve;
-
-  if (pathToResolve.startsWith('.')) {
-    return resolveUnknown(path.join(path.dirname(basePath), pathToResolve), resolveOptions);
+  if (path.isAbsolute(requestedPath)) {
+    const aliasFieldResolved = resolveAliasFieldFromPackageJSON(requestedPath, resolveOptions);
+    if (aliasFieldResolved) return aliasFieldResolved;
+    if (fs.existsSync(requestedPath)) return requestedPath;
   }
 
-  return resolveModule(basePath, pathToResolve, resolveOptions);
+  if (requestedPath.startsWith('.')) {
+    return resolveUnknown(path.join(path.dirname(basePath), requestedPath), resolveOptions);
+  }
+
+  return resolveModule(basePath, requestedPath, resolveOptions);
 }
 
 export const ResolverPlugin: ReboostPlugin = {

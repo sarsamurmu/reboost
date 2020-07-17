@@ -144,7 +144,7 @@ export interface ReboostConfig {
     extensions?: string[];
     /**
      * Fields to check in package.json for script file
-     * @default ['module', 'main']
+     * @default ['browser', 'module', 'main']
      */
     mainFields?: string[];
     /**
@@ -191,8 +191,8 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
     alias: {},
     extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json'],
     mainFiles: ['index'],
-    mainFields: ['module', 'main'],
-    modules: ['node_modules']
+    mainFields: ['browser', 'module', 'main'],
+    modules: ['node_modules'],
   },
   showResponseTime: false,
   sourceMaps: {

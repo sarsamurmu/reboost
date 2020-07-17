@@ -217,4 +217,28 @@ describe('Module Resolver', () => {
 
     assert.equal(resolve(main, './mod'), indexFile);
   });
+
+  it('resolves aliasField in package.json', () => {
+    const main = f('main.js');
+    const pkgJSON = f('mod/package.json');
+    const imported = f('mod/dist/browser.js');
+
+    mockFS({
+      [main]: '',
+      [imported]: '',
+      [pkgJSON]: JSON.stringify({
+        main: './dist/main.js',
+        browser: {
+          './dist/main.js': './dist/browser.js'
+        }
+      })
+    });
+
+    assert.equal(resolve(main, './mod', {
+      mainFields: ['browser', 'main']
+    }), imported);
+    assert.equal(resolve(main, './mod/dist/main.js', {
+      mainFields: ['browser', 'main']
+    }), imported);
+  });
 });
