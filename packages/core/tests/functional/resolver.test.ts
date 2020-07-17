@@ -256,6 +256,9 @@ describe('Module Resolver', () => {
     assert.equal(resolve(main, './mod/dist/main.js', {
       mainFields: ['browser', 'main']
     }), imported);
+    assert.equal(resolve(main, f('mod/dist/main.js'), {
+      mainFields: ['browser', 'main']
+    }), imported);
   });
 
   it('resolves roots', () => {
