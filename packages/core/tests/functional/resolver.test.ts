@@ -241,4 +241,18 @@ describe('Module Resolver', () => {
       mainFields: ['browser', 'main']
     }), imported);
   });
+
+  it('resolves roots', () => {
+    const main = f('path1/main.js');
+    const moduleIndex = f('path2/nested/node_modules/mod/index.js');
+
+    mockFS({
+      [main]: '',
+      [moduleIndex]: ''
+    });
+
+    assert.equal(resolve(main, 'mod', {
+      roots: [f('path2/nested')]
+    }), moduleIndex);
+  });
 });

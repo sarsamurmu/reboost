@@ -148,8 +148,9 @@ function resolvePackagePath(
 function resolveModule(
   basePath: string,
   packagePath: string,
-  resolveOptions: ReboostConfig['resolve']
-) {
+  resolveOptions: ReboostConfig['resolve'],
+  checkRoots = true
+): string {
   const absoluteModulesDirs = resolveOptions.modules.filter((p) => path.isAbsolute(p));
   const modulesDirNames = resolveOptions.modules.filter((p) => !path.isAbsolute(p));
 
@@ -170,6 +171,15 @@ function resolveModule(
         const resolved = resolvePackagePath(packagePath, modulesDir, resolveOptions);
         if (resolved) return resolved;
       }
+    }
+  }
+
+  if (checkRoots) {
+    for (const root of resolveOptions.roots) {
+      // `resolveModule` algorithm is written in a way that we have
+      // to pass the path with file name
+      const resolved = resolveModule(path.join(root, 'file.js'), packagePath, resolveOptions, false);
+      if (resolved) return resolved;
     }
   }
 

@@ -157,6 +157,11 @@ export interface ReboostConfig {
      * @default ['node_modules']
      */
     modules?: string[];
+    /**
+     * Absolute root paths to search for modules
+     * @default [config.rootDir]
+     */
+    roots?: string[];
   };
   /** When enabled, logs the time it takes to serve a file */
   showResponseTime?: boolean;
@@ -193,6 +198,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
     mainFiles: ['index'],
     mainFields: ['browser', 'module', 'main'],
     modules: ['node_modules'],
+    roots: undefined
   },
   showResponseTime: false,
   sourceMaps: {
@@ -226,6 +232,7 @@ export const start = (config: ReboostConfig = {} as any) => {
       if (!config.watchOptions.include) {
         config.watchOptions.include = /.*/;
       }
+      if (!config.resolve.roots) config.resolve.roots = [config.rootDir];
       if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
         config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
       }
