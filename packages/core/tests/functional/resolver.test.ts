@@ -218,6 +218,22 @@ describe('Module Resolver', () => {
     assert.equal(resolve(main, './mod'), indexFile);
   });
 
+  it('resolves package.json `main` field as a directory', () => {
+    const main = f('main.js');
+    const pkgJSON = f('mod/package.json');
+    const indexFile = f('mod/lib/index.js');
+
+    mockFS({
+      [main]: '',
+      [indexFile]: '',
+      [pkgJSON]: JSON.stringify({
+        main: 'lib'
+      })
+    });
+
+    assert.equal(resolve(main, './mod'), indexFile);
+  });
+
   it('resolves aliasField in package.json', () => {
     const main = f('main.js');
     const pkgJSON = f('mod/package.json');
