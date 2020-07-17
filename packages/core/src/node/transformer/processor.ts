@@ -92,12 +92,12 @@ export const process = async (
           result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
           sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
         }
-        type = result.type || type;
+        if (result.type) type = result.type;
       }
     }
   }
 
-  runTransformContentHooks(transformContentHooks);
+  await runTransformContentHooks(transformContentHooks);
 
   for (const hook of transformIntoJSHooks) {
     const result = await bind(hook, pluginContext)({
@@ -116,13 +116,13 @@ export const process = async (
     }
   }
 
-  if (type !== 'js') {
-    let message = `[reboost] ${filePath}: File with type "${type}" is not supported. `;
+  if (!['js', 'mjs', 'es6', 'es'].includes(type)) {
+    let message = `${filePath}: File with type "${type}" is not supported. `;
     message += 'You may need proper loader to transform this kind of files into JS.';
     return handleError({ message });
   }
 
-  runTransformContentHooks(transformJSContentHooks);
+  await runTransformContentHooks(transformJSContentHooks);
 
   try {
     ast = parse(code, {
