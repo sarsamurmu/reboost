@@ -209,10 +209,21 @@ export function resolve(
   return resolveModule(basePath, requestedPath, resolveOptions);
 }
 
+const cacheMap = new Map();
+
 export const ResolverPlugin: ReboostPlugin = {
   name: 'core-resolver-plugin',
   resolve(importPath, importer) {
     if (importPath.startsWith('#/')) return importPath;
-    return resolve(importer, importPath);
+
+    const key = `${importer} -> ${importPath}`;
+    if (cacheMap.has(key)) {
+      const resolvedPath = cacheMap.get(key);
+      if (fs.existsSync(resolvedPath)) return resolvedPath;
+    }
+
+    const resolvedPath = resolve(importer, importPath);
+    if (resolvedPath) cacheMap.set(key, resolvedPath);
+    return resolvedPath;
   }
 }
