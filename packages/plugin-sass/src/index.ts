@@ -26,12 +26,16 @@ export = (options: Options = {}): ReboostPlugin => {
       if (['sass', 'scss'].includes(data.type)) {
         // Prefer `node-sass` over `sass`
         if (!sass) {
-          const nodeSassPath = this.resolve('', 'node-sass', { mainFields: ['main'] });
+          const nodeSassPath = this.resolve(__filename, 'node-sass', {
+            mainFields: ['main']
+          });
 
           if (nodeSassPath) {
             sass = require(nodeSassPath);
           } else {
-            const sassPath = this.resolve('', 'sass', { mainFields: ['main'] });
+            const sassPath = this.resolve(__filename, 'sass', {
+              mainFields: ['main']
+            });
             if (sassPath) sass = require(sassPath);
           }
         }

@@ -19,7 +19,9 @@ export = (options: SveltePluginOptions = {}): ReboostPlugin => {
     name: 'core-svelte-plugin',
     async transformContent(data, filePath) {
       if (data.type === 'svelte') {
-        if (!sveltePath) sveltePath = this.resolve('', 'svelte/compiler', { mainFields: ['main'] });
+        if (!sveltePath) sveltePath = this.resolve(__filename, 'svelte/compiler', {
+          mainFields: ['main']
+        });
 
         if (!sveltePath) {
           console.log(this.chalk.red('You need to install "svelte" package in order to use SveltePlugin.'));
