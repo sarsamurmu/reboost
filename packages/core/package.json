@@ -74,7 +74,7 @@
     "@types/postcss-modules-scope": "^1.1.0",
     "@types/postcss-modules-values": "^3.0.0",
     "chai": "*",
-    "concurrently": "^5.2.0",
+    "concurrently": "*",
     "mocha": "*",
     "mock-fs": "^4.12.0",
     "nyc": "*",

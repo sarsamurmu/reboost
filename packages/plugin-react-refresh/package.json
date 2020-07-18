@@ -3,16 +3,16 @@
   "name": "@reboost/plugin-react-refresh",
   "version": "0.5.11",
   "description": "React Fast Refresh plugin for Reboost",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/node/index.js",
+  "types": "./dist/node/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "node ../../rmDist",
-    "build": "tsc -p build.tsconfig.json",
-    "watch": "tsc -p build.tsconfig.json -w"
+    "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
+    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
   },
   "keywords": [
     "reboost",
@@ -29,6 +29,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/babel__core": "^7.1.9",
+    "concurrently": "*",
     "typescript": "*"
   },
   "dependencies": {
