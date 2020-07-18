@@ -4,7 +4,7 @@ const {
     UsePlugin
   }
 } = require('reboost');
-const ReactFastRefresh = require('@reboost/plugin-react-refresh');
+const ReactRefreshPlugin = require('@reboost/plugin-react-refresh');
 
 start({
   entries: [
@@ -20,7 +20,7 @@ start({
       // with .js, .ts, .jsx or .tsx extensions
       // Feel free to use any regex for your files
       test: /\.[jt]sx?$/i,
-      use: ReactFastRefresh()
+      use: ReactRefreshPlugin()
     })
   ]
 });
