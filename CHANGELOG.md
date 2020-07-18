@@ -1,3 +1,14 @@
+## 0.6.0
+- Improve Plugin API
+- Resolver
+  - Fix infinite loop when `"main": '.'` in `package.json`
+  - Fix module directory resolving. Now also checks directory in ancestors
+  - Added support for parsing `browser` fields in `package.json`
+  - Added new option `roots` to `ReboostConfig['resolve']`
+  - Cache results for faster path resolving
+- Added React Fast Refresh plugin
+- Updated dependencies
+
 ## 0.5.11
 - Removed unused codes
 - Minor fixes
