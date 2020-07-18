@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@reboost/plugin-react-refresh",
   "version": "0.5.11",
   "description": "React Fast Refresh plugin for Reboost",
