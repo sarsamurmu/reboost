@@ -27,7 +27,7 @@
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "@babel/core": "^7.10.4"
+    "@babel/core": "^7.10.5"
   },
   "dependencies": {
     "@types/babel__core": "^7.1.9"
