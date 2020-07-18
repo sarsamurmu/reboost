@@ -201,35 +201,3 @@ export const process = async (
     sourceMap
   }
 }
-
-// export const finalProcess = async (
-//   filePath: string,
-//   pluginContext: PluginContext,
-//   code: string,
-//   sourceMap: RawSourceMap,
-// ): Promise<{
-//   code?: string;
-//   sourceMap?: RawSourceMap;
-//   error?: string;
-// }> => {
-//   getPluginHooks();
-
-//   for (const hook of transformJSContentHooks) {
-//     const result = await bind(hook, pluginContext)({ code, type: 'js', map: sourceMap }, filePath);
-//     if (result) {
-//       if (result instanceof Error) return handleError(result);
-
-//       ({ code } = result);
-//       if (result.map) {
-//         // Here source maps sources can be null, like when source map is generated using MagicString (npm package)
-//         result.map.sources = result.map.sources.map((sourcePath) => !sourcePath ? filePath : sourcePath);
-//         sourceMap = sourceMap ? await mergeSourceMaps(sourceMap, result.map) : result.map;
-//       }
-//     }
-//   }
-
-//   return {
-//     code,
-//     sourceMap
-//   }
-// }
