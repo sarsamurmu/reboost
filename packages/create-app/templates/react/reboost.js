@@ -1,9 +1,10 @@
 const {
   start,
   builtInPlugins: {
-    esbuildPlugin
+    UsePlugin
   }
 } = require('reboost');
+const ReactFastRefresh = require('@reboost/plugin-react-refresh');
 
 start({
   entries: [
@@ -12,5 +13,14 @@ start({
   contentServer: {
     root: './public',
     open: true
-  }
+  },
+  plugins: [
+    UsePlugin({
+      // The following regex enables fast refresh for files
+      // with .js, .ts, .jsx or .tsx extensions
+      // Feel free to use any regex for your files
+      test: /\.[jt]sx?$/i,
+      use: ReactFastRefresh()
+    })
+  ]
 });

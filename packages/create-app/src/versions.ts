@@ -14,6 +14,7 @@ export const versions = {
   svelte: '^3.23.2',
   react: '^16.13.1',
   reactDom: '^16.13.1',
+  reboostPluginReactRefresh: `^${reboostPackageVersions['plugin-react-refresh']}`,
   vue: '^3.0.0-rc.1',
   reboostPluginVue: `^${reboostPackageVersions['plugin-vue']}`
 }
