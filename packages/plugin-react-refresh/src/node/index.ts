@@ -75,18 +75,3 @@ export = ({
     }
   }
 }
-
-/*
-({ parse }) => ({
-  visitor: {
-    Program(program: babel.NodePath<babel.types.Program>) {
-      program.node.body.unshift(
-        ...(parse(preCode) as babel.types.File).program.body
-      );
-      program.node.body.push(
-        ...(parse(postCode) as babel.types.File).program.body
-      );
-    }
-  }
-})
-*/
