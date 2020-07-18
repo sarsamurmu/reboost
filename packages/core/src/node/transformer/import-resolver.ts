@@ -8,16 +8,10 @@ import { getAddress } from '../shared';
 export const resolveImports = async (ast: babelTypes.Node, filePath: string, imports: string[]) => {
   let error = false;
 
-  const resolvedPathMap = {} as Record<string, any>;
   const resolvePath = async (source: string, filePath: string) => {
-    const keyStr = `${filePath}||${source}`;
-    if (resolvedPathMap[keyStr]) return resolvedPathMap[keyStr];
     for (const hook of getPluginHooks().resolveHooks) {
       const resolvedPath = await hook(source, filePath);
-      if (resolvedPath) {
-        resolvedPathMap[keyStr] = resolvedPath;
-        return resolvedPath
-      }
+      if (resolvedPath) return resolvedPath;
     }
     console.log(chalk.red(`[reboost] Unable to resolve path "${source}" of "${filePath}"`));
     return null;
@@ -59,7 +53,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
     }
   }
 
-  const promises: (() => Promise<void>)[] = [];
+  const promiseExecutors: (() => Promise<void>)[] = [];
   let astProgram: NodePath<babelTypes.Program>;
 
   traverse(ast, {
@@ -67,13 +61,13 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
       astProgram = astPath;
     },
     ImportDeclaration(astPath) {
-      promises.push(async () => {
+      promiseExecutors.push(async () => {
         await resolveDeclaration(astPath);
       });
       return false;
     },
     ExportDeclaration(astPath) {
-      promises.push(async () => {
+      promiseExecutors.push(async () => {
         await resolveDeclaration(astPath);
       });
       return false;
@@ -81,7 +75,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
     CallExpression(astPath) {
       const t = babelTypes;
       if (t.isIdentifier(astPath.node.callee, { name: '__reboost_resolve' })) {
-        promises.push(async () => {
+        promiseExecutors.push(async () => {
           astPath.replaceWith(
             t.stringLiteral(
               await resolvePath((astPath.node.arguments[0] as babelTypes.StringLiteral).value, filePath)
@@ -118,7 +112,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
     }
   });
 
-  for (const execute of promises) await execute();
+  for (const execute of promiseExecutors) await execute();
 
   return error;
 }
