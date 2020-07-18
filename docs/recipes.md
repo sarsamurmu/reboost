@@ -4,6 +4,22 @@ Here's how you can make Reboost work with different files/frameworks.
 ## React
 Works out of the box.
 
+## React with Fast Refresh
+Change configuration to match this
+```js
+const { start } = require('reboost');
+// NOTE: You have to install @reboost/plugin-react-refresh from npm
+const ReactRefreshPlugin = require('@reboost/plugin-react-refresh');
+
+start({
+  // Other options
+  plugins: [
+    // Other plugins
+    ReactRefreshPlugin()
+  ]
+})
+```
+
 ## Preact
 Change configuration to match this
 ```js
