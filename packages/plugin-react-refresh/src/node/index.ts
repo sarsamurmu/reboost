@@ -60,8 +60,10 @@ export = ({
 
         const resultCode = `${preCode}\n${babelResult.code};${postCode}`;
 
-        if (babelResult.map) babelResult.map.sources = [filePath];
-        babelResult.map.mappings = ';'.repeat(preCode.split('\n').length) + babelResult.map.mappings;
+        if (babelResult.map) {
+          babelResult.map.sources = [filePath];
+          babelResult.map.mappings = ';'.repeat(preCode.split('\n').length) + babelResult.map.mappings;
+        }
 
         return {
           code: resultCode,
