@@ -30,8 +30,8 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
     if (fs.existsSync(absolutePath)) {
       map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
     } else {
-      console.log(chalk.red(`Unable to find file "${toPosix(absolutePath)}". Required for source map generation.`));
-      map.sourcesContent.push(`Unable to find file in "${toPosix(absolutePath)}".`);
+      console.log(chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
+      map.sourcesContent.push(`Unable to find file in "${absolutePath}".`);
     }
   });
 
@@ -44,7 +44,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   address: getAddress(),
   config: getConfig(),
   addDependency(dependency) {
-    mergedDependencies.push(toPosix(dependency));
+    mergedDependencies.push(path.normalize(dependency));
   },
   chalk,
   getCompatibleSourceMap,

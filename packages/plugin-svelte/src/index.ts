@@ -53,8 +53,7 @@ export = (options: SveltePluginOptions = {}): ReboostPlugin => {
 
         dependencies.forEach((dependency) => {
           const absolutePath = path.isAbsolute(dependency) ? dependency : path.join(path.dirname(filePath), dependency);
-          const normalizedPath = path.normalize(absolutePath);
-          this.addDependency(normalizedPath);
+          this.addDependency(absolutePath);
         });
 
         /* eslint-disable prefer-const */

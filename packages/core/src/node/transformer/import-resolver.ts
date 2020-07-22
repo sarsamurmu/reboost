@@ -4,7 +4,6 @@ import * as babelTypes from '@babel/types';
 
 import { getPluginHooks } from './processor';
 import { getAddress } from '../shared';
-import { toPosix } from '../utils';
 
 export const resolveImports = async (ast: babelTypes.Node, filePath: string, imports: string[]) => {
   let error = false;
@@ -37,7 +36,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
               finalPath = resolvedPath.replace(/^#/, '');
               routed = true;
             } else {
-              finalPath = toPosix(resolvedPath);
+              finalPath = resolvedPath;
               imports.push(finalPath);
             }
           } else {
@@ -112,6 +111,24 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
       }
     }
   });
+
+  const t = babelTypes;
+
+  astProgram.node.body.unshift(
+    t.expressionStatement(
+      t.assignmentExpression(
+        '=',
+        t.memberExpression(
+          t.metaProperty(
+            t.identifier('import'),
+            t.identifier('meta')
+          ),
+          t.identifier('url')
+        ),
+        t.stringLiteral(filePath)
+      )
+    )
+  );
 
   for (const execute of promiseExecutors) await execute();
 

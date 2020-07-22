@@ -11,7 +11,6 @@ import path from 'path';
 import { postcssError } from './postcss';
 import { ReboostPlugin } from '../index';
 import { getConfig } from '../shared';
-import { toPosix } from '../utils';
 
 type Modes = 'local' | 'global' | 'pure';
 
@@ -39,7 +38,7 @@ const getID = (key: string) => {
 }
 
 const getCSS = (css: string, sourceMap: RawSourceMap, filePath: string) => {
-  let str = `\n/* ${toPosix(path.relative(getConfig().rootDir, filePath))} */\n\n`;
+  let str = `\n/* ${path.relative(getConfig().rootDir, filePath)} */\n\n`;
   str += css;
   if (sourceMap) {
     str += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';

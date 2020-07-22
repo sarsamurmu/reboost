@@ -64,6 +64,7 @@ const hot: HMR = {
   }
 };
 
+// TODO: Remove it in v1.0
 (hot as any).selfAccept = hot.self.accept;
 (hot as any).selfDispose = hot.self.dispose;
 

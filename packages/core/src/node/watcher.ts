@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig, messageClient, getFilesData, getFilesDir, saveFilesData } from './shared';
-import { diff, toPosix } from './utils';
+import { diff } from './utils';
 
 export const removeFile = (file: string) => {
   const filesData = getFilesData().files;
@@ -40,7 +40,7 @@ export const createWatcher = () => {
   const log = false && getConfig().debugMode;
 
   watcher.on('change', (filePath) => {
-    console.log(chalk.blue(`Changed: ${toPosix(path.relative(getConfig().rootDir, filePath))}`));
+    console.log(chalk.blue(`Changed: ${path.relative(getConfig().rootDir, filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
     const dependents = dependentsMap.get(filePath);
@@ -54,7 +54,7 @@ export const createWatcher = () => {
   });
 
   watcher.on('unlink', (filePath) => {
-    console.log(chalk.blue(`Deleted: ${toPosix(path.relative(getConfig().rootDir, filePath))}`));
+    console.log(chalk.blue(`Deleted: ${path.relative(getConfig().rootDir, filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
     dependentsMap.delete(filePath);
@@ -68,12 +68,14 @@ export const createWatcher = () => {
   });
 
   const setDependencies = (file: string, dependencies: string[]) => {
+    file = path.normalize(file);
+
     if (
       !anymatch(watchOptions.exclude, file) && // Not excluded
       anymatch(watchOptions.include, file) // and included
     ) {
       const prevDependencies = dependenciesMap.get(file) || [];
-      const dependenciesCopy = dependencies.slice(0);
+      const dependenciesCopy = dependencies.map((p) => path.normalize(p));
       // The file itself is also the file's dependency
       dependenciesCopy.unshift(file);
 

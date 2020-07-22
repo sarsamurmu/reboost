@@ -73,8 +73,7 @@ export = (options: Options = {}): ReboostPlugin => {
               const result = sass.renderSync(renderOptions as any);
 
               result.stats.includedFiles.forEach((includedFile) => {
-                const normalizedPath = path.normalize(includedFile);
-                this.addDependency(normalizedPath);
+                this.addDependency(includedFile);
               });
 
               resolve({

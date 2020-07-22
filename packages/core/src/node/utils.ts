@@ -11,9 +11,7 @@ export type DeepFrozen<T> = T extends Record<string, any> ? {
   readonly [P in keyof T]: DeepFrozen<T[P]>;
 } : T extends any[] ? readonly T[] : T;
 
-export const toPosix = path.sep === '/'
-  ? (pathString: string) => pathString
-  : (pathString: string) => pathString.replace(/\\/g, '/');
+export const toPosix = (pathString: string) => pathString.replace(/\\/g, '/');
 
 export const uniqueID = (length = 32) => Array(length).fill(0).map(() => (Math.random() * 16 | 0).toString(16)).join('');
 
