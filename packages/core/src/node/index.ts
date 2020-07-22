@@ -3,6 +3,7 @@ import Router from '@koa/router';
 import cors from '@koa/cors';
 import serveStatic from 'koa-static';
 import withWebSocket from 'koa-websocket';
+import { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import chalk from 'chalk';
 import portFinder from 'portfinder';
 import { Matcher } from 'anymatch';
@@ -11,7 +12,6 @@ import * as babelTypes from '@babel/types';
 import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
 import open from 'open';
-import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import MagicString from 'magic-string';
 
 import { networkInterfaces } from 'os';
@@ -20,6 +20,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
+import { createContentServer } from './content-server';
 import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData, getUsedPlugins } from './shared';
 import { verifyFiles } from './file-handler';
@@ -336,22 +337,7 @@ export const start = (config: ReboostConfig = {} as any) => {
           console.log(chalk.green('[reboost] Proxy server started'));
 
           if (config.contentServer) {
-            const contentServer = new Koa();
-
-            contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
-
-            const proxyObject = config.contentServer.proxy;
-            if (proxyObject) {
-              for (const key in proxyObject) {
-                const proxyOptions: ProxyOptions = typeof proxyObject[key] === 'string'
-                  ? { target: proxyObject[key] as string }
-                  : proxyObject[key] as ProxyOptions;
-
-                contentServer.use(proxy(key, proxyOptions));
-              }
-            }
-
-            if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
+            const contentServer = createContentServer();
 
             const startedAt = (address: string) => {
               console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
