@@ -31,7 +31,7 @@
     "typescript": "*"
   },
   "dependencies": {
-    "@vue/compiler-sfc": "^3.0.0-rc.1",
+    "@vue/compiler-sfc": "^3.0.0-rc.4",
     "hash-sum": "^2.0.0"
   }
 }
