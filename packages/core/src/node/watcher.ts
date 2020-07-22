@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig, messageClient, getFilesData, getFilesDir, saveFilesData } from './shared';
-import { diff } from './utils';
+import { diff, toPosix } from './utils';
 
 export const removeFile = (file: string) => {
   const filesData = getFilesData().files;
@@ -40,7 +40,7 @@ export const createWatcher = () => {
   const log = false && getConfig().debugMode;
 
   watcher.on('change', (filePath) => {
-    console.log(chalk.blue(`Changed: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
+    console.log(chalk.blue(`Changed: ${toPosix(path.relative(getConfig().rootDir, filePath))}`));
     if (!dependentsMap.has(filePath)) return;
 
     const dependents = dependentsMap.get(filePath);
@@ -54,7 +54,7 @@ export const createWatcher = () => {
   });
 
   watcher.on('unlink', (filePath) => {
-    console.log(chalk.blue(`Deleted: ${path.relative(getConfig().rootDir, filePath).replace(/\\/g, '/')}`));
+    console.log(chalk.blue(`Deleted: ${toPosix(path.relative(getConfig().rootDir, filePath))}`));
     if (!dependentsMap.has(filePath)) return;
 
     dependentsMap.delete(filePath);

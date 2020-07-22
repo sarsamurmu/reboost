@@ -4,6 +4,7 @@ import * as babelTypes from '@babel/types';
 
 import { getPluginHooks } from './processor';
 import { getAddress } from '../shared';
+import { toPosix } from '../utils';
 
 export const resolveImports = async (ast: babelTypes.Node, filePath: string, imports: string[]) => {
   let error = false;
@@ -36,8 +37,8 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
               finalPath = resolvedPath.replace(/^#/, '');
               routed = true;
             } else {
-              finalPath = resolvedPath;
-              imports.push(resolvedPath);
+              finalPath = toPosix(resolvedPath);
+              imports.push(finalPath);
             }
           } else {
             error = true;

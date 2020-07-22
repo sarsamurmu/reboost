@@ -5,9 +5,10 @@ import { codeFrameColumns } from '@babel/code-frame';
 import path from 'path';
 
 import { ReboostPlugin, ReboostConfig } from '../index';
+import { toPosix } from '../utils';
 
 export const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
-  let errorMessage = `${pluginName}: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
+  let errorMessage = `${pluginName}: Error while processing "${toPosix(path.relative(config.rootDir, error.file))}"\n`;
   errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
 
   errorMessage += codeFrameColumns(error.source, {
@@ -73,7 +74,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
               try {
                 warnings().forEach((warning) => {
                   const { text, line, column } = warning;
-                  console.log(this.chalk.yellow(`PostCSS: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n(${line}:${column}) ${text}`));
+                  console.log(this.chalk.yellow(`PostCSS: Warning "${toPosix(path.relative(this.config.rootDir, filePath))}"\n\n(${line}:${column}) ${text}`));
                 });
               } catch (e) {
                 // Do nothing

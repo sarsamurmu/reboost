@@ -9,12 +9,10 @@ import path from 'path';
 
 import { PluginContext } from '../index';
 import { getConfig, getAddress } from '../shared';
-import { mergeSourceMaps } from '../utils';
+import { mergeSourceMaps, toPosix } from '../utils';
 import { resolve } from '../core-plugins/resolver';
 import { process } from './processor';
 import { resolveImports } from './import-resolver';
-
-const fixPath = (pathString: string) => pathString.replace(/\\/g, '/');
 
 const getCompatibleSourceMap = (map: RawSourceMap) => {
   const config = getConfig();
@@ -22,8 +20,8 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
   map.sourceRoot = 'reboost:///';
 
   map.sources = map.sources.map((sourcePath: string) => {
-    if (path.isAbsolute(sourcePath)) return fixPath(path.relative(config.rootDir, sourcePath));
-    return fixPath(sourcePath);
+    if (path.isAbsolute(sourcePath)) return toPosix(path.relative(config.rootDir, sourcePath));
+    return toPosix(sourcePath);
   });
 
   map.sourcesContent = [];
@@ -32,8 +30,8 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
     if (fs.existsSync(absolutePath)) {
       map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
     } else {
-      console.log(chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
-      map.sourcesContent.push(`Unable to find file in "${absolutePath}".`);
+      console.log(chalk.red(`Unable to find file "${toPosix(absolutePath)}". Required for source map generation.`));
+      map.sourcesContent.push(`Unable to find file in "${toPosix(absolutePath)}".`);
     }
   });
 
@@ -46,7 +44,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   address: getAddress(),
   config: getConfig(),
   addDependency(dependency) {
-    mergedDependencies.push(dependency);
+    mergedDependencies.push(toPosix(dependency));
   },
   chalk,
   getCompatibleSourceMap,
@@ -59,7 +57,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   MagicString,
   mergeSourceMaps,
   resolve
-})
+});
 
 export const transformFile = async (filePath: string): Promise<{
   code: string;
@@ -92,7 +90,7 @@ export const transformFile = async (filePath: string): Promise<{
   const { debugMode } = getConfig();
   const generatorOptions: GeneratorOptions = {
     sourceMaps: true,
-    sourceFileName: fixPath(path.relative(getConfig().rootDir, filePath)),
+    sourceFileName: toPosix(path.relative(getConfig().rootDir, filePath)),
     sourceRoot: 'reboost:///',
     minified: !debugMode
   }

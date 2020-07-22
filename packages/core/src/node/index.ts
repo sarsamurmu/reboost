@@ -20,7 +20,7 @@ import path from 'path';
 import http from 'http';
 
 import { createRouter } from './router';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, toPosix } from './utils';
 import { setAddress, setConfig, setWebSocket, getFilesData, getUsedPlugins } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
@@ -183,7 +183,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = '0.5.10';
+const INCOMPATIBLE_BELOW = '0.6.1';
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
@@ -307,7 +307,7 @@ export const start = (config: ReboostConfig = {} as any) => {
         let fileContent = `import '${fullAddress}/setup';\n`;
         fileContent += 'import';
         if (libName) fileContent += ' * as _$lib$_ from';
-        fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
+        fileContent += ` '${fullAddress}/transformed?q=${encodeURI(toPosix(path.join(config.rootDir, input)))}';\n`;
         if (libName) fileContent += `window['${libName}'] = _$lib$_;\n`;
 
         fs.promises.writeFile(outputPath, fileContent);

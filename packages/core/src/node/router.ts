@@ -7,6 +7,7 @@ import path from 'path';
 
 import { fileRequestHandler } from './file-handler';
 import { getAddress, getConfig } from './shared';
+import { toPosix } from './utils';
 
 export const createRouter = () => {
   const router = new Router();
@@ -56,7 +57,7 @@ export const createRouter = () => {
       if (plugin.resolve) {
         const resolvedPath = await plugin.resolve(pathToResolve, relativeTo);
         if (resolvedPath) {
-          finalPath = resolvedPath;
+          finalPath = toPosix(resolvedPath);
           break;
         }
       }

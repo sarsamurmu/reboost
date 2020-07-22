@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir } from './shared';
-import { ensureDir, uniqueID, diff } from './utils';
+import { ensureDir, uniqueID, diff, toPosix } from './utils';
 import { transformFile } from './transformer';
 import { createWatcher, removeFile } from './watcher';
 
@@ -122,7 +122,7 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
   if (!watcher) watcher = createWatcher();
 
   const filePath = ctx.query.q;
-  const timerName = chalk.cyan(`Response time - ${path.relative(config.rootDir, filePath)}`);
+  const timerName = chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}`);
   let transformedCode: string;
 
   if (config.showResponseTime) console.time(timerName);
