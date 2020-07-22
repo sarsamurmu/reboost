@@ -50,7 +50,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       factory: 'React.createElement',
       fragment: 'React.Fragment'
     },
-    target: 'es2019',
+    target: 'es2020',
     minify: true,
     define: {
       'process.env.NODE_ENV': '"development"'

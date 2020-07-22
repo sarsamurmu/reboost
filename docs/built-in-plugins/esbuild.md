@@ -73,7 +73,7 @@ Component to use as the fragment component.
 
 #### `target`
 Type: `'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020'`\
-Default: `'es2019'`
+Default: `'es2020'`
 
 The ECMAScript version esbuild should target when transforming files.
 
