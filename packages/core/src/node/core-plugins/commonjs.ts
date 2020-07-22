@@ -109,13 +109,9 @@ export const CommonJSPlugin: ReboostPlugin = {
     });
 
     if (cjsModule) {
+      const moduleExportsExp = t.memberExpression(t.identifier('module'), t.identifier('exports'));
+
       program.node.body.unshift(
-        t.exportNamedDeclaration(
-          t.variableDeclaration(
-            'const',
-            [t.variableDeclarator(t.identifier('__cjsModule'), t.booleanLiteral(true))]
-          )
-        ),
         t.variableDeclaration(
           'const',
           [
@@ -135,15 +131,21 @@ export const CommonJSPlugin: ReboostPlugin = {
           [
             t.variableDeclarator(
               t.identifier('exports'),
-              t.memberExpression(t.identifier('module'), t.identifier('exports'))
+              moduleExportsExp
             )
           ]
         )
       );
 
       program.node.body.push(
-        t.exportDefaultDeclaration(
-          t.memberExpression(t.identifier('module'), t.identifier('exports'))
+        t.exportNamedDeclaration(
+          t.variableDeclaration(
+            'const',
+            [t.variableDeclarator(
+              t.identifier('__cjsExports'),
+              moduleExportsExp
+            )]
+          )
         )
       );
     }

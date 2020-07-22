@@ -9,15 +9,18 @@ declare const address: string;
 
 const importer: Importer = {
   All(mod) {
-    if (mod.__cjsModule) return mod.default;
+    if (mod.__cjsExports) return mod.__cjsExports;
     return mod;
   },
   Default(mod, sourcePath, importerPath) {
     const message = `The requested module "${sourcePath}" does not provide an export named "default". Module is imported by "${importerPath}"`;
 
-    if (mod.__cjsModule && mod.default.__esModule) {
-      if (!('default' in mod.default)) throw new SyntaxError(message);
-      return mod.default.default;
+    if (mod.__cjsExports) {
+      if (mod.__cjsExports.__esModule) {
+        if (!('default' in mod.__cjsExports)) throw new SyntaxError(message);
+        return mod.__cjsExports.default;
+      }
+      return mod.__cjsExports;
     }
     if (!('default' in mod)) throw new SyntaxError(message);
     return mod.default;
@@ -33,9 +36,9 @@ const importer: Importer = {
   Member(mod, member, sourcePath, importerPath) {
     const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module is imported by "${importerPath}"`;
 
-    if (mod.__cjsModule) {
-      if (!(member in mod.default)) throw new SyntaxError(message);
-      return mod.default[member];
+    if (mod.__cjsExports) {
+      if (!(member in mod.__cjsExports)) throw new SyntaxError(message);
+      return mod.__cjsExports[member];
     }
     if (!(member in mod)) throw new SyntaxError(message);
     return mod[member];
