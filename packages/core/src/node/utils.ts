@@ -44,13 +44,13 @@ export const ensureDir = (dirPath: string) => {
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 }
 
-export const isDir = (dirPath: string) => fs.lstatSync(dirPath).isDirectory();
+export const isDirectory = (dirPath: string) => fs.lstatSync(dirPath).isDirectory();
 
 export const rmDir = (dirPath: string) => {
   if (!fs.existsSync(dirPath)) return;
   fs.readdirSync(dirPath).forEach((file) => {
     const filePath = path.join(dirPath, file);
-    if (isDir(filePath)) return rmDir(filePath);
+    if (isDirectory(filePath)) return rmDir(filePath);
     fs.unlinkSync(filePath);
   });
   fs.rmdirSync(dirPath);

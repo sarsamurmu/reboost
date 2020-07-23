@@ -3,7 +3,7 @@ import path from 'path';
 
 import { ReboostPlugin, ReboostConfig } from '../index';
 import { getConfig } from '../shared';
-import { isDir } from '../utils';
+import { isDirectory } from '../utils';
 
 function resolveUnknown(
   requestedPath: string,
@@ -14,7 +14,7 @@ function resolveUnknown(
   if (aliasFieldResolved) return aliasFieldResolved;
 
   if (fs.existsSync(requestedPath)) {
-    if (isDir(requestedPath)) return resolveDirectory(requestedPath, resolveOptions, skippedPkgJSON);
+    if (isDirectory(requestedPath)) return resolveDirectory(requestedPath, resolveOptions, skippedPkgJSON);
     return requestedPath;
   }
 

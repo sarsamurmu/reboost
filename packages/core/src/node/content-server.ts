@@ -6,14 +6,13 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig } from './shared';
+import { isDirectory } from './utils';
 
 export const serveDirectory = () => {
   const { contentServer: { root } } = getConfig();
   const styles = /* css */`
-    @import url(https://fonts.googleapis.com/css2?family=Sora:wght@400&display=swap);
-
     * {
-      font-family: 'Sora', sans-serif;
+      font-family: monospace;
       --link: rgb(0, 0, 238);
     }
 
@@ -36,7 +35,7 @@ export const serveDirectory = () => {
     li a {
       padding: 5px 0px;
       text-decoration: none;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: var(--link);
       border-bottom-style: solid;
       border-width: 2px;
@@ -55,8 +54,9 @@ export const serveDirectory = () => {
     }
 
     [icon] {
-      height: 1.5rem;
-      width: 1.5rem;
+      --size: 1.5rem;
+      height: var(--size);
+      width: var(--size);
       display: inline-block;
       margin-right: 0.5rem;
     }
@@ -70,20 +70,24 @@ export const serveDirectory = () => {
     [icon=file] {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' style='width:24px;height:24px' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' /%3E%3C/svg%3E");
     }
+
+    [icon=go-up] {
+      transform: rotate(90deg);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' style='width:24px;height:24px' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M11,9L12.42,10.42L8.83,14H18V4H20V16H8.83L12.42,19.58L11,21L5,15L11,9Z' /%3E%3C/svg%3E");
+    }
   `;
 
   // eslint-disable-next-line @typescript-eslint/require-await
   return async (ctx: Koa.Context) => {
     const dirPath = path.join(root, ctx.path);
-    const fullPath = (file: string) => path.join(dirPath, file);
 
     if (
       !fs.existsSync(dirPath) ||
-      !fs.lstatSync(dirPath).isDirectory()
+      !isDirectory(dirPath)
     ) return;
 
     const all = fs.readdirSync(dirPath);
-    const directories = all.filter((file) => fs.lstatSync(fullPath(file)).isDirectory()).sort();
+    const directories = all.filter((file) => isDirectory(path.join(dirPath, file))).sort();
     const files = all.filter((file) => !directories.includes(file)).sort();
 
     /* eslint-disable indent */
@@ -98,18 +102,27 @@ export const serveDirectory = () => {
         <body>
           <h2>Index of ${ctx.path}</h2>
           <ul>
+            ${ctx.path !== '/' ? /* html */`
+              <li>
+                <a href="${path.join(ctx.path, '..')}">
+                  <i icon="go-up"></i>
+                  Go up
+                </a>
+              <li>
+            ` : ''}
             ${directories.concat(files).map((file) => {
-              const full = file + (directories.includes(file) ? '/' : '');
-              return `
-                <li>
-                  <a
-                    href="./${full}">
-                    <span icon="${directories.includes(file) ? 'directory' : 'file'}"></span>
-                    ${full}
-                  </a>
-                </li>
-              `;
-            }).join('\n')}
+                const isDir = directories.includes(file);
+                const full = file + (isDir ? '/' : '');
+
+                return /* html */`
+                  <li>
+                    <a href="./${full}">
+                      <i icon="${isDir ? 'directory' : 'file'}"></i>
+                      ${full}
+                    </a>
+                  </li>
+                `;
+              }).join('\n')}
           </ul>
         </body>
       </html>
