@@ -5,23 +5,52 @@ import { ReboostPlugin, ReboostConfig } from '../index';
 import { getConfig } from '../shared';
 import { isDirectory } from '../utils';
 
+function resolveSymlink(requestedPath: string) {
+  let fileStat: fs.Stats;
+  if (fs.existsSync(requestedPath) && (fileStat = fs.lstatSync(requestedPath)).isSymbolicLink()) {
+    const linkPath = fs.readlinkSync(requestedPath);
+    const filePath = path.isAbsolute(linkPath)
+      ? linkPath
+      : path.join(fileStat.isDirectory() ? requestedPath : path.basename(requestedPath), linkPath);
+
+    return filePath;
+  }
+
+  return null;
+}
+
 function resolveUnknown(
   requestedPath: string,
   resolveOptions: ReboostConfig['resolve'],
   skippedPkgJSON = ''
 ): string {
   const aliasFieldResolved = resolveAliasFieldFromPackageJSON(requestedPath, resolveOptions);
-  if (aliasFieldResolved) return aliasFieldResolved;
+  if (aliasFieldResolved) {
+    const symlinkResolved = resolveSymlink(aliasFieldResolved);
+    if (symlinkResolved) {
+      return resolveUnknown(symlinkResolved, resolveOptions);
+    }
+    return aliasFieldResolved;
+  }
 
   if (fs.existsSync(requestedPath)) {
     if (isDirectory(requestedPath)) return resolveDirectory(requestedPath, resolveOptions, skippedPkgJSON);
+    const symlinkResolved = resolveSymlink(requestedPath);
+    if (symlinkResolved) {
+      return resolveUnknown(symlinkResolved, resolveOptions);
+    }
     return requestedPath;
   }
 
   const resolved = resolveExtension(requestedPath, resolveOptions.extensions);
   if (resolved) {
     const eAliasFieldResolved = resolveAliasFieldFromPackageJSON(resolved, resolveOptions);
-    return eAliasFieldResolved || resolved;
+    const truthyPath = eAliasFieldResolved || resolved;
+    const symlinkResolved = resolveSymlink(truthyPath);
+    if (symlinkResolved) {
+      return resolveUnknown(symlinkResolved, resolveOptions);
+    }
+    return truthyPath;
   }
 
   return null;
@@ -71,7 +100,13 @@ function resolveDirectory(
   for (const mainFile of resolveOptions.mainFiles) {
     const filePath = path.join(dirPath, mainFile);
     const resolved = resolveExtension(filePath, resolveOptions.extensions);
-    if (resolved) return resolved;
+    if (resolved) {
+      const symlinkResolved = resolveSymlink(resolved);
+      if (symlinkResolved) {
+        return resolveUnknown(symlinkResolved, resolveOptions);
+      }
+      return resolved;
+    }
   }
 
   return null;
@@ -142,6 +177,8 @@ function resolvePackagePath(
     moduleDirPath = path.join(moduleDirPath, restPart.shift());
   }
 
+  moduleDirPath = resolveSymlink(moduleDirPath) || moduleDirPath;
+
   return resolveUnknown(path.join(moduleDirPath, ...restPart), resolveOptions);
 }
 
@@ -197,9 +234,7 @@ export function resolve(
   requestedPath = resolveAlias(requestedPath, resolveOptions.alias);
 
   if (path.isAbsolute(requestedPath)) {
-    const aliasFieldResolved = resolveAliasFieldFromPackageJSON(requestedPath, resolveOptions);
-    if (aliasFieldResolved) return aliasFieldResolved;
-    if (fs.existsSync(requestedPath)) return requestedPath;
+    return resolveUnknown(requestedPath, resolveOptions);
   }
 
   if (requestedPath.startsWith('.')) {

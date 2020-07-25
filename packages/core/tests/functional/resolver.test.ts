@@ -27,6 +27,38 @@ describe('Module Resolver', () => {
     assert.equal(resolve(main, absolute), absolute);
   });
 
+  it('resolves relative symlinks', () => {
+    const main = f('dir1/dir2/dir3/main.js');
+    const symlink = f('dir1/dir2/dir3/sym.js');
+    const actual = f('dir1/actual.js');
+
+    mockFS({
+      [main]: '',
+      [symlink]: mockFS.symlink({
+        path: actual
+      }),
+      [actual]: ''
+    });
+
+    assert.equal(resolve(main, './sym'), actual);
+  });
+
+  it('resolves symlinks in modules', () => {
+    const main = f('dir1/dir2/dir3/main.js');
+    const symlink = f('dir1/dir2/dir3/node_modules/mod');
+    const actual = f('dir1/mod/index.js');
+
+    mockFS({
+      [main]: '',
+      [symlink]: mockFS.symlink({
+        path: actual
+      }),
+      [actual]: ''
+    });
+
+    assert.equal(resolve(main, 'mod'), actual);
+  });
+
   it('resolves extensions', () => {
     const main = f('main.js');
     const JSFile = f('javascript.js');
