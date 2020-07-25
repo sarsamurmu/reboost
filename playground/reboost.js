@@ -22,7 +22,8 @@ start({
     ['./src/vue/index.js', './public/dist/vue.js']
   ],
   contentServer: {
-    root: './public'
+    root: './public',
+    index: false
   },
   plugins: [
     UsePlugin({
