@@ -59,7 +59,7 @@
 - TypeScript
 - Vue
 
-Please see the [Recipes](/docs/recipes.md) for template configurations.
+See the [Recipes](/docs/recipes.md) for template configurations.
 
 ## Compatibility
 Reboost works with both CommonJS and ES modules, so you can try it even
