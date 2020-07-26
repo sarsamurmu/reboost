@@ -1,3 +1,11 @@
+## 0.7.0
+- Updated dependencies
+- Set esbuild plugin's default target to `es2020`
+- Fixed `import.meta.url`
+- Improved CommonJS interoperability
+- Content server can now show directories
+- Now supports symbolic links
+
 ## 0.6.0
 - Improve Plugin API
 - Resolver
