@@ -1,5 +1,5 @@
-import { HMRMapType } from './hmr';
-import { Importer } from './importer';
+import type { HMRMapType } from './hmr';
+import type { Importer } from './importer';
 
 declare const address: string;
 
@@ -34,36 +34,50 @@ socket.addEventListener('open', () => {
   // ? Should we send message to server that we're connected?
 });
 
+const reloadPage = () => {
+  // ? Maybe we can ask user if they really want to reload?
+  location.reload();
+}
+
 socket.addEventListener('message', async ({ data }) => {
-  const { type, file: acceptedFile } = JSON.parse(data);
+  const {
+    type,
+    file: emitterFile
+  }: {
+    type: string;
+    file: string;
+  } = JSON.parse(data);
 
   if (type === 'change') {
-    if (HMR_MAP.has(acceptedFile)) {
+    if (HMR_MAP.has(emitterFile)) {
+      const fileLastUpdated = lastUpdatedData[emitterFile];
+      const now = Date.now();
+
       // Apply HMR only if file's last updated time is greater that 0.8s
-      const fileLastUpdated = lastUpdatedData[acceptedFile];
-      if (!fileLastUpdated || (((Date.now() - fileLastUpdated) / 1000) > 0.8)) {
+      if (!fileLastUpdated || (((now - fileLastUpdated) / 1000) > 0.8)) {
         await loadImporter;
 
-        HMR_DATA_MAP.set(acceptedFile, {});
-        lastUpdatedData[acceptedFile] = Date.now();
+        HMR_DATA_MAP.set(emitterFile, {});
+        lastUpdatedData[emitterFile] = now;
 
-        HMR_MAP.get(acceptedFile).forEach(({ dispose }) => {
-          if (dispose) dispose(HMR_DATA_MAP.get(acceptedFile));
+        if (HMR_MAP.get(emitterFile).declined) reloadPage();
+
+        HMR_MAP.get(emitterFile).listeners.forEach(({ dispose }) => {
+          if (dispose) dispose(HMR_DATA_MAP.get(emitterFile));
         });
 
-        import(`${address}/transformed?q=${encodeURI(acceptedFile)}&t=${Date.now()}`).then((mod) => {
-          HMR_MAP.get(acceptedFile).forEach(({ accept }) => {
+        import(`${address}/transformed?q=${encodeURI(emitterFile)}&t=${now}`).then((mod) => {
+          HMR_MAP.get(emitterFile).listeners.forEach(({ accept }) => {
             if (accept) accept(importer.All(mod));
           });
 
-          HMR_DATA_MAP.delete(acceptedFile);
+          HMR_DATA_MAP.delete(emitterFile);
         });
       }
     } else {
-      location.reload();
+      reloadPage();
     }
   } else if (type === 'unlink') {
-    // ? Maybe we can ask user if they really want to reload?
-    location.reload();
+    reloadPage();
   }
 });

@@ -7,12 +7,16 @@ export type HMR = Readonly<{
   }>;
   accept(dependency: string, callback: (module: any) => void): void;
   dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
+  decline(): void;
 }>;
 
-export type HMRMapType = Map<string, Map<string, {
-  accept?: (module: any) => void;
-  dispose?: (data: Record<string, any>) => void;
-}>>;
+export type HMRMapType = Map<string, {
+  declined: boolean;
+  listeners: Map<string, {
+    accept?: (module: any) => void;
+    dispose?: (data: Record<string, any>) => void;
+  }>
+}>;
 
 declare const address: string;
 declare const filePath: string;
@@ -23,11 +27,20 @@ if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
 const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
 const HMR_DATA_MAP: Map<string, any> = aWindow.$_HMR_DATA_MAP_;
 
-const getAcceptor = (acceptedFile: string, acceptorFile: string) => {
-  if (!HMR_MAP.has(acceptedFile)) HMR_MAP.set(acceptedFile, new Map());
-  const acceptedFileMap = HMR_MAP.get(acceptedFile);
-  if (!acceptedFileMap.has(acceptorFile)) acceptedFileMap.set(acceptorFile, {});
-  return acceptedFileMap.get(acceptorFile);
+const getEmitterFileData = (emitter: string) => {
+  if (!HMR_MAP.has(emitter)) {
+    HMR_MAP.set(emitter, {
+      declined: false,
+      listeners: new Map()
+    });
+  }
+  return HMR_MAP.get(emitter);
+}
+
+const getListenerFileData = (emitterFile: string, listenerFile: string) => {
+  const listenedFileData = getEmitterFileData(emitterFile);
+  if (!listenedFileData.listeners.has(listenerFile)) listenedFileData.listeners.set(listenerFile, {});
+  return listenedFileData.listeners.get(listenerFile);
 }
 
 const resolveDependency = async (dependency: string) => {
@@ -46,21 +59,24 @@ const hot: HMR = {
   id: filePath,
   self: {
     accept(callback): void {
-      const acceptorFileData = getAcceptor(filePath, filePath);
-      if (!acceptorFileData.accept) acceptorFileData.accept = callback;
+      const listenerData = getListenerFileData(filePath, filePath);
+      if (!listenerData.accept) listenerData.accept = callback;
     },
     dispose(callback): void {
-      const acceptorFileData = getAcceptor(filePath, filePath);
-      if (!acceptorFileData.dispose) acceptorFileData.dispose = callback;
+      const listenerData = getListenerFileData(filePath, filePath);
+      if (!listenerData.dispose) listenerData.dispose = callback;
     }
   },
   async accept(dependency, callback) {
-    const acceptorFileData = getAcceptor(await resolveDependency(dependency), filePath);
-    if (!acceptorFileData.accept) acceptorFileData.accept = callback;
+    const listenerData = getListenerFileData(await resolveDependency(dependency), filePath);
+    if (!listenerData.accept) listenerData.accept = callback;
   },
   async dispose(dependency, callback) {
-    const acceptorFileData = getAcceptor(await resolveDependency(dependency), filePath);
-    if (!acceptorFileData.dispose) acceptorFileData.dispose = callback;
+    const listenerData = getListenerFileData(await resolveDependency(dependency), filePath);
+    if (!listenerData.dispose) listenerData.dispose = callback;
+  },
+  decline() {
+    getEmitterFileData(filePath).declined = true;
   }
 };
 
