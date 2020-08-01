@@ -65,8 +65,16 @@ const hot: HMR = {
 };
 
 // TODO: Remove it in v1.0
-(hot as any).selfAccept = hot.self.accept;
-(hot as any).selfDispose = hot.self.dispose;
+Object.defineProperties(hot, {
+  selfAccept: {
+    enumerable: false,
+    value: hot.self.accept
+  },
+  selfDispose: {
+    enumerable: false,
+    value: hot.self.dispose
+  }
+});
 
 Object.freeze(hot.self);
 Object.freeze(hot);
