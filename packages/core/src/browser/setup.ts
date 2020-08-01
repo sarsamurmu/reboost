@@ -36,7 +36,7 @@ socket.addEventListener('open', () => {
 
 const reloadPage = () => {
   // ? Maybe we can ask user if they really want to reload?
-  location.reload();
+  ((self as any).HMR_RELOAD || location.reload)(true);
 }
 
 socket.addEventListener('message', async ({ data }) => {
