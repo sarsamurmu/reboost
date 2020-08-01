@@ -3,6 +3,9 @@
 - Updated dependencies
 - Added new `import.meta` fields
 - Minor fixes to HMR, Added support for `hot.decline`
+- Fixed bug with cache deletion
+- Added support for using custom reload mechanism
+  in HMR
 
 ## 0.7.0
 - Updated dependencies
