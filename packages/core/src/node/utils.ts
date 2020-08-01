@@ -78,8 +78,11 @@ export const isVersionLessThan = (version: string, toCompareWith: string) => {
   const [bMajor, bMinor, bPatch] = toCompareWith.split('.').map(Number);
 
   if (aMajor < bMajor) return true;
+  if (aMajor > bMajor) return false;
   if (aMinor < bMinor) return true;
+  if (aMinor > bMinor) return false;
   if (aPatch < bPatch) return true;
+  if (aPatch > bPatch) return false;
 
   return false;
 }

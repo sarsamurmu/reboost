@@ -10,5 +10,7 @@ describe('Utility functions', () => {
     assert.isTrue(isVersionLessThan('0.0.1', '0.0.10'));
     assert.isTrue(isVersionLessThan('0.1.0', '0.10.0'));
     assert.isTrue(isVersionLessThan('1.0.0', '10.0.0'));
+
+    assert.isFalse(isVersionLessThan('0.7.0', '0.6.1'));
   });
 });
