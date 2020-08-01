@@ -249,7 +249,7 @@ Default: `['node_modules']`
 Directories to use while resolving modules.
 
 ##### `resolve.roots`
-Type: `string[]`\
+Type: `string[]`
 
 Absolute paths to directories which will be used to
 search for modules directories (`resolve.modules`)
