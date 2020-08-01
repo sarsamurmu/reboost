@@ -11,7 +11,7 @@ import path from 'path';
 import { fileRequestHandler } from './file-handler';
 import { getAddress, getConfig } from './shared';
 
-let webSockets: Context['websocket'][] = [];
+const webSockets = new Set<Context['websocket']>();
 
 export const createRouter = () => {
   const router = new Router();
@@ -80,11 +80,9 @@ export const createProxyServer = (): [Koa, () => Koa, Router] => {
   const proxyServer = withWebSocket(new Koa());
   const router = createRouter();
 
-  proxyServer.ws.use((ctx) => {
-    webSockets.push(ctx.websocket);
-    ctx.websocket.on('close', () => {
-      webSockets = webSockets.filter((ws) => ws !== ctx.websocket);
-    });
+  proxyServer.ws.use(({ websocket }) => {
+    webSockets.add(websocket);
+    websocket.on('close', () => webSockets.delete(websocket));
   });
 
   return [
@@ -102,7 +100,5 @@ export const createProxyServer = (): [Koa, () => Koa, Router] => {
 }
 
 export const messageClient = (message: string | Record<string, string>) => {
-  if (webSockets) {
-    webSockets.forEach((ws) => ws.send(JSON.stringify(message)));
-  }
+  webSockets.forEach((ws) => ws.send(JSON.stringify(message)));
 }
