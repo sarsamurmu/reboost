@@ -11,6 +11,8 @@ export = ({
 }: Options = {
   excludeNodeModules: true
 }): ReboostPlugin => {
+  let reactRefreshPath: string;
+
   return {
     name: 'react-refresh-plugin',
     async transformJSContent({ code }, filePath) {
@@ -41,7 +43,7 @@ export = ({
             if (isReactRefreshBoundary(updatedModule)) {
               RefreshRuntime.performReactRefresh();
             } else {
-              // TODO: Use hot.decline when it's supported
+              // TODO: Use hot.decline or hot.invalidate when it's supported
               location.reload();
             }
           });
@@ -54,7 +56,9 @@ export = ({
           envName: 'development',
           comments: false,
           compact: true,
-          plugins: [this.resolve(__filename, 'react-refresh/babel')],
+          plugins: [
+            reactRefreshPath || (reactRefreshPath = this.resolve(__filename, 'react-refresh/babel'))
+          ],
           sourceMaps: true
         });
 
