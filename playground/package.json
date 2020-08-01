@@ -9,21 +9,21 @@
     "start": "nodemon reboost"
   },
   "dependencies": {
-    "@babel/core": "^7.10.2",
-    "@babel/plugin-proposal-pipeline-operator": "^7.10.1",
+    "@babel/core": "^7.11.0",
+    "@babel/plugin-proposal-pipeline-operator": "^7.10.5",
     "@reboost/plugin-babel": "file:../packages/plugin-babel",
     "@reboost/plugin-react-refresh": "file:../packages/plugin-react-refresh",
     "@reboost/plugin-sass": "file:../packages/plugin-sass",
     "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
     "@reboost/plugin-vue": "file:../packages/plugin-vue",
-    "browser-sync": "^2.26.7",
+    "browser-sync": "^2.26.12",
     "node-sass": "^4.14.1",
     "postcss-nesting": "^7.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "reboost": "file:../packages/core",
-    "svelte": "^3.23.0",
-    "vue": "^3.0.0-beta.20"
+    "svelte": "^3.24.0",
+    "vue": "^3.0.0-rc.5"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT"
