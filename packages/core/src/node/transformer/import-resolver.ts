@@ -113,19 +113,47 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
   });
 
   const t = babelTypes;
+  const importMeta = t.metaProperty(
+    t.identifier('import'),
+    t.identifier('meta')
+  );
+  const importMetaUrl = t.memberExpression(
+    importMeta,
+    t.identifier('url')
+  );
+
+  astProgram.node.body.unshift(
+    t.expressionStatement(
+      t.assignmentExpression(
+        '=',
+        importMetaUrl,
+        t.stringLiteral(filePath)
+      )
+    )
+  );
 
   astProgram.node.body.unshift(
     t.expressionStatement(
       t.assignmentExpression(
         '=',
         t.memberExpression(
-          t.metaProperty(
-            t.identifier('import'),
-            t.identifier('meta')
-          ),
-          t.identifier('url')
+          importMeta,
+          t.identifier('absoluteUrl')
         ),
-        t.stringLiteral(filePath)
+        importMetaUrl
+      )
+    )
+  );
+
+  astProgram.node.body.unshift(
+    t.expressionStatement(
+      t.assignmentExpression(
+        '=',
+        t.memberExpression(
+          importMeta,
+          t.identifier('reboost')
+        ),
+        t.booleanLiteral(true)
       )
     )
   );
