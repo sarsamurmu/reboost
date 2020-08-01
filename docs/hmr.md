@@ -7,15 +7,18 @@ export let someExport = 10;
 
 if (hot) { // Code will be stripped out when bundled using bundler
   hot.self.accept((updatedMod) => {
-    // Called when this module updates
+    // Called when the module itself updates
     // `updatedMod` is the updated instance of the module
+
     // Do some updates
     someExport = updatedMod.someExport;
   });
 
-  hot.self.dispose(() => {
-    // Called before hot.selfAccept
+  hot.self.dispose(({ data }) => {
+    // Called before hot.self.accept
     // You can do cleanups here
+    // Assign properties to the `data` to pass the data to the
+    // module which being updated
   });
 }
 ```
@@ -32,6 +35,7 @@ if (hot) {
   hot.accept('./some-module', (updatedMod) => {
     // Called when `./some-module` updates
     // `updatedMod` is the updated instance of the module
+
     // Do some updates
     setName(updatedMod.name);
   });
@@ -44,6 +48,19 @@ if (hot) {
 }
 ```
 
+### Declining HMR updates
+```js
+import { hot } from 'reboost/hmr';
+
+if (hot) {
+  // `hot.decline` marks this module as not HMR updatable
+  // Even if other module accepts this module, it will not trigger any
+  // HMR updates. Whenever this module is updated (doing modification and saving it)
+  // it will do a full page reload no matter what
+  hot.decline();
+}
+```
+
 ### Passing data to the module which is being updated
 ```js
 // main.js
@@ -53,7 +70,7 @@ import { hot } from 'reboost/hmr';
 if (hot) {
   hot.dispose('./dep.js', (data) => {
     // Add properties to the `data` object, it will be passed to the module
-    // which we accepted (in this case, using the `dispose` function)
+    // which is being updated (in this case, using the `dispose` function)
     data.VALUE = 'Hi, there';
   });
 }
@@ -65,8 +82,7 @@ if (hot) {
   console.log(hot.data);
   /*
     `hot.data` would be undefined when this module (`dep.js`) is being imported for the first time
-   */
-  /*
+
     But when this module is accepted by any module and updated by HMR
     `hot.data` would be the data which is passed from the `dispose` function
     in our case `hot.data` would be `{ VALUE: 'Hi, there' }`
@@ -80,6 +96,7 @@ import { hot } from 'reboost/hmr';
 
 if (hot) {
   hot.id // ID of the module where `hot` is imported
-  // You can use it as key to store module specific data
+  // You can use it as a key to store module specific data
+  // on some global object
 }
 ```

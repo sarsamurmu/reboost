@@ -1,5 +1,8 @@
 ## next
 - Improved proxy server
+- Updated dependencies
+- Added new `import.meta` fields
+- Minor fixes to HMR, Added support for `hot.decline`
 
 ## 0.7.0
 - Updated dependencies
