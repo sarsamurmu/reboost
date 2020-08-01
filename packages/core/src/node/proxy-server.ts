@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/require-await */
 
+import Koa, { Context } from 'koa';
+import withWebSocket from 'koa-websocket';
+import cors from '@koa/cors';
 import Router from '@koa/router';
 
 import fs from 'fs';
@@ -7,6 +10,8 @@ import path from 'path';
 
 import { fileRequestHandler } from './file-handler';
 import { getAddress, getConfig } from './shared';
+
+let webSockets: Context['websocket'][] = [];
 
 export const createRouter = () => {
   const router = new Router();
@@ -69,4 +74,35 @@ export const createRouter = () => {
   });
 
   return router;
+}
+
+export const createProxyServer = (): [Koa, () => Koa, Router] => {
+  const proxyServer = withWebSocket(new Koa());
+  const router = createRouter();
+
+  proxyServer.ws.use((ctx) => {
+    webSockets.push(ctx.websocket);
+    ctx.websocket.on('close', () => {
+      webSockets = webSockets.filter((ws) => ws !== ctx.websocket);
+    });
+  });
+
+  return [
+    proxyServer,
+    () => {
+      proxyServer
+        .use(cors({ origin: '*' }))
+        .use(router.routes())
+        .use(router.allowedMethods());
+      
+      return proxyServer;
+    },
+    router
+  ];
+}
+
+export const messageClient = (message: string | Record<string, string>) => {
+  if (webSockets) {
+    webSockets.forEach((ws) => ws.send(JSON.stringify(message)));
+  }
 }

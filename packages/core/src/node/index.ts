@@ -1,8 +1,6 @@
 import Koa from 'koa';
 import Router from '@koa/router';
-import cors from '@koa/cors';
 import serveStatic from 'koa-static';
-import withWebSocket from 'koa-websocket';
 import { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import chalk from 'chalk';
 import portFinder from 'portfinder';
@@ -19,16 +17,16 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
-import { createRouter } from './router';
 import { createContentServer } from './content-server';
 import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
-import { setAddress, setConfig, setWebSocket, getFilesData, getUsedPlugins } from './shared';
+import { setAddress, setConfig, getFilesData, getUsedPlugins } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
 import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
 import { resolve } from './core-plugins/resolver';
+import { createProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
 export * from './plugins/removed';
@@ -277,8 +275,7 @@ export const start = (config: ReboostConfig = {} as any) => {
 
       console.log(chalk.green('[reboost] Starting proxy server...'));
 
-      const app = withWebSocket(new Koa());
-      const router = createRouter();
+      const [proxyServer, finalizeProxyServer, router] = createProxyServer();
       const interfaces = networkInterfaces();
       let host: string;
       let port: number;
@@ -315,74 +312,72 @@ export const start = (config: ReboostConfig = {} as any) => {
         console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
       }
 
-      app.ws.use((ctx) => {
-        setWebSocket(ctx.websocket);
-      });
-
       const setupPromises: Promise<void>[] = [];
       config.plugins.forEach(({ setup }) => {
         if (setup) {
-          const promise = setup({ config, app, router, resolve, chalk });
+          const promise = setup({
+            config,
+            app: proxyServer,
+            router,
+            resolve,
+            chalk
+          });
           if (promise) setupPromises.push(promise);
         }
       });
       await Promise.all(setupPromises);
       deepFreeze(config);
 
-      app
-        .use(cors({ origin: '*' }))
-        .use(router.routes())
-        .use(router.allowedMethods())
-        .listen(port, host, async () => {
-          console.log(chalk.green('[reboost] Proxy server started'));
+      finalizeProxyServer().listen(port, host, async () => {
+        console.log(chalk.green('[reboost] Proxy server started'));
 
-          if (config.contentServer) {
-            const contentServer = createContentServer();
+        if (config.contentServer) {
+          const contentServer = createContentServer();
 
-            const startedAt = (address: string) => {
-              console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
-            }
+          const startedAt = (address: string) => {
+            console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
+          }
 
-            const localPort = await portFinder.getPortPromise();
+          const localPort = await portFinder.getPortPromise();
+          http.createServer(contentServer.callback()).listen(
+            localPort,
+            () => startedAt(`localhost:${localPort}`)
+          );
+
+          const openOptions = config.contentServer.open;
+          if (openOptions) {
+            open(`http://localhost:${localPort}`, typeof openOptions === 'object' ? openOptions : undefined);
+          }
+
+          if (host !== 'localhost') {
+            const ipPort = await portFinder.getPortPromise({ host });
             http.createServer(contentServer.callback()).listen(
-              localPort,
-              () => startedAt(`localhost:${localPort}`)
+              ipPort,
+              host,
+              () => startedAt(`${host}:${ipPort}`)
             );
-
-            const openOptions = config.contentServer.open;
-            if (openOptions) {
-              open(`http://localhost:${localPort}`, typeof openOptions === 'object' ? openOptions : undefined);
-            }
-
-            if (host !== 'localhost') {
-              const ipPort = await portFinder.getPortPromise({ host });
-              http.createServer(contentServer.callback()).listen(
-                ipPort,
-                host,
-                () => startedAt(`${host}:${ipPort}`)
-              );
-
-              return resolvePromise({
-                proxyServer: fullAddress,
-                contentServer: {
-                  local: `http://localhost:${localPort}`,
-                  ip: `http://${host}:${ipPort}`
-                }
-              });
-            }
 
             return resolvePromise({
               proxyServer: fullAddress,
               contentServer: {
-                local: `http://localhost:${localPort}`
+                local: `http://localhost:${localPort}`,
+                ip: `http://${host}:${ipPort}`
               }
             });
           }
 
-          resolvePromise({
-            proxyServer: fullAddress
+          return resolvePromise({
+            proxyServer: fullAddress,
+            contentServer: {
+              local: `http://localhost:${localPort}`
+            }
           });
+        }
+
+        resolvePromise({
+          proxyServer: fullAddress
         });
+      });
     })();
   });
 }

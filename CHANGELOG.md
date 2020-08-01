@@ -1,3 +1,6 @@
+## next
+- Improved proxy server
+
 ## 0.7.0
 - Updated dependencies
 - Set esbuild plugin's default target to `es2020`

@@ -29,7 +29,6 @@ let filesData: {
   }>;
   dependents: Record<string, string[]>;
 };
-let webSocket: Context['websocket'];
 
 export const getAddress = () => address;
 export const setAddress = (aAddress: string) => address = aAddress;
@@ -74,11 +73,9 @@ export const getFilesData = () => {
   }
   return filesData;
 }
+
 export const saveFilesData = () => {
   if (filesData) {
     fs.promises.writeFile(filesDataPath(), JSON.stringify(filesData, null, getConfig().debugMode ? 2 : 0));
   }
 }
-
-export const setWebSocket = (aWebSocket: any) => webSocket = aWebSocket;
-export const messageClient = (message: any) => webSocket && webSocket.send(JSON.stringify(message));

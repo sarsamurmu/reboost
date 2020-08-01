@@ -5,8 +5,9 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
-import { getConfig, messageClient, getFilesData, getFilesDir, saveFilesData } from './shared';
+import { getConfig, getFilesData, getFilesDir, saveFilesData } from './shared';
 import { diff } from './utils';
+import { messageClient } from './proxy-server';
 
 export const removeFile = (file: string) => {
   const filesData = getFilesData().files;
@@ -108,7 +109,5 @@ export const createWatcher = () => {
     }
   }
 
-  return {
-    setDependencies
-  }
+  return { setDependencies }
 }
