@@ -15,6 +15,6 @@ export const versions = {
   react: '^16.13.1',
   reactDom: '^16.13.1',
   reboostPluginReactRefresh: `^${reboostPackageVersions['plugin-react-refresh']}`,
-  vue: '^3.0.0-rc.1',
+  vue: '^3.0.0-rc.5',
   reboostPluginVue: `^${reboostPackageVersions['plugin-vue']}`
 }
