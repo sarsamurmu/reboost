@@ -61,6 +61,21 @@ if (hot) {
 }
 ```
 
+### Canceling ongoing HMR update
+```js
+import { hot } from 'reboost/hmr';
+
+if (hot) {
+  hot.self.accept(() => {
+    // You can cancel an ongoing HMR update by calling `hot.invalidate`
+    // You can use it to cancel updates conditionally
+    if (someCondition) {
+      hot.invalidate();
+    }
+  });
+}
+```
+
 ### Passing data to the module which is being updated
 ```js
 // main.js

@@ -10,6 +10,7 @@ export type HMR = Readonly<{
   accept(dependency: string, callback: (module: any) => void): void;
   dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
   decline(): void;
+  invalidate(): void;
 }>;
 
 export type HMRMapType = Map<string, {
@@ -83,6 +84,9 @@ const hot: HMR = {
   },
   decline() {
     getEmitterFileData(filePath).declined = true;
+  },
+  invalidate() {
+    Reboost.HMRReload();
   }
 };
 
