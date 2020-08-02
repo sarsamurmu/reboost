@@ -11,6 +11,7 @@ import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
 import open from 'open';
 import MagicString from 'magic-string';
+import { ResolveOptions } from 'enhanced-resolve';
 
 import { networkInterfaces } from 'os';
 import fs from 'fs';
@@ -133,35 +134,12 @@ export interface ReboostConfig {
    */
   rootDir?: string;
   /** Resolve options to use when resolving files */
-  resolve?: {
-    /** Aliases to use while resolving */
-    alias?: Record<string, string>;
-    /**
-     * Extensions to use while resolving
-     * @default ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.json']
-     */
-    extensions?: string[];
-    /**
-     * Fields to check in package.json for script file
-     * @default ['browser', 'module', 'main']
-     */
-    mainFields?: string[];
-    /**
-     * File names to use while resolving directory
-     * @default ['index']
-     */
-    mainFiles?: string[];
-    /**
-     * Module directories to use while resolving modules
-     * @default ['node_modules']
-     */
-    modules?: string[];
-    /**
-     * Absolute root paths to search for modules
-     * @default [config.rootDir]
-     */
-    roots?: string[];
-  };
+  resolve?: Omit<
+    ResolveOptions, 
+    'cachePredicate' | 'cacheWithContext' | 'fileSystem' | 'unsafeCache' |
+    'resolver' | 'fullySpecified' | 'resolveToContext' | 'useSyncFileSystemCalls' |
+    'conditionNames'
+  >;
   /** When enabled, logs the time it takes to serve a file */
   showResponseTime?: boolean;
   /** Options for sourceMaps */
@@ -192,12 +170,20 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   plugins: [],
   rootDir: process.cwd(),
   resolve: {
-    alias: {},
+    alias: undefined,
+    aliasFields: undefined,
+    descriptionFiles: ['package.json'],
+    enforceExtension: false,
+    exportsFields: ['exports'],
     extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json'],
     mainFiles: ['index'],
     mainFields: ['browser', 'module', 'main'],
     modules: ['node_modules'],
-    roots: undefined
+    plugins: undefined,
+    pnpApi: undefined,
+    restrictions: undefined,
+    roots: undefined,
+    symlinks: true
   },
   showResponseTime: false,
   sourceMaps: {
@@ -228,13 +214,16 @@ export const start = (config: ReboostConfig = {} as any) => {
 
       if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
       if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
-      if (!config.watchOptions.include) {
-        config.watchOptions.include = /.*/;
-      }
-      if (!config.resolve.roots) config.resolve.roots = [config.rootDir];
+      if (!config.watchOptions.include) config.watchOptions.include = /.*/;
       if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
         config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
       }
+
+      config.resolve.modules = [config.resolve.modules].flat();
+      config.resolve.modules.slice().forEach((modDirName) => {
+        if (path.isAbsolute(modDirName)) return;
+        (config.resolve.modules as string[]).push(path.join(config.rootDir, modDirName));
+      });
 
       config.plugins.push(...CorePlugins);
       const pluginNames = config.plugins.map(({ name }) => name);

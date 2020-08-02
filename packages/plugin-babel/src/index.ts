@@ -14,6 +14,7 @@ export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
       const babelPath = resolve(__filename, '@babel/core', {
         mainFields: ['main']
       });
+      
       if (babelPath) {
         babel = require(babelPath);
 
