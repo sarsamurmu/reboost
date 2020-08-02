@@ -171,7 +171,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   rootDir: process.cwd(),
   resolve: {
     alias: undefined,
-    aliasFields: undefined,
+    aliasFields: ['browser'],
     descriptionFiles: ['package.json'],
     enforceExtension: false,
     exportsFields: ['exports'],
