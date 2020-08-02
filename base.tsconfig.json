@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "declaration": true,
+    "removeComments": true,
     "baseUrl": ".",
     "paths": {
       "reboost": ["./packages/core"]

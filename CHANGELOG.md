@@ -6,6 +6,7 @@
 - Fixed bug with cache deletion
 - Added support for using custom reload mechanism
   in HMR
+- Now uses `enhanced-resolve` to resolve paths
 
 ## 0.7.0
 - Updated dependencies
