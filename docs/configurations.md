@@ -175,7 +175,9 @@ Directory to use as the root directory. Used to resolve relative paths.
 #### `resolve`
 Type: `object`
 
-Configurations for module and file resolving
+Configurations for module and file resolving. Because it uses [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve/blob/master/README.md#resolver-options),
+it supports all of its options. `enhanced-resolve` is also used by `webpack`, so you may be already
+familiar with these options.
 
 ##### `resolve.alias`
 Type: `{ [aliasName: string]: string }`\
@@ -207,11 +209,37 @@ Now you can do
 import ProgressBar from 'Components/progressbar';
 ```
 
+##### `resolve.aliasField`
+Type: `string[]`\
+Default: `['browser']`
+
+Description file fields to use for parsing aliases.
+[See the specification](https://github.com/defunctzombie/package-browser-field-spec).
+
+##### `resolve.descriptionFiles`
+Type: `string[]`\
+Default: `['package.json']`
+
+JSON files to use as description files when resolving module directories and normal directories.
+
+##### `resolve.enforceExtension`
+Type: `boolean`\
+Default: `false`
+
+If `true`, enforces extensions when resolving relative paths,
+if the extension is not in the import path, resolving will just not work.
+
+##### `resolve.exportsFields`
+Type: `string[]`\
+Default: `['exports']`
+
+Description file fields to use for parsing [conditional exports](https://github.com/nodejs/node/pull/29978).
+
 ##### `resolve.extensions`
 Type: `string[]`\
 Default: `['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json']`
 
-Extensions to use for resolving files.
+Extensions to use for resolving files' extensions.
 
 ```js
 // If you use `['.js']`
@@ -226,8 +254,7 @@ It returns the first file with the first matched extension, so extension orderin
 Type: `string[]`\
 Default: `['module', 'main']`
 
-When resolving an npm package, this option will determine which
-fields in `package.json` should be checked for resolving the script file.
+Description file fields to be used for resolving the script file.
 
 ##### `resolve.mainFiles`
 Type: `string[]`\
@@ -246,13 +273,20 @@ import main from './subdir/index';
 Type: `string[]`\
 Default: `['node_modules']`
 
-Directories to use while resolving modules.
+Directory names to search for requested modules. If a relative path is provided, it scans the directory
+and its ancestors for the module. If an absolute path is provided, then it searches for the module
+only in the given directory.
 
-##### `resolve.roots`
+##### `resolve.restrictions`
 Type: `string[]`
 
-Absolute paths to directories which will be used to
-search for modules directories (`resolve.modules`)
+Path to directories that should be excluded when resolving paths.
+
+##### `resolve.symlinks`
+Type: `boolean`\
+Default: `true`
+
+If `true`, resolves symbolic links to their original path.
 
 #### `showResponseTime`
 Type: `boolean`\
