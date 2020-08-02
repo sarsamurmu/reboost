@@ -160,5 +160,22 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
 
   for (const execute of promiseExecutors) await execute();
 
+  if (imports.length) {
+    astProgram.node.body.push(
+      t.expressionStatement(
+        t.callExpression(
+          t.memberExpression(
+            t.memberExpression(t.identifier('Reboost'), t.stringLiteral('[[Private]]'), true),
+            t.identifier('setDependencies')
+          ),
+          [
+            t.stringLiteral(filePath),
+            t.arrayExpression(imports.map((s) => t.stringLiteral(s)))
+          ]
+        )
+      )
+    );
+  }
+
   return error;
 }

@@ -1,3 +1,5 @@
+import type { ReboostGlobalWithPrivateObject } from './setup';
+
 export type HMR = Readonly<{
   data: Record<string, any>;
   id: string;
@@ -20,21 +22,22 @@ export type HMRMapType = Map<string, {
 
 declare const address: string;
 declare const filePath: string;
+declare const Reboost: ReboostGlobalWithPrivateObject;
 
-const aWindow = window as any;
-if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
-if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
-const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
-const HMR_DATA_MAP: Map<string, any> = aWindow.$_HMR_DATA_MAP_;
+let HMR_Map: ReboostGlobalWithPrivateObject['[[Private]]']['HMR_Map'];
+let HMR_Data_Map: ReboostGlobalWithPrivateObject['[[Private]]']['HMR_Data_Map'];
 
-const getEmitterFileData = (emitter: string) => {
-  if (!HMR_MAP.has(emitter)) {
-    HMR_MAP.set(emitter, {
+const getEmitterFileData = (emitterFile: string) => {
+  if (!HMR_Map) ({ HMR_Map } = Reboost['[[Private]]']);
+
+  if (!HMR_Map.has(emitterFile)) {
+    HMR_Map.set(emitterFile, {
       declined: false,
       listeners: new Map()
     });
   }
-  return HMR_MAP.get(emitter);
+
+  return HMR_Map.get(emitterFile);
 }
 
 const getListenerFileData = (emitterFile: string, listenerFile: string) => {
@@ -54,7 +57,10 @@ const resolveDependency = async (dependency: string) => {
 
 const hot: HMR = {
   get data() {
-    return HMR_DATA_MAP.get(filePath);
+    return (
+      HMR_Data_Map ||
+      (HMR_Data_Map = Reboost['[[Private]]'].HMR_Data_Map)
+    ).get(filePath);
   },
   id: filePath,
   self: {

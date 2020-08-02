@@ -3,21 +3,90 @@ import type { Importer } from './importer';
 
 declare const address: string;
 
-const aWindow = window as any;
-aWindow._REBOOST_ADDRESS_ = address;
-if (!aWindow.process) {
-  aWindow.process = {
+const aSelf = self as any;
+if (!aSelf.process) {
+  aSelf.process = {
     env: {
       NODE_ENV: 'development'
     }
   }
 }
 
+type DependentTree = {
+  file: string;
+  dependents: DependentTree[];
+}
+
+interface ReboostGlobalObject {
+  HMRReload: () => void;
+}
+
+export interface ReboostGlobalWithPrivateObject extends ReboostGlobalObject {
+  '[[Private]]': ReboostPrivateObject;
+}
+
+export interface ReboostPrivateObject {
+  HMR_Map: HMRMapType;
+  HMR_Data_Map: Map<string, any>;
+  setDependencies(file: string, dependencies: string[]): void;
+  dependentTreeFor(file: string): DependentTree;
+}
+
+const Reboost: ReboostGlobalObject = {} as any;
+const Private = ((): ReboostPrivateObject => {
+  const dependentsMap = new Map<string, Set<string>>();
+  const dependencyMap = new Map<string, Set<string>>();
+
+  const setDependencies = (file: string, dependencies: string[]) => {
+    dependencyMap.set(file, new Set(dependencies));
+    dependencies.forEach((dependency) => {
+      const dependents = dependentsMap.get(dependency);
+      if (!dependents) {
+        dependentsMap.set(dependency, new Set([file]))
+      } else {
+        dependents.add(file);
+      }
+    });
+  }
+
+  const dependentTreeFor = (file: string): DependentTree => {
+    const dependentTrees: DependentTree[] = [];
+
+    const dependents = dependentsMap.get(file) || ([] as string[]);
+    dependents.forEach((dFile: string) => {
+      dependentTrees.push(dependentTreeFor(dFile));
+    });
+
+    return {
+      file: file,
+      dependents: dependentTrees
+    }
+  }
+
+  return {
+    HMR_Map: new Map(),
+    HMR_Data_Map: new Map(),
+    setDependencies,
+    dependentTreeFor
+  }
+})();
+
+Object.defineProperty(Reboost, '[[Private]]', {
+  get: () => Private,
+  enumerable: false,
+  configurable: false
+});
+
+Reboost.HMRReload = () => location.reload(true);
+
+(self as any)['Reboost'] = Reboost;
+
 const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
-if (!aWindow.$_HMR_MAP_) aWindow.$_HMR_MAP_ = new Map();
-if (!aWindow.$_HMR_DATA_MAP_) aWindow.$_HMR_DATA_MAP_ = new Map();
-const HMR_MAP: HMRMapType = aWindow.$_HMR_MAP_;
-const HMR_DATA_MAP: Map<string, any> = aWindow.$_HMR_DATA_MAP_;
+
+socket.addEventListener('open', () => {
+  console.log('[reboost] Connected to the server');
+  // ? Should we send message to server that we're connected?
+});
 
 const lastUpdatedData = {} as Record<string, number>;
 
@@ -29,27 +98,15 @@ const loadImporter = new Promise((resolve) => {
   })
 });
 
-socket.addEventListener('open', () => {
-  console.log('[reboost] Connected to the server');
-  // ? Should we send message to server that we're connected?
-});
-
-const reloadPage = () => {
-  // ? Maybe we can ask user if they really want to reload?
-  ((self as any).HMR_RELOAD || location.reload)(true);
-}
-
 socket.addEventListener('message', async ({ data }) => {
-  const {
-    type,
-    file: emitterFile
-  }: {
+  const { type, file: emitterFile } = JSON.parse(data) as {
     type: string;
     file: string;
-  } = JSON.parse(data);
+  };
+  const { HMR_Map, HMR_Data_Map } = Private;
 
   if (type === 'change') {
-    if (HMR_MAP.has(emitterFile)) {
+    if (HMR_Map.has(emitterFile)) {
       const fileLastUpdated = lastUpdatedData[emitterFile];
       const now = Date.now();
 
@@ -57,27 +114,41 @@ socket.addEventListener('message', async ({ data }) => {
       if (!fileLastUpdated || (((now - fileLastUpdated) / 1000) > 0.8)) {
         await loadImporter;
 
-        HMR_DATA_MAP.set(emitterFile, {});
+        const hotDataObj = {};
+        const listeners = HMR_Map.get(emitterFile).listeners;
+        HMR_Data_Map.set(emitterFile, hotDataObj);
         lastUpdatedData[emitterFile] = now;
 
-        if (HMR_MAP.get(emitterFile).declined) reloadPage();
+        if (HMR_Map.get(emitterFile).declined) Reboost.HMRReload();
 
-        HMR_MAP.get(emitterFile).listeners.forEach(({ dispose }) => {
-          if (dispose) dispose(HMR_DATA_MAP.get(emitterFile));
-        });
+        const selfHandlers = listeners.get(emitterFile);
+        const selfAcceptCallback = (selfHandlers || {}).accept;
+
+        // If the module is self accepted, just call the self dispose handler (don't call other handlers)
+        if (selfAcceptCallback) {
+          if (selfHandlers.dispose) selfHandlers.dispose(hotDataObj);
+        } else {
+          listeners.forEach(({ dispose }) => dispose && dispose(hotDataObj));
+        }
 
         import(`${address}/transformed?q=${encodeURI(emitterFile)}&t=${now}`).then((mod) => {
-          HMR_MAP.get(emitterFile).listeners.forEach(({ accept }) => {
-            if (accept) accept(importer.All(mod));
-          });
+          // If the module is self accepted, just call the self accept handler
+          // and finish the update (don't call other handlers)
+          if (selfAcceptCallback) {
+            selfAcceptCallback(importer.All(mod));
+          } else {
+            listeners.forEach(({ accept }) => {
+              if (accept) accept(importer.All(mod));
+            });
+          }
 
-          HMR_DATA_MAP.delete(emitterFile);
+          HMR_Data_Map.delete(emitterFile);
         });
       }
     } else {
-      reloadPage();
+      Reboost.HMRReload();
     }
   } else if (type === 'unlink') {
-    reloadPage();
+    Reboost.HMRReload();
   }
 });

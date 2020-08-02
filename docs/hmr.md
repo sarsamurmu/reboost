@@ -104,9 +104,9 @@ if (hot) {
 ### Using a custom reload mechanism
 ```js
 // By default, Reboost uses the native `location.reload` function
-// to reload the page. But you can change it by assigning `HMR_RELOAD` property
-// to the global `self` object
-self.HMR_RELOAD = () => {
+// to reload the page. But you can change it by assigning `HMRReload` property
+// to the `Reboost` object of global `self` object
+self.Reboost.HMRReload = () => {
   // Do your things to reload the page
 }
 ```
