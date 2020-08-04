@@ -1,9 +1,12 @@
 # HMR API
 ### Self-accepting modules
 ```js
+import { setName } from './some-util';
 import { hot } from 'reboost/hmr';
 
-export let someExport = 10;
+export const name = 'Some name';
+
+setName(name);
 
 if (hot) { // Code will be stripped out when bundled using bundler
   hot.self.accept((updatedMod) => {
@@ -11,10 +14,10 @@ if (hot) { // Code will be stripped out when bundled using bundler
     // `updatedMod` is the updated instance of the module
 
     // Do some updates
-    someExport = updatedMod.someExport;
+    setName(updatedMod.name);
   });
 
-  hot.self.dispose(({ data }) => {
+  hot.self.dispose((data) => {
     // Called before hot.self.accept
     // You can do cleanups here
     // Assign properties to the `data` to pass the data to the
@@ -57,7 +60,12 @@ if (hot) {
   // Even if other module accepts this module, it will not trigger any
   // HMR updates. Whenever this module is updated (doing modification and saving it)
   // it will do a full page reload no matter what
-  hot.decline();
+
+  // Declining the module itself
+  hot.self.decline();
+
+  // Declining other modules
+  hot.decline('./someDep.js');
 }
 ```
 
