@@ -6,7 +6,7 @@ import { render } from './render';
 
 console.log('Add', add(5, 5));
 cMod.isSupported();
-// console.log('JSON is', json);
+console.log('JSON is', json);
 // console.log('Replaced strings are', ADJECTIVE);
 console.log('Import meta', import.meta);
 
