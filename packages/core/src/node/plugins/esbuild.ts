@@ -32,7 +32,7 @@ export interface esbuildPluginOptions {
    * Only minifies syntax
    * @default true
    */
-  minifySyntax: boolean;
+  minifySyntax?: boolean;
   /** Define values of variables */
   define?: Record<string, string>;
 }
