@@ -1,3 +1,4 @@
+// @ts-check
 const {
   start,
   builtInPlugins: {
@@ -57,5 +58,5 @@ start({
 
   // Don't use these options, these are only for debugging
   dumpCache: true,
-  // debugMode: true,
+  debugMode: true,
 });

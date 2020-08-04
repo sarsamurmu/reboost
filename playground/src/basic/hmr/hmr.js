@@ -1,4 +1,4 @@
-import * as imported from './imported';
+import './imported';
 import { hot } from 'reboost/hmr';
 
 if (hot) {
@@ -9,4 +9,7 @@ if (hot) {
     console.log('Disposing hot');
     data.value = 'some value';
   });
+  // hot.self.accept(() => {
+  //   console.log('Self accepted triggered');
+  // });
 }
