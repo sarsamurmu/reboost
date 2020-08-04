@@ -28,6 +28,11 @@ export interface esbuildPluginOptions {
    * @default true
    */
   minify?: boolean;
+  /**
+   * Only minifies syntax
+   * @default true
+   */
+  minifySyntax: boolean;
   /** Define values of variables */
   define?: Record<string, string>;
 }
@@ -52,6 +57,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     },
     target: 'es2020',
     minify: true,
+    minifySyntax: true,
     define: {
       'process.env.NODE_ENV': '"development"'
     }
@@ -96,6 +102,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
             jsxFragment: options.jsx.fragment,
             target: options.target,
             minify: options.minify,
+            minifySyntax: options.minifySyntax,
             define: options.define
           });
 
