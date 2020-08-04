@@ -43,8 +43,7 @@ export = ({
             if (isReactRefreshBoundary(updatedModule)) {
               RefreshRuntime.performReactRefresh();
             } else {
-              // TODO: Use hot.decline or hot.invalidate when it's supported
-              location.reload();
+              hot.invalidate();
             }
           });
         `;
