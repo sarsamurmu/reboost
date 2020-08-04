@@ -43,7 +43,7 @@
     "chalk": "^4.1.0",
     "chokidar": "^3.4.1",
     "enhanced-resolve": "^5.0.0-beta.10",
-    "esbuild": "^0.6.13",
+    "esbuild": "^0.6.16",
     "icss-utils": "^4.1.1",
     "koa": "^2.13.0",
     "koa-proxies": "^0.11.0",
