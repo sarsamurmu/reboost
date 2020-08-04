@@ -1,12 +1,14 @@
-## next
+## 0.8.0
 - Improved proxy server
 - Updated dependencies
 - Added new `import.meta` fields
-- Minor fixes to HMR, Added support for `hot.decline`
 - Fixed bug with cache deletion
-- Added support for using custom reload mechanism
-  in HMR
+- Added support for using custom reload mechanism in HMR
 - Now uses `enhanced-resolve` to resolve paths
+- Major rework on HMR, Added new methods -
+  - `hot.self.decline`
+  - `hot.decline`
+  - `hot.invalidate`
 
 ## 0.7.0
 - Updated dependencies
