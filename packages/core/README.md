@@ -77,7 +77,7 @@ if you are not using ES modules, though using ES modules is recommended.
 ### Using `npm init`
 Run this command in your terminal
 ```shell
-npm init @reboost/create
+npm init @reboost/app
 ```
 Then it will ask you to choose a template from
 [available templates](/packages/create-app/README.md#available-templates).
