@@ -2,15 +2,9 @@ import type { HMRMapType } from './hmr';
 import type { Importer } from './importer';
 
 declare const address: string;
+declare const debugMode: boolean;
 
-const aSelf = self as any;
-if (!aSelf.process) {
-  aSelf.process = {
-    env: {
-      NODE_ENV: 'development'
-    }
-  }
-}
+type MapValue<T extends Map<any, any>> = ReturnType<T['get']>;
 
 type DependentTree = {
   file: string;
@@ -32,13 +26,16 @@ export interface ReboostPrivateObject {
   dependentTreeFor(file: string): DependentTree;
 }
 
+const debug = (...data: any) => debugMode && console.log(...data);
+
 const Reboost: ReboostGlobalObject = {} as any;
 const Private = ((): ReboostPrivateObject => {
+  type P = ReboostPrivateObject;
   const dependentsMap = new Map<string, Set<string>>();
-  const dependencyMap = new Map<string, Set<string>>();
+  // const dependencyMap = new Map<string, Set<string>>();
 
-  const setDependencies = (file: string, dependencies: string[]) => {
-    dependencyMap.set(file, new Set(dependencies));
+  const setDependencies: P['setDependencies'] = (file, dependencies) => {
+    // dependencyMap.set(file, new Set(dependencies));
     dependencies.forEach((dependency) => {
       const dependents = dependentsMap.get(dependency);
       if (!dependents) {
@@ -49,7 +46,7 @@ const Private = ((): ReboostPrivateObject => {
     });
   }
 
-  const dependentTreeFor = (file: string): DependentTree => {
+  const dependentTreeFor: P['dependentTreeFor'] = (file) => {
     const dependentTrees: DependentTree[] = [];
 
     const dependents = dependentsMap.get(file) || ([] as string[]);
@@ -77,16 +74,14 @@ Object.defineProperty(Reboost, '[[Private]]', {
   configurable: false
 });
 
-Reboost.HMRReload = () => location.reload(true);
+Reboost.HMRReload = () => debugMode ? console.log('TRIGGER RELOAD') : location.reload(true);
 
-(self as any)['Reboost'] = Reboost;
+const aSelf = self as any;
+if (!aSelf.process) {
+  aSelf.process = { env: { NODE_ENV: 'development' } };
+}
+aSelf['Reboost'] = Reboost;
 
-const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
-
-socket.addEventListener('open', () => {
-  console.log('[reboost] Connected to the server');
-  // ? Should we send message to server that we're connected?
-});
 
 const lastUpdatedData = {} as Record<string, number>;
 
@@ -98,6 +93,24 @@ const loadImporter = new Promise((resolve) => {
   })
 });
 
+const makeLoopGuard = (max: number) => {
+  let count = 0;
+
+  return {
+    call() {
+      if (++count > max) {
+        throw new Error(`Loop crossed the limit of ${max}`);
+      }
+    }
+  }
+}
+
+const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
+
+socket.addEventListener('open', () => {
+  console.log('[reboost] Connected to the server');
+});
+
 socket.addEventListener('message', async ({ data }) => {
   const { type, file: emitterFile } = JSON.parse(data) as {
     type: string;
@@ -106,47 +119,90 @@ socket.addEventListener('message', async ({ data }) => {
   const { HMR_Map, HMR_Data_Map } = Private;
 
   if (type === 'change') {
-    if (HMR_Map.has(emitterFile)) {
-      const fileLastUpdated = lastUpdatedData[emitterFile];
-      const now = Date.now();
+    console.log(`[reboost] Changed ${emitterFile}`);
 
-      // Apply HMR only if file's last updated time is greater that 0.8s
-      if (!fileLastUpdated || (((now - fileLastUpdated) / 1000) > 0.8)) {
-        await loadImporter;
+    const fileLastUpdated = lastUpdatedData[emitterFile];
+    const now = Date.now();
 
-        const hotDataObj = {};
-        const listeners = HMR_Map.get(emitterFile).listeners;
-        HMR_Data_Map.set(emitterFile, hotDataObj);
-        lastUpdatedData[emitterFile] = now;
+    // Apply HMR only if file's last updated time is greater that 0.8s
+    if (!fileLastUpdated || (((now - fileLastUpdated) / 1000) > 0.8)) {
+      await loadImporter;
 
-        if (HMR_Map.get(emitterFile).declined) Reboost.HMRReload();
+      const guard = makeLoopGuard(1000);
+      const checkedFiles = new Set<string>();
+      let bubbleUpDependents: DependentTree[];
+      let nextBubbleUpDependents = [Private.dependentTreeFor(emitterFile)];
+      let emitterFileData: MapValue<HMRMapType>;
+      let handler;
+      let dependentsAccepted: number;
+      let dependentsAcceptedLevel2: number;
+      let updatedModuleInstance: any;
+      let hotData: Record<string, any>;
 
-        const selfHandlers = listeners.get(emitterFile);
-        const selfAcceptCallback = (selfHandlers || {}).accept;
+      while (nextBubbleUpDependents.length > 0) {
+        guard.call();
 
-        // If the module is self accepted, just call the self dispose handler (don't call other handlers)
-        if (selfAcceptCallback) {
-          if (selfHandlers.dispose) selfHandlers.dispose(hotDataObj);
-        } else {
-          listeners.forEach(({ dispose }) => dispose && dispose(hotDataObj));
+        dependentsAccepted = 0;
+        bubbleUpDependents = nextBubbleUpDependents;
+        nextBubbleUpDependents = [];
+
+        for (const { file, dependents } of bubbleUpDependents) {
+          debug('[HMR] Checking -', file);
+
+          if (checkedFiles.has(file)) continue;
+
+          checkedFiles.add(file);
+
+          if ((emitterFileData = HMR_Map.get(file))) {
+            if (emitterFileData.declined) Reboost.HMRReload();
+
+            hotData = {};
+            emitterFileData.listeners.forEach(({ dispose }) => dispose && dispose(hotData));
+            HMR_Data_Map.set(file, hotData);
+
+            updatedModuleInstance = await import(`${address}/transformed?q=${encodeURI(file)}&t=${now}`);
+            updatedModuleInstance = importer.All(updatedModuleInstance);
+
+            // If the module is self accepted, just call the self accept handler
+            // and finish the update (don't bubble up)
+            if ((handler = emitterFileData.listeners.get(file)) && handler.accept) {
+              debug('[HMR] Self accepted by', file);
+              handler.accept(updatedModuleInstance);
+              dependentsAccepted++;
+            }
+
+            dependentsAcceptedLevel2 = 0;
+
+            dependents.forEach((tree) => {
+              if ((handler = emitterFileData.listeners.get(tree.file)) && handler.accept) {
+                debug('[HMR] Accepted by', tree.file);
+                handler.accept(updatedModuleInstance);
+                dependentsAcceptedLevel2++;
+              } else if (tree.dependents.length > 0) {
+                nextBubbleUpDependents.push(...tree.dependents);
+              } else {
+                debug('[HMR] Triggering Reload. The file has no parent -', tree.file);
+                Reboost.HMRReload();
+              }
+            });
+
+            HMR_Data_Map.delete(file);
+
+            if (dependentsAcceptedLevel2 === dependents.length) dependentsAccepted++;
+          } else if (dependents.length > 0) {
+            nextBubbleUpDependents.push(...dependents);
+          } else {
+            debug('[HMR] Triggering Reload. The file has no parent -', file);
+            Reboost.HMRReload();
+          }
         }
 
-        import(`${address}/transformed?q=${encodeURI(emitterFile)}&t=${now}`).then((mod) => {
-          // If the module is self accepted, just call the self accept handler
-          // and finish the update (don't call other handlers)
-          if (selfAcceptCallback) {
-            selfAcceptCallback(importer.All(mod));
-          } else {
-            listeners.forEach(({ accept }) => {
-              if (accept) accept(importer.All(mod));
-            });
-          }
-
-          HMR_Data_Map.delete(emitterFile);
-        });
+        if (dependentsAccepted === bubbleUpDependents.length) {
+          // All dependents handled the update
+          debug('[HMR] Completed update');
+          break;
+        }
       }
-    } else {
-      Reboost.HMRReload();
     }
   } else if (type === 'unlink') {
     Reboost.HMRReload();

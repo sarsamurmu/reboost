@@ -6,19 +6,22 @@ export type HMR = Readonly<{
   self: Readonly<{
     accept(callback: (module: any) => void): void;
     dispose(callback: (data: Record<string, any>) => void): void;
+    decline(): void;
   }>;
   accept(dependency: string, callback: (module: any) => void): void;
   dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
-  decline(): void;
+  decline(dependency: string): void;
   invalidate(): void;
 }>;
 
+export interface HandlerObject {
+  accept?: (module: any) => void;
+  dispose?: (data: Record<string, any>) => void;
+}
+
 export type HMRMapType = Map<string, {
   declined: boolean;
-  listeners: Map<string, {
-    accept?: (module: any) => void;
-    dispose?: (data: Record<string, any>) => void;
-  }>
+  listeners: Map<string, HandlerObject>
 }>;
 
 declare const address: string;
@@ -72,6 +75,9 @@ const hot: HMR = {
     dispose(callback): void {
       const listenerData = getListenerFileData(filePath, filePath);
       if (!listenerData.dispose) listenerData.dispose = callback;
+    },
+    decline() {
+      getEmitterFileData(filePath).declined = true;
     }
   },
   async accept(dependency, callback) {
@@ -82,13 +88,13 @@ const hot: HMR = {
     const listenerData = getListenerFileData(await resolveDependency(dependency), filePath);
     if (!listenerData.dispose) listenerData.dispose = callback;
   },
-  decline() {
-    getEmitterFileData(filePath).declined = true;
+  async decline(dependency) {
+    getEmitterFileData(await resolveDependency(dependency)).declined = true;
   },
   invalidate() {
     Reboost.HMRReload();
   }
-};
+}
 
 // TODO: Remove it in v1.0
 Object.defineProperties(hot, {

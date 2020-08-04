@@ -18,10 +18,15 @@ export const createRouter = () => {
 
   router.get('/transformed', fileRequestHandler);
 
-  const setupCode = fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString();
+  const loadSetupCode = () => (
+    fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString()
+  );
+  const setupCode = loadSetupCode();
   router.get('/setup', async (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `const address = "${getAddress()}";\n\n${setupCode}`;
+    ctx.body = `const address = "${getAddress()}";\n`;
+    ctx.body += `const debugMode = ${getConfig().debugMode};\n\n`;
+    ctx.body += getConfig().debugMode ? loadSetupCode() : setupCode;
   });
 
   router.get('/raw', async (ctx) => {

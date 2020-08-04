@@ -160,7 +160,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = '0.6.1';
+const INCOMPATIBLE_BELOW = '0.8.0';
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
