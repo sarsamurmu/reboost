@@ -11,7 +11,7 @@
 <script>
 export default {
   data() {
-    console.log('Vem');
+    console.log('Source map test');
 
     return {
       message: 'This is working'
