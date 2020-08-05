@@ -17,6 +17,7 @@
     "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
     "@reboost/plugin-vue": "file:../packages/plugin-vue",
     "browser-sync": "^2.26.12",
+    "lit-element": "^2.3.1",
     "node-sass": "^4.14.1",
     "postcss-nesting": "^7.0.1",
     "react": "^16.13.1",

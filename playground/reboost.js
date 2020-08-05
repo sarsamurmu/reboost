@@ -15,11 +15,12 @@ const VuePlugin = require('@reboost/plugin-vue');
 
 start({
   entries: [
+    ['./src/babel/index.js', './public/dist/babel.js'],
     ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
+    ['./src/lit-element/index.js', './public/dist/lit-element.js'],
     ['./src/react/index.js', './public/dist/react.js'],
     ['./src/react-fast-refresh/index.js', './public/dist/react-fast-refresh.js'],
     ['./src/svelte/index.js', './public/dist/svelte.js'],
-    ['./src/babel/index.js', './public/dist/babel.js'],
     ['./src/vue/index.js', './public/dist/vue.js']
   ],
   contentServer: {
