@@ -107,6 +107,9 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
           });
 
           warnings.forEach(({ location: { line, column, lineText, file }, text }) => {
+            const lText = text.toLowerCase();
+            if (lText.includes('unsupported source map')) return;
+
             let msg = `esbuild: Warning "${file}"\n\n`;
             msg += `(${line}:${column}) ${text}\n`;
             msg += `| ${lineText}`;
