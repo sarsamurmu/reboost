@@ -8,7 +8,7 @@ import Router from '@koa/router';
 import fs from 'fs';
 import path from 'path';
 
-import { fileRequestHandler } from './file-handler';
+import { createFileHandler } from './file-handler';
 import { getAddress, getConfig } from './shared';
 
 const webSockets = new Set<Context['websocket']>();
@@ -16,7 +16,7 @@ const webSockets = new Set<Context['websocket']>();
 export const createRouter = () => {
   const router = new Router();
 
-  router.get('/transformed', fileRequestHandler);
+  router.get('/transformed', createFileHandler());
 
   const loadSetupCode = () => (
     fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString()

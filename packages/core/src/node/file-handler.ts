@@ -1,5 +1,4 @@
 import { ParameterizedContext } from 'koa';
-import { RouterParamContext } from '@koa/router';
 import getHash from 'md5-file';
 import chalk from 'chalk';
 
@@ -10,6 +9,7 @@ import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir } from 
 import { ensureDir, uniqueID, diff, toPosix } from './utils';
 import { transformFile } from './transformer';
 import { createWatcher, removeFile } from './watcher';
+import { ReboostConfig } from './index';
 
 export const verifyFiles = () => {
   if (fs.existsSync(getFilesDir())) {
@@ -104,45 +104,109 @@ const updateDependencies = async (
   fileData.dependencies = depsData;
 }
 
-let gitignoreCreated = false;
-let watcher: ReturnType<typeof createWatcher>;
-const memoizedFiles = new Map();
+export const createFileHandler = () => {
+  let initialized = false;
+  let config: ReboostConfig;
+  let filesDir: string;
+  let watcher: ReturnType<typeof createWatcher>;
+  const memoizedFiles = new Map();
 
-export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterParamContext<any, any>>) => {
-  const config = getConfig();
-  const filesDir = getFilesDir();
-  ensureDir(config.cacheDir);
-  ensureDir(filesDir);
+  return async (ctx: ParameterizedContext) => {
+    if (!initialized) {
+      config = getConfig();
+      filesDir = getFilesDir();
+      watcher = createWatcher();
 
-  if (!gitignoreCreated) {
-    fs.promises.writeFile(path.join(config.cacheDir, './.gitignore'), '/**/*');
-    gitignoreCreated = true;
-  }
+      ensureDir(config.cacheDir);
+      ensureDir(filesDir);
 
-  if (!watcher) watcher = createWatcher();
+      fs.writeFileSync(path.join(config.cacheDir, './.gitignore'), '/**/*');
 
-  const filePath = ctx.query.q;
-  const timerName = chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}`);
-  let transformedCode: string;
+      initialized = true;
+    }
 
-  if (config.showResponseTime) console.time(timerName);
+    const filePath = ctx.query.q;
+    const timerName = chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}`);
+    let transformedCode: string;
 
-  if (fs.existsSync(filePath)) {
-    const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
+    if (config.showResponseTime) console.time(timerName);
 
-    if (getFilesData().files[filePath]) {
-      const fileData = getFilesData().files[filePath];
-      const outputFilePath = path.join(filesDir, fileData.uid);
-      let hash: string;
+    if (fs.existsSync(filePath)) {
+      const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
 
-      if (
-        await depsChanged(filePath) ||
-        (
-          (fileData.mtime !== mtime) &&
-          (fileData.hash !== (hash = await getHash(filePath)))
-        )
-      ) {
+      if (getFilesData().files[filePath]) {
+        const fileData = getFilesData().files[filePath];
+        const outputFilePath = path.join(filesDir, fileData.uid);
+        let hash: string;
+
+        if (
+          await depsChanged(filePath) ||
+          (
+            (fileData.mtime !== mtime) &&
+            (fileData.hash !== (hash = await getHash(filePath)))
+          )
+        ) {
+          let pure = true;
+          const {
+            code,
+            map,
+            imports,
+            dependencies,
+            error
+          } = await transformFile(filePath);
+          transformedCode = code;
+
+          if (map) {
+            // Remove other source maps
+            transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
+            transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
+            fs.promises.writeFile(`${outputFilePath}.map`, map);
+          }
+
+          if (!error) {
+            if (map || imports.length) pure = undefined;
+            fs.promises.writeFile(outputFilePath, transformedCode);
+            fileData.hash = hash;
+            fileData.mtime = mtime;
+            fileData.address = getAddress();
+            fileData.pure = pure;
+            await updateDependencies(filePath, dependencies);
+            saveFilesData();
+          }
+
+          if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+          watcher.setDependencies(filePath, dependencies);
+        } else {
+          const pure = fileData.pure;
+          const currentAddress = getAddress();
+          transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
+
+          if (!pure && (fileData.address !== currentAddress)) {
+            const addressRegex = new RegExp(fileData.address, 'g');
+            transformedCode = transformedCode.replace(addressRegex, currentAddress);
+
+            fs.promises.writeFile(outputFilePath, transformedCode);
+            if (fs.existsSync(`${outputFilePath}.map`)) {
+              const fileMap = fs.readFileSync(`${outputFilePath}.map`).toString();
+              fs.promises.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress));
+            }
+
+            fileData.address = currentAddress;
+            saveFilesData();
+          }
+
+          if (fileData.mtime !== mtime) {
+            fileData.mtime = mtime;
+            saveFilesData();
+          }
+
+          if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+          watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
+        }
+      } else {
         let pure = true;
+        const uid = uniqueID();
+        const outputFilePath = path.join(filesDir, uid);
         const {
           code,
           map,
@@ -162,88 +226,29 @@ export const fileRequestHandler = async (ctx: ParameterizedContext<any, RouterPa
         if (!error) {
           if (map || imports.length) pure = undefined;
           fs.promises.writeFile(outputFilePath, transformedCode);
-          fileData.hash = hash;
-          fileData.mtime = mtime;
-          fileData.address = getAddress();
-          fileData.pure = pure;
-          await updateDependencies(filePath, dependencies);
+          type fileData = ReturnType<typeof getFilesData>['files'][string];
+          (getFilesData().files[filePath] as Omit<fileData, 'mergedDependencies' | 'dependencies'>) = {
+            uid,
+            hash: await getHash(filePath),
+            mtime,
+            address: getAddress(),
+            pure
+          };
+          await updateDependencies(filePath, dependencies, true);
           saveFilesData();
         }
 
         if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, dependencies);
-      } else {
-        const pure = fileData.pure;
-        const currentAddress = getAddress();
-        transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
-
-        if (!pure && (fileData.address !== currentAddress)) {
-          const addressRegex = new RegExp(fileData.address, 'g');
-          transformedCode = transformedCode.replace(addressRegex, currentAddress);
-
-          fs.promises.writeFile(outputFilePath, transformedCode);
-          if (fs.existsSync(`${outputFilePath}.map`)) {
-            const fileMap = fs.readFileSync(`${outputFilePath}.map`).toString();
-            fs.promises.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress));
-          }
-
-          fileData.address = currentAddress;
-          saveFilesData();
-        }
-
-        if (fileData.mtime !== mtime) {
-          fileData.mtime = mtime;
-          saveFilesData();
-        }
-
-        if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
-        watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
       }
     } else {
-      let pure = true;
-      const uid = uniqueID();
-      const outputFilePath = path.join(filesDir, uid);
-      const {
-        code,
-        map,
-        imports,
-        dependencies,
-        error
-      } = await transformFile(filePath);
-      transformedCode = code;
-
-      if (map) {
-        // Remove other source maps
-        transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
-        transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
-        fs.promises.writeFile(`${outputFilePath}.map`, map);
-      }
-
-      if (!error) {
-        if (map || imports.length) pure = undefined;
-        fs.promises.writeFile(outputFilePath, transformedCode);
-        type fileData = ReturnType<typeof getFilesData>['files'][string];
-        (getFilesData().files[filePath] as Omit<fileData, 'mergedDependencies' | 'dependencies'>) = {
-          uid,
-          hash: await getHash(filePath),
-          mtime,
-          address: getAddress(),
-          pure
-        };
-        await updateDependencies(filePath, dependencies, true);
-        saveFilesData();
-      }
-
-      if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
-      watcher.setDependencies(filePath, dependencies);
+      const message = `[reboost] The requested file does not exist: ${filePath}.`;
+      transformedCode = `console.error(${JSON.stringify(message)})`;
     }
-  } else {
-    const message = `[reboost] The requested file does not exist: ${filePath}.`;
-    transformedCode = `console.error(${JSON.stringify(message)})`;
+
+    ctx.type = 'text/javascript';
+    ctx.body = transformedCode;
+
+    if (config.showResponseTime) console.timeEnd(timerName);
   }
-
-  ctx.type = 'text/javascript';
-  ctx.body = transformedCode;
-
-  if (config.showResponseTime) console.timeEnd(timerName);
 }
