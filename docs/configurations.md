@@ -209,7 +209,7 @@ Now you can do
 import ProgressBar from 'Components/progressbar';
 ```
 
-##### `resolve.aliasField`
+##### `resolve.aliasFields`
 Type: `string[]`\
 Default: `['browser']`
 
