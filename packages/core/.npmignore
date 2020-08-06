@@ -3,6 +3,5 @@ coverage/
 src/
 tests/
 
-browser.tsconfig.json
-node.tsconfig.json
+*tsconfig.json
 nyc.config.js
