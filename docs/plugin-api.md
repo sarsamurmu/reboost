@@ -47,7 +47,7 @@ The first argument of this function is an object with the following properties -
 - `config` - The configuration object passed when starting Reboost.
 - `app` - The [Koa](https://koajs.com/) app instance used by Reboost.
 - `router` - The [koa-router](https://github.com/koajs/router) instance used by Koa.
-- `resolve` - <!-- TODO: Connect it with plugin context -->
+- `resolve` - Same as plugin context's [resolve](#resolve-func) function
 - `chalk` - The [chalk](https://www.npmjs.com/package/chalk) module
 
 
@@ -145,7 +145,7 @@ module.exports = function plugin() {
 Here are all the items available in plugin context
 
 #### `config`
-The configuration object is currently being used.
+The configuration object passed when starting Reboost.
 
 #### `addDependency`
 Type: `(dependency: string) => void`
@@ -198,6 +198,8 @@ module.exports = function plugin() {
   }
 }
 ```
+
+<div id="resolve-func"></div>
 
 #### `resolve`
 Type: `(basePath: string, requestedPath: string, overrides?: Partial<ResolveOptions>) => string`
