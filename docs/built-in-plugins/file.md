@@ -1,9 +1,9 @@
 # File Plugin
-Load files by importing them from JavaScript.
+Load file URLs by importing them from JavaScript.
 
 ## Usage
 ### Setup
-1. Import `FilePlugin` and `UsePlugin`
+Import `FilePlugin` and `UsePlugin`
 ```js
 const {
   start,
@@ -13,7 +13,7 @@ const {
   }
 } = require('reboost');
 ```
-2. Add it to the plugins array
+Add it to the plugins array
 ```js
 const {
   start,
@@ -36,8 +36,8 @@ start({
 ```js
 import file from 'path/to/file.png';
 ```
-Here `file` would be an URL to your file which you can use wherever
-URL is supported
+Here `file` should be an URL to your file, you can use the URL wherever
+URLs are supported
 
 ## Example
 ### Importing image in JSX
@@ -54,7 +54,7 @@ const {
 start({
   plugins: [
     UsePlugin({
-      include: /.(png|jpg|jpeg)$/i, // We want to load only PNG and JPG as file
+      include: /.(png|jpg|jpeg)$/i, // We want to load only PNG and JPG as file URLs
       use: FilePlugin()
     })
   ]

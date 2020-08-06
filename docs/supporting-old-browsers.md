@@ -12,7 +12,7 @@ polyfills and other stuff, let's name it `bundle.fallback.js`. In your HTML add 
 ```
 What does it do? Modern browsers know what `script` with attribute `nomodule` means,
 so modern browsers won't load `path/to/bundle.fallback.js` but cause old browsers
-don't know what it means, they will load the script as regular scripts. In this way
+don't know what it means, they will load the script as regular scripts. In this way,
 you can support both old and modern browsers while using `script type="module"`.
 
 *Plus point: Modern browsers will load less code as the code is not 

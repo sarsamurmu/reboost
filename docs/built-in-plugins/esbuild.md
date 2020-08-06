@@ -2,9 +2,8 @@
 [esbuild](https://github.com/evanw/esbuild) is a fast and powerful transformer,
 which you can use to transform TypeScript, JSX, or newer ECMAScript features.
 
-**NOTE**: `esbuild` does not do type checking. Type checking should be handled
-by your IDE/Code editor or by yourself. If you were using `tsc` to compile your
-TypeScript code, you can use it to just do type checking by using the command
+**NOTE**: `esbuild` does not do type checking. You should handle type checking manually.
+If you were using `tsc` to compile your TypeScript file, you can use it to just do type checking by using the command
 `tsc --noEmit` (if you want `tsc` to watch for changes, use the command `tsc --noEmit -w`).
 
 ## Usage

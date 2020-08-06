@@ -3,7 +3,7 @@ Use plugins based on [anymatch](https://www.npmjs.com/package/anymatch) pattern.
 
 ## Usage
 ### Setup
-1. Import `UsePlugin`
+Import `UsePlugin`
 ```js
 const {
   start,
@@ -12,7 +12,7 @@ const {
   }
 } = require('reboost');
 ```
-2. Add it to the plugins array
+Add it to the plugins array
 ```js
 const {
   start,
@@ -38,13 +38,13 @@ start({
 Type: `Matcher`
 
 [Anymatch](https://www.npmjs.com/package/anymatch) pattern to test file paths.
-If test passes all plugin(s) in `use` will be used for the file.
+If the test passes all plugin(s) in `use` will be used for the file.
 
 #### `exclude`
 Type: `Matcher`
 
 [Anymatch](https://www.npmjs.com/package/anymatch) pattern to test file paths.
-If test passes the file will be excluded.
+If the test passes the file will be excluded.
 
 #### `use`
 Type: `ReboostPlugin | ReboostPlugin[]`

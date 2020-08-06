@@ -3,7 +3,7 @@ A plugin that you can use to replace strings in your code.
 
 ## Usage
 ### Setup
-1. Import `ReplacePlugin`
+Import `ReplacePlugin`
 ```js
 const {
   start,
@@ -12,7 +12,7 @@ const {
   }
 } = require('reboost');
 ```
-2. Add it to the plugins array
+Add it to the plugins array
 ```js
 const {
   start,

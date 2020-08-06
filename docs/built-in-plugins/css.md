@@ -3,7 +3,7 @@ Adds support for importing CSS files in JavaScript. Enables Hot reload for CSS f
 
 ## Usage
 ### Setup
-1. Import `CSSPlugin`
+Import `CSSPlugin`
 ```js
 const {
   start,
@@ -12,7 +12,7 @@ const {
   }
 } = require('reboost');
 ```
-2. Add it to the plugins array
+Add it to the plugins array
 ```js
 const {
   start,
@@ -63,7 +63,7 @@ Default: `'local'`
 Sets `mode` option. Can be `local`, `global`, `pure` or a function which
 returns any of these modes based on the file path.
 
-Example with function as value
+Example with function as the value
 ```js
 const {
   start,
@@ -130,7 +130,7 @@ start({
 ```
 
 ### Treating all CSS files as modules
-By default all CSS files which includes `.module.` in their name are treated as
+By default, all CSS files which includes `.module.` in their name are treated as
 CSS modules. If you want your all CSS files to be loaded as CSS modules then
 you can use `modules.test` option change this behavior.
 ```js

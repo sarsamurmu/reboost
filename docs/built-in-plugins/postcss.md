@@ -3,7 +3,7 @@ Adds support for transforming stylesheets with PostCSS.
 
 ## Usage
 ### Setup
-1. Import `PostCSSPlugin`
+Import `PostCSSPlugin`
 ```js
 const {
   start,
@@ -12,7 +12,7 @@ const {
   }
 } = require('reboost');
 ```
-2. Add it to the plugins array
+Add it to the plugins array
 ```js
 const {
   start,
@@ -35,9 +35,9 @@ Now it will transform all stylesheets with your PostCSS plugins.
 #### `ctx`
 Type: `object`
 
-Like webpack's [postcss-loader](https://www.npmjs.com/package/postcss-loader#context-ctx), this plugin
-also exposes context `ctx` to the config file, so that your config file can be dynamic
-like
+Like webpack's [`postcss-loader`](https://www.npmjs.com/package/postcss-loader#context-ctx), this plugin
+also exposes context `ctx` to the config file, so that your config file can be dynamic.
+Like so
 
 `postcss.config.js`
 ```js

@@ -57,7 +57,7 @@ import { hot } from 'reboost/hmr';
 
 if (hot) {
   // `hot.decline` marks this module as not HMR updatable
-  // Even if other module accepts this module, it will not trigger any
+  // Even if another module accepts this module, it will not trigger any
   // HMR updates. Whenever this module is updated (doing modification and saving it)
   // it will do a full page reload no matter what
 
