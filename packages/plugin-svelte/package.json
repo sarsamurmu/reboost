@@ -27,14 +27,14 @@
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "svelte": "^3.24.0"
+    "svelte": "^3.24.1"
   },
   "dependencies": {
     "chalk": "^4.1.0"
   },
   "devDependencies": {
     "magic-string": "^0.25.7",
-    "svelte": "^3.24.0",
+    "svelte": "^3.24.1",
     "typescript": "*"
   }
 }
