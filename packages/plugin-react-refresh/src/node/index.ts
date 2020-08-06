@@ -43,7 +43,7 @@ export = ({
             if (isReactRefreshBoundary(updatedModule)) {
               RefreshRuntime.performReactRefresh();
             } else {
-              hot.invalidate();
+              ReboostHot.invalidate();
             }
           });
         `;
