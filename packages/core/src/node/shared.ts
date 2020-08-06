@@ -1,5 +1,3 @@
-import { Context } from 'koa';
-
 import fs from 'fs';
 import path from 'path';
 
