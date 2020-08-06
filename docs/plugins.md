@@ -20,6 +20,7 @@ These plugins don't come out of the box with Reboost package.
 You have to manually install them when necessary.
 
 - [BabelPlugin](../packages/plugin-babel/README.md)
+- [ReactRefreshPlugin](../packages/plugin-react-refresh/README.md)
 - [SassPlugin](../packages/plugin-sass/README.md)
 - [SveltePlugin](../packages/plugin-svelte/README.md)
 - [VuePlugin](../packages/plugin-vue/README.md)
