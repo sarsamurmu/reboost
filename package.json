@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "clean": "lerna run clean",
-    "build": "npm run build:core && npm run build:plugins",
-    "build:core": "lerna run --scope reboost build",
+    "build": "npm run build:main && npm run build:plugins",
+    "build:main": "lerna run --scope {reboost,@reboost/create-app} build",
     "build:plugins": "lerna run --scope @reboost/plugin-* build",
     "watch": "lerna run --parallel watch",
     "check-updates": "lerna exec --concurrency 1 -- ncu",
