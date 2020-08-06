@@ -175,9 +175,12 @@ Directory to use as the root directory. Used to resolve relative paths.
 #### `resolve`
 Type: `object`
 
-Configurations for module and file resolving. Because it uses [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve/blob/master/README.md#resolver-options),
-it supports all of its options. `enhanced-resolve` is also used by `webpack`, so you may be already
-familiar with these options.
+[enhanced-resolve]: https://github.com/webpack/enhanced-resolve/blob/master/README.md
+
+Configurations for module and file resolving. Reboost internally uses [`enhanced-resolve`](enhanced-resolve)
+as default file resolver. `enhanced-resolve` is also used by `webpack`, so you may be already
+familiar with these options. Though many options are supported by [`enhanced-resolve`](enhanced-resolve),
+following options are configurable by the user, other options are overridden internally by Reboost.
 
 ##### `resolve.alias`
 Type: `{ [aliasName: string]: string }`\
@@ -216,6 +219,12 @@ Default: `['browser']`
 Description file fields to use for parsing aliases.
 [See the specification](https://github.com/defunctzombie/package-browser-field-spec).
 
+##### `resolve.conditionNames`
+Type: `string[]`\
+Default: `['import', 'require', 'node', 'default']`
+
+Condition fields to check while resolving [conditional exports](https://nodejs.org/api/esm.html#esm_conditional_exports).
+
 ##### `resolve.descriptionFiles`
 Type: `string[]`\
 Default: `['package.json']`
@@ -233,7 +242,8 @@ if the extension is not in the import path, resolving will just not work.
 Type: `string[]`\
 Default: `['exports']`
 
-Description file fields to use for parsing [conditional exports](https://github.com/nodejs/node/pull/29978).
+Description file fields to use for parsing conditional exports. To learn more about what
+conditional exports are, [See official docs](https://nodejs.org/api/esm.html#esm_conditional_exports).
 
 ##### `resolve.extensions`
 Type: `string[]`\
