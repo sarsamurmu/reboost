@@ -180,7 +180,7 @@ Type: `object`
 Configurations for module and file resolving. Reboost internally uses [`enhanced-resolve`](enhanced-resolve)
 as default file resolver. `enhanced-resolve` is also used by `webpack`, so you may be already
 familiar with these options. Though many options are supported by [`enhanced-resolve`](enhanced-resolve),
-following options are configurable by the user, other options are overridden internally by Reboost.
+only following options are configurable by the user, other options are overridden internally by Reboost.
 
 ##### `resolve.alias`
 Type: `{ [aliasName: string]: string }`\
