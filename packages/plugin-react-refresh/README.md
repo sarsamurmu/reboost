@@ -34,11 +34,11 @@ start({
 Type: `boolean`\
 Default: `true`
 
-Excludes all files which matches `/node_modules/`. Disabling it will decrease performance.
+Excludes all files which match `/node_modules/`. Disabling it will decrease performance.
 
 ## Example
 ### Improving performance by excluding non-related files
-By default it runs the transformation on all files. You can run transformation
+By default, it runs the transformation on all files. You can run the transformation
 only on the files which need it by using `UsePlugin`.
 ```js
 const {

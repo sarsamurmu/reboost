@@ -54,7 +54,7 @@ Svelte's [community-maintained preprocessing plugins](https://github.com/sveltej
 ### Using preprocessors
 [svelte-preprocess](https://www.npmjs.com/package/svelte-preprocess)
 is an official preprocessor plugin which can transform
-PostCSS, SCSS, Pug and more. Let's see how we can use it
+PostCSS, SCSS, Pug, and more. Let's see how we can use it
 with Svelte.
 
 ```js

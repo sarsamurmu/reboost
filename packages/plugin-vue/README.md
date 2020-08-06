@@ -35,8 +35,8 @@ import Component from './file.vue';
 #### `compiler`
 Type: `object`
 
-Compiler to use when compiling SFCs. You may need it if you want to use different version
-of SFC compiler than the one which comes with this package. First install the version of the compiler
+Compiler to use when compiling SFCs. You may need it if you want to use a different version
+of the SFC compiler than the one which comes with this package. First, install the version of the compiler
 you want to use then pass it to the options. Like so
 ```js
 const { start } = require('reboost');
@@ -56,7 +56,7 @@ start({
 # Why Vue 2 is not supported
 Vue 2 uses the [`with` statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/with)
 in its code, but the `with` statement is forbidden in ES modules and strict mode. And because Reboost uses native
-ES modules, `with` statement will give error. That's why Vue 2 is not supported.
+ES modules, `with` statements will give an error. That's why Vue 2 is not supported.
 
 # License
 Licensed under the [MIT License](/LICENSE).
