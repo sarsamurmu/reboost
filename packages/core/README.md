@@ -58,8 +58,9 @@
 - Svelte
 - TypeScript
 - Vue
+- and almost anything as long as you can implement it as a [plugin](/docs/plugin-api.md)
 
-See the [Recipes](/docs/recipes.md) for template configurations.
+See the [Recipes](/docs/recipes.md) for many template configurations.
 
 ## Compatibility
 Reboost works with both CommonJS and ES modules, so you can try it even
@@ -69,6 +70,7 @@ if you are not using ES modules, though using ES modules is recommended.
 [Changelog](/CHANGELOG.md)\
 [Configurations](/docs/configurations.md)\
 [Plugins](/docs/plugins.md)\
+[Plugin API](/docs/plugin-api.md)\
 [HMR API](/docs/hmr.md)\
 [Recipes](/docs/recipes.md)\
 [Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
