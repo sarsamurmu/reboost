@@ -175,11 +175,9 @@ Directory to use as the root directory. Used to resolve relative paths.
 #### `resolve`
 Type: `object`
 
-[enhanced-resolve]: https://github.com/webpack/enhanced-resolve/blob/master/README.md
-
-Configurations for module and file resolving. Reboost internally uses [`enhanced-resolve`](enhanced-resolve)
+Configurations for module and file resolving. Reboost internally uses [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve)
 as default file resolver. `enhanced-resolve` is also used by `webpack`, so you may be already
-familiar with these options. Though many options are supported by [`enhanced-resolve`](enhanced-resolve),
+familiar with these options. Though many options are supported by `enhanced-resolve`,
 only following options are configurable by the user, other options are overridden internally by Reboost.
 
 ##### `resolve.alias`
