@@ -137,8 +137,7 @@ export interface ReboostConfig {
   resolve?: Omit<
     ResolveOptions, 
     'cachePredicate' | 'cacheWithContext' | 'fileSystem' | 'unsafeCache' |
-    'resolver' | 'fullySpecified' | 'resolveToContext' | 'useSyncFileSystemCalls' |
-    'conditionNames'
+    'resolver' | 'fullySpecified' | 'resolveToContext' | 'useSyncFileSystemCalls'
   >;
   /** When enabled, logs the time it takes to serve a file */
   showResponseTime?: boolean;
@@ -172,6 +171,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   resolve: {
     alias: undefined,
     aliasFields: ['browser'],
+    conditionNames: ['import', 'require', 'node', 'default'],
     descriptionFiles: ['package.json'],
     enforceExtension: false,
     exportsFields: ['exports'],
