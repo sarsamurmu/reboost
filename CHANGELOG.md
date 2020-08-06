@@ -1,3 +1,12 @@
+## 0.9.0
+- Fixed esbuild plugin warning
+- Fixed security issues
+- Fixed React Refresh plugin
+- Now appends library name to `self` instead of `window`
+- Enabled new resolve option - `conditionNames`
+- Added documentation for Plugin API
+- Updated dependencies
+
 ## 0.8.0
 - Improved proxy server
 - Updated dependencies
