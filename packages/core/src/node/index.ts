@@ -295,7 +295,7 @@ export const start = (config: ReboostConfig = {} as any) => {
         fileContent += 'import';
         if (libName) fileContent += ' * as _$lib$_ from';
         fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
-        if (libName) fileContent += `window[${JSON.stringify(libName)}] = _$lib$_;\n`;
+        if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
         fs.promises.writeFile(outputPath, fileContent);
         console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
