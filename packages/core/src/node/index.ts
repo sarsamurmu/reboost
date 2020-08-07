@@ -297,7 +297,7 @@ export const start = (config: ReboostConfig = {} as any) => {
         fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
         if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
-        fs.promises.writeFile(outputPath, fileContent);
+        fs.writeFileSync(outputPath, fileContent);
         console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
       }
 

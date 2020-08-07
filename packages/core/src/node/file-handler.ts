@@ -110,6 +110,7 @@ export const createFileHandler = () => {
   let filesDir: string;
   let watcher: ReturnType<typeof createWatcher>;
   const memoizedFiles = new Map();
+  const noop = () => {/* No Operation */};
 
   return async (ctx: ParameterizedContext) => {
     if (!initialized) {
@@ -120,7 +121,7 @@ export const createFileHandler = () => {
       ensureDir(config.cacheDir);
       ensureDir(filesDir);
 
-      fs.writeFileSync(path.join(config.cacheDir, './.gitignore'), '/**/*');
+      fs.writeFile(path.join(config.cacheDir, './.gitignore'), '/**/*', noop);
 
       initialized = true;
     }
@@ -160,12 +161,12 @@ export const createFileHandler = () => {
             // Remove other source maps
             transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
             transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
-            fs.promises.writeFile(`${outputFilePath}.map`, map);
+            fs.writeFile(`${outputFilePath}.map`, map, noop);
           }
 
           if (!error) {
             if (map || imports.length) pure = undefined;
-            fs.promises.writeFile(outputFilePath, transformedCode);
+            fs.writeFile(outputFilePath, transformedCode, noop);
             fileData.hash = hash;
             fileData.mtime = mtime;
             fileData.address = getAddress();
@@ -185,10 +186,11 @@ export const createFileHandler = () => {
             const addressRegex = new RegExp(fileData.address, 'g');
             transformedCode = transformedCode.replace(addressRegex, currentAddress);
 
-            fs.promises.writeFile(outputFilePath, transformedCode);
+            fs.writeFile(outputFilePath, transformedCode, noop);
+
             if (fs.existsSync(`${outputFilePath}.map`)) {
               const fileMap = fs.readFileSync(`${outputFilePath}.map`).toString();
-              fs.promises.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress));
+              fs.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress), noop);
             }
 
             fileData.address = currentAddress;
@@ -220,12 +222,12 @@ export const createFileHandler = () => {
           // Remove other source maps
           transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
           transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
-          fs.promises.writeFile(`${outputFilePath}.map`, map);
+          fs.writeFile(`${outputFilePath}.map`, map, noop);
         }
 
         if (!error) {
           if (map || imports.length) pure = undefined;
-          fs.promises.writeFile(outputFilePath, transformedCode);
+          fs.writeFile(outputFilePath, transformedCode, noop);
           type fileData = ReturnType<typeof getFilesData>['files'][string];
           (getFilesData().files[filePath] as Omit<fileData, 'mergedDependencies' | 'dependencies'>) = {
             uid,

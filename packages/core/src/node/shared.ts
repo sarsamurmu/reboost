@@ -73,7 +73,11 @@ export const getFilesData = () => {
 }
 
 export const saveFilesData = () => {
-  if (filesData) {
-    fs.promises.writeFile(filesDataPath(), JSON.stringify(filesData, null, getConfig().debugMode ? 2 : 0));
-  }
+  if (!filesData) return;
+  
+  fs.writeFile(
+    filesDataPath(),
+    JSON.stringify(filesData, null, getConfig().debugMode ? 2 : 0),
+    () => 0
+  );
 }
