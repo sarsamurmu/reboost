@@ -59,7 +59,7 @@ Middleware(s) to use with content server's [Koa app](https://koajs.com) instance
 Type: `boolean | object`\
 Default: `false`
 
-Automatically opens the content server URL in browser when ready. If set to `true`, opens the
+Automatically opens the content server URL in a browser when ready. If set to `true`, opens the
 URL in your default browser. You can also use an `object` for more configurations.
 The `object` accepts all [`open`](https://www.npmjs.com/package/open) options.
 
@@ -91,11 +91,17 @@ start({
 })
 ```
 
+##### `contentServer.port`
+Type: `number`
+
+Port to use for the content server. Fallbacks to a random port when the
+given port unavailable.
+
 ##### `contentServer.proxy`
 Type: `object`
 
 Sets up custom proxies in the content server. This option can be an `object` with
-key as path that you want to redirect and value as a string (shorthand) or
+key as the path that you want to redirect and value as a string (shorthand) or
 [`http-proxy`](https://github.com/http-party/node-http-proxy#options) options object.
 
 ```js
@@ -194,7 +200,7 @@ Type: `object`
 Configurations for module and file resolving. Reboost internally uses [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve)
 as default file resolver. `enhanced-resolve` is also used by `webpack`, so you may be already
 familiar with these options. Though many options are supported by `enhanced-resolve`,
-only following options are configurable by the user, other options are overridden internally by Reboost.
+only the following options are configurable by the user, other options are overridden internally by Reboost.
 
 ##### `resolve.alias`
 Type: `{ [aliasName: string]: string }`\
