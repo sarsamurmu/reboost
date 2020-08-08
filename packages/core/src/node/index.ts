@@ -1,6 +1,5 @@
 import Koa from 'koa';
 import Router from '@koa/router';
-import serveStatic from 'koa-static';
 import { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import chalk from 'chalk';
 import portFinder from 'portfinder';
@@ -117,13 +116,27 @@ export interface ReboostConfig {
   cacheOnMemory?: boolean;
   /** Options for content server */
   contentServer?: {
-    /** Directory which the content server should serve */
-    root: string;
+    onReady?: (app: Koa) => void;
     /** Options for automatically opening content server URL when ready */
     open?: boolean | open.Options;
     proxy?: Record<string, string | ProxyOptions>;
-    onReady?: (app: Koa) => void;
-  } & serveStatic.Options;
+    /** Directory which the content server should serve */
+    root: string;
+    serveOptions?: {
+      /** Tries to serve the brotli version of the file when supported */
+      brotli?: boolean;
+      /** Extensions to resolve when no extension is sufficed in the URL */
+      extensions?: string[];
+      /** Tries to serve the gzip version of the file when supported */
+      gzip?: boolean;
+      /** When enabled, also serves hidden files */
+      hidden?: boolean;
+      /** Name of the index file to serve automatically when serving a directory */
+      index?: string | false;
+      /** Browser cache max-age in milliseconds */
+      maxAge?: number;
+    };
+  };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
   /** Plugins you want to use with Reboost */
@@ -200,10 +213,25 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   debugMode: false
 };
 
+export const DefaultServeOptions: DeepRequire<ReboostConfig['contentServer']['serveOptions']> = {
+  brotli: true,
+  extensions: ['.html'],
+  gzip: true,
+  hidden: false,
+  index: 'index.html',
+  maxAge: undefined
+}
+
 deepFreeze(DefaultConfig);
 
 export const start = (config: ReboostConfig = {} as any) => {
-  return new Promise((resolvePromise) => {
+  return new Promise<{
+    proxyServer: string;
+    contentServer?: {
+      local: string;
+      external?: string;
+    }
+  }>((resolvePromise) => {
     (async () => {
       config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
 
@@ -328,10 +356,7 @@ export const start = (config: ReboostConfig = {} as any) => {
           }
 
           const localPort = await portFinder.getPortPromise();
-          http.createServer(contentServer.callback()).listen(
-            localPort,
-            () => startedAt(`localhost:${localPort}`)
-          );
+          contentServer.listen(localPort, () => startedAt(`localhost:${localPort}`));
 
           const openOptions = config.contentServer.open;
           if (openOptions) {
@@ -340,7 +365,7 @@ export const start = (config: ReboostConfig = {} as any) => {
 
           if (host !== 'localhost') {
             const ipPort = await portFinder.getPortPromise({ host });
-            http.createServer(contentServer.callback()).listen(
+            contentServer.listen(
               ipPort,
               host,
               () => startedAt(`${host}:${ipPort}`)
@@ -350,7 +375,7 @@ export const start = (config: ReboostConfig = {} as any) => {
               proxyServer: fullAddress,
               contentServer: {
                 local: `http://localhost:${localPort}`,
-                ip: `http://${host}:${ipPort}`
+                external: `http://${host}:${ipPort}`
               }
             });
           }

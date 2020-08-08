@@ -25,7 +25,9 @@ start({
   ],
   contentServer: {
     root: './public',
-    index: false
+    serveOptions: {
+      index: false
+    }
   },
   plugins: [
     UsePlugin({

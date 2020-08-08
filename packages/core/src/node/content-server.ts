@@ -1,15 +1,19 @@
 import Koa from 'koa';
 import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
-import serveStatic from 'koa-static';
+import sendFile, { SendOptions } from 'koa-send';
+import withWebsocket from 'koa-websocket';
+import { parse as parseHTML } from 'node-html-parser';
+import chalk from 'chalk';
+import { FSWatcher } from 'chokidar';
 
 import fs from 'fs';
 import path from 'path';
 
 import { getConfig } from './shared';
-import { isDirectory } from './utils';
+import { isDirectory, uniqueID } from './utils';
+import { ReboostConfig, DefaultServeOptions } from './index';
 
-export const serveDirectory = () => {
-  const { contentServer: { root } } = getConfig();
+const createDirectoryServer = () => {
   const styles = /* css */`
     * {
       font-family: monospace;
@@ -77,8 +81,7 @@ export const serveDirectory = () => {
     }
   `;
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  return async (ctx: Koa.Context) => {
+  return (ctx: Koa.Context, root: string) => {
     const dirPath = path.join(root, ctx.path);
 
     if (
@@ -131,9 +134,110 @@ export const serveDirectory = () => {
   }
 }
 
+const createFileServer = () => {
+  const sendDirectory = createDirectoryServer();
+  const { contentServer, debugMode } = getConfig();
+  const { root } = contentServer;
+  const sendOptions: SendOptions = Object.assign(
+    {},
+    DefaultServeOptions,
+    contentServer.serveOptions,
+    { root }
+  ) as ReboostConfig['contentServer']['serveOptions'];
+
+  // TODO: Remove it in v1.0
+  for (const key in contentServer) {
+    if (
+      ['maxage', 'maxAge', 'immutable', 'hidden',
+        'index', 'gzip', 'brotli', 'format', 'setHeaders', 'extensions'].includes(key)) {
+      console.log(chalk.yellow(
+        `Option "${key}" is now no longer available in "config.contentServer"\n` +
+        `Please use "config.contentServer.serveOptions.${key}"\n`
+      ));
+    }
+  }
+
+  const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js')).toString();
+  const initCode = loadInitCode();
+  const initScriptPath = `/reboost-${uniqueID(10)}`;
+  const webSockets = new Set<Koa.Context['websocket']>();
+  const watcher = new FSWatcher();
+  const watchedFiles = new Set<string>();
+
+  const triggerReload = () => webSockets.forEach((ws) => ws.send(''));
+
+  watcher.on('change', triggerReload);
+  watcher.on('unlink', (filePath) => {
+    watchedFiles.delete(path.normalize(filePath));
+    triggerReload();
+  });
+
+  const websocketMiddleware = ({ websocket }: Koa.Context) => {
+    webSockets.add(websocket);
+    websocket.on('close', () => webSockets.delete(websocket));
+  }
+
+  const koaMiddleware = async (ctx: Koa.Context, next: Koa.Next) => {
+    let sentFilePath;
+
+    if (ctx.path === initScriptPath) {
+      ctx.type = 'text/javascript';
+      ctx.body = `const debugMode = ${getConfig().debugMode};\n\n`;
+      ctx.body += debugMode ? loadInitCode() : initCode;
+      return;
+    }
+
+    try {
+      sentFilePath = await sendFile(ctx, ctx.path, sendOptions);
+      sentFilePath = path.normalize(sentFilePath);
+    } catch (err) {/* Ignored */}
+
+    if (sentFilePath) {
+      if (!watchedFiles.has(sentFilePath)) {
+        watcher.add(sentFilePath);
+        watchedFiles.add(sentFilePath);
+      }
+
+      if (/^\.html?/.test(path.extname(sentFilePath))) {
+        const htmlSource = await new Promise<string>((res) => {
+          const stream = ctx.body as fs.ReadStream;
+          const chunks: Buffer[] = [];
+
+          stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+          stream.on('end', () => res(Buffer.concat(chunks).toString()));
+        });
+
+        const root = parseHTML(htmlSource, {
+          comment: true,
+          script: true,
+          style: true,
+          pre: true
+        });
+        const body = root.querySelector('body');
+
+        if (body) {
+          body.appendChild(parseHTML(`<script src="${initScriptPath}"></script>`));
+        }
+
+        ctx.body = root.toString();
+        ctx.remove('Content-Length');
+      }
+
+      sendDirectory(ctx, root);
+
+      return;
+    }
+
+    await next();
+  }
+
+  return [koaMiddleware, websocketMiddleware] as const;
+}
+
 export const createContentServer = () => {
-  const contentServer = new Koa();
+  const contentServer = withWebsocket(new Koa());
   const config = getConfig();
+  const [koaMiddleware, websocketMiddleware] = createFileServer();
 
   const proxyObject = config.contentServer.proxy;
   if (proxyObject) {
@@ -146,10 +250,10 @@ export const createContentServer = () => {
     }
   }
 
-  contentServer.use(serveStatic(config.contentServer.root, config.contentServer));
-  contentServer.use(serveDirectory());
+  contentServer.ws.use(websocketMiddleware);
+  contentServer.use(koaMiddleware);
 
-  if (config.contentServer.onReady) config.contentServer.onReady(contentServer);
+  (config.contentServer.onReady || (() => 0))(contentServer);
 
   return contentServer;
 }
