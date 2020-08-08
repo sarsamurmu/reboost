@@ -122,6 +122,9 @@ export interface ReboostConfig {
     middleware?: Koa.Middleware | Koa.Middleware[];
     /** Options for automatically opening content server URL when ready */
     open?: boolean | open.Options;
+    /** Port to use for content server */
+    port?: number;
+    /** Proxies to redirect requests */
     proxy?: Record<string, string | ProxyOptions>;
     /** Directory which the content server should serve */
     root: string;
@@ -205,6 +208,7 @@ export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['
   index: 'index.html',
   middleware: undefined,
   open: false,
+  port: undefined,
   proxy: undefined,
   root: undefined
 }
@@ -231,8 +235,15 @@ export const start = (config: ReboostConfig = {} as any) => {
       if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
       if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
       if (!config.watchOptions.include) config.watchOptions.include = /.*/;
-      if (config.contentServer && !path.isAbsolute(config.contentServer.root)) {
-        config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
+      if (config.contentServer) {
+        config.contentServer = merge(
+          clone(DefaultContentServerOptions as ReboostConfig['contentServer']),
+          config.contentServer
+        );
+
+        if (!path.isAbsolute(config.contentServer.root)) {
+          config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
+        }
       }
 
       config.resolve.modules = [config.resolve.modules].flat();
@@ -343,7 +354,9 @@ export const start = (config: ReboostConfig = {} as any) => {
             console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
           }
 
-          const localPort = await portFinder.getPortPromise();
+          const localPort = await portFinder.getPortPromise({
+            port: config.contentServer.port
+          });
           contentServer.listen(localPort, () => startedAt(`localhost:${localPort}`));
 
           const openOptions = config.contentServer.open;
@@ -352,7 +365,10 @@ export const start = (config: ReboostConfig = {} as any) => {
           }
 
           if (host !== 'localhost') {
-            const ipPort = await portFinder.getPortPromise({ host });
+            const ipPort = await portFinder.getPortPromise({
+              host,
+              port: config.contentServer.port
+            });
             contentServer.listen(
               ipPort,
               host,

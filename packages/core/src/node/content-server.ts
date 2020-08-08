@@ -138,11 +138,11 @@ const createFileServer = () => {
   const sendDirectory = createDirectoryServer();
   const { contentServer, debugMode } = getConfig();
   const { root } = contentServer;
-  const sendOptions: SendOptions = Object.assign<any, any, SendOptions>(
-    {},
-    DefaultContentServerOptions,
-    contentServer
-  );
+  const sendOptions: SendOptions = {
+    extensions: contentServer.extensions,
+    hidden: contentServer.hidden,
+    index: contentServer.index
+  }
 
   // TODO: Remove it in v1.0
   for (const key in contentServer) {
