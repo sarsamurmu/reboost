@@ -15,7 +15,6 @@ import { ResolveOptions } from 'enhanced-resolve';
 import { networkInterfaces } from 'os';
 import fs from 'fs';
 import path from 'path';
-import http from 'http';
 
 import { createContentServer } from './content-server';
 import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
@@ -107,44 +106,31 @@ export interface ReboostPlugin {
 }
 
 export interface ReboostConfig {
-  /**
-   * Directory to use for storing cached files
-   * @default ./.reboost_cache
-   */
+  /** Directory to use for storing cached files */
   cacheDir?: string;
   /** Cache transformed files on memory */
   cacheOnMemory?: boolean;
   /** Options for content server */
   contentServer?: {
-    onReady?: (app: Koa) => void;
+    /** Extensions to resolve when no extension is present in the URL */
+    extensions?: string[];
+    /** When enabled, also serves hidden files */
+    hidden?: boolean;
+    /** Name of the index file to serve automatically when serving a directory */
+    index?: string | false;
+    /** Middleware(s) to use */
+    middleware?: Koa.Middleware | Koa.Middleware[];
     /** Options for automatically opening content server URL when ready */
     open?: boolean | open.Options;
     proxy?: Record<string, string | ProxyOptions>;
     /** Directory which the content server should serve */
     root: string;
-    serveOptions?: {
-      /** Tries to serve the brotli version of the file when supported */
-      brotli?: boolean;
-      /** Extensions to resolve when no extension is sufficed in the URL */
-      extensions?: string[];
-      /** Tries to serve the gzip version of the file when supported */
-      gzip?: boolean;
-      /** When enabled, also serves hidden files */
-      hidden?: boolean;
-      /** Name of the index file to serve automatically when serving a directory */
-      index?: string | false;
-      /** Browser cache max-age in milliseconds */
-      maxAge?: number;
-    };
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
   /** Plugins you want to use with Reboost */
   plugins?: ReboostPlugin[];
-  /**
-   * Directory to use as root
-   * @default .
-   */
+  /** Directory to use as root */
   rootDir?: string;
   /** Resolve options to use when resolving files */
   resolve?: Omit<
@@ -165,7 +151,7 @@ export interface ReboostConfig {
     chokidar?: WatchOptions;
   };
 
-  // Developer options
+  /* Developer options */
   /** If you want to run reboost in debug mode */
   debugMode?: boolean;
   /** Clears cache whenever reboost starts. Only for use while debugging. */
@@ -213,16 +199,18 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   debugMode: false
 };
 
-export const DefaultServeOptions: DeepRequire<ReboostConfig['contentServer']['serveOptions']> = {
-  brotli: true,
+export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['contentServer']>> = {
   extensions: ['.html'],
-  gzip: true,
   hidden: false,
   index: 'index.html',
-  maxAge: undefined
+  middleware: undefined,
+  open: false,
+  proxy: undefined,
+  root: undefined
 }
 
 deepFreeze(DefaultConfig);
+deepFreeze(DefaultContentServerOptions);
 
 export const start = (config: ReboostConfig = {} as any) => {
   return new Promise<{

@@ -11,7 +11,7 @@ import path from 'path';
 
 import { getConfig } from './shared';
 import { isDirectory, uniqueID } from './utils';
-import { ReboostConfig, DefaultServeOptions } from './index';
+import { DefaultContentServerOptions } from './index';
 
 const createDirectoryServer = () => {
   const styles = /* css */`
@@ -138,21 +138,25 @@ const createFileServer = () => {
   const sendDirectory = createDirectoryServer();
   const { contentServer, debugMode } = getConfig();
   const { root } = contentServer;
-  const sendOptions: SendOptions = Object.assign(
-    {},
-    DefaultServeOptions,
-    contentServer.serveOptions,
-    { root }
-  ) as ReboostConfig['contentServer']['serveOptions'];
+  const sendOptions: SendOptions = Object.assign<SendOptions, SendOptions>(
+    {
+      extensions: DefaultContentServerOptions.extensions.slice(),
+      hidden: DefaultContentServerOptions.hidden,
+      index: DefaultContentServerOptions.index
+    },
+    {
+      extensions: contentServer.extensions,
+      hidden: contentServer.hidden,
+      index: contentServer.index
+    }
+  );
 
   // TODO: Remove it in v1.0
   for (const key in contentServer) {
     if (
-      ['maxage', 'maxAge', 'immutable', 'hidden',
-        'index', 'gzip', 'brotli', 'format', 'setHeaders', 'extensions'].includes(key)) {
+      ['maxage', 'maxAge', 'immutable', 'gzip', 'brotli', 'format', 'setHeaders', 'onReady'].includes(key)) {
       console.log(chalk.yellow(
-        `Option "${key}" is now no longer available in "config.contentServer"\n` +
-        `Please use "config.contentServer.serveOptions.${key}"\n`
+        `Option "${key}" is now no longer available in "config.contentServer".\n`
       ));
     }
   }
@@ -239,6 +243,11 @@ export const createContentServer = () => {
   const config = getConfig();
   const [koaMiddleware, websocketMiddleware] = createFileServer();
 
+  const middleware = config.contentServer.middleware;
+  if (middleware) {
+    [].concat(middleware).forEach((fn) => contentServer.use(fn));
+  }
+
   const proxyObject = config.contentServer.proxy;
   if (proxyObject) {
     for (const key in proxyObject) {
@@ -252,8 +261,6 @@ export const createContentServer = () => {
 
   contentServer.ws.use(websocketMiddleware);
   contentServer.use(koaMiddleware);
-
-  (config.contentServer.onReady || (() => 0))(contentServer);
 
   return contentServer;
 }
