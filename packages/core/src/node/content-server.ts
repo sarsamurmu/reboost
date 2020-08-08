@@ -138,26 +138,16 @@ const createFileServer = () => {
   const sendDirectory = createDirectoryServer();
   const { contentServer, debugMode } = getConfig();
   const { root } = contentServer;
-  const sendOptions: SendOptions = Object.assign<SendOptions, SendOptions>(
-    {
-      extensions: DefaultContentServerOptions.extensions.slice(),
-      hidden: DefaultContentServerOptions.hidden,
-      index: DefaultContentServerOptions.index
-    },
-    {
-      extensions: contentServer.extensions,
-      hidden: contentServer.hidden,
-      index: contentServer.index
-    }
+  const sendOptions: SendOptions = Object.assign<any, any, SendOptions>(
+    {},
+    DefaultContentServerOptions,
+    contentServer
   );
 
   // TODO: Remove it in v1.0
   for (const key in contentServer) {
-    if (
-      ['maxage', 'maxAge', 'immutable', 'gzip', 'brotli', 'format', 'setHeaders', 'onReady'].includes(key)) {
-      console.log(chalk.yellow(
-        `Option "${key}" is now no longer available in "config.contentServer".\n`
-      ));
+    if (['maxage', 'maxAge', 'immutable', 'gzip', 'brotli', 'format', 'setHeaders', 'onReady'].includes(key)) {
+      console.log(chalk.yellow(`Option "${key}" is now no longer available in "config.contentServer".\n`));
     }
   }
 
@@ -227,10 +217,10 @@ const createFileServer = () => {
         ctx.remove('Content-Length');
       }
 
-      sendDirectory(ctx, root);
-
       return;
     }
+
+    sendDirectory(ctx, root);
 
     await next();
   }
@@ -243,7 +233,7 @@ export const createContentServer = () => {
   const config = getConfig();
   const [koaMiddleware, websocketMiddleware] = createFileServer();
 
-  const middleware = config.contentServer.middleware;
+  const { middleware } = config.contentServer;
   if (middleware) {
     [].concat(middleware).forEach((fn) => contentServer.use(fn));
   }

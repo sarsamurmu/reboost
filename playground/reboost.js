@@ -25,9 +25,7 @@ start({
   ],
   contentServer: {
     root: './public',
-    serveOptions: {
-      index: false
-    }
+    index: false
   },
   plugins: [
     UsePlugin({
@@ -57,6 +55,9 @@ start({
       use: ReactFastRefreshPlugin()
     })
   ],
+  watchOptions: {
+    exclude: /\.reboost_cache/,
+  },
   showResponseTime: true,
 
   // Don't use these options, these are only for debugging
