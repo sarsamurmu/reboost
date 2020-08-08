@@ -81,7 +81,7 @@ export const createRouter = () => {
   return router;
 }
 
-export const createProxyServer = (): [Koa, () => Koa, Router] => {
+export const createProxyServer = () => {
   const proxyServer = withWebSocket(new Koa());
   const router = createRouter();
 
@@ -101,7 +101,7 @@ export const createProxyServer = (): [Koa, () => Koa, Router] => {
       return proxyServer;
     },
     router
-  ];
+  ] as const;
 }
 
 export const messageClient = (message: string | Record<string, string>) => {
