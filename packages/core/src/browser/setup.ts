@@ -74,7 +74,7 @@ Object.defineProperty(Reboost, '[[Private]]', {
   configurable: false
 });
 
-Reboost.HMRReload = () => debugMode ? console.log('TRIGGER RELOAD') : location.reload(true);
+Reboost.HMRReload = () => debugMode ? console.log('TRIGGER RELOAD') : location.reload();
 
 const aSelf = self as any;
 if (!aSelf.process) {
