@@ -41,6 +41,8 @@ export const createWatcher = () => {
   const log = false && getConfig().debugMode;
 
   watcher.on('change', (filePath) => {
+    filePath = path.normalize(filePath);
+    
     console.log(chalk.blue(`Changed: ${path.relative(getConfig().rootDir, filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
@@ -55,6 +57,8 @@ export const createWatcher = () => {
   });
 
   watcher.on('unlink', (filePath) => {
+    filePath = path.normalize(filePath);
+    
     console.log(chalk.blue(`Deleted: ${path.relative(getConfig().rootDir, filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
