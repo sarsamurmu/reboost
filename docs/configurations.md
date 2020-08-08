@@ -30,20 +30,38 @@ if you are working on a very large project.
 Type: `object`
 
 Options for the content server. The content server serves your static
-files like HTML. It supports all the options of [koa-static](https://github.com/koajs/static#options)
-and some extra options which are described below.
+files like HTML, CSS, JS, images, etc.
 
-##### `contentServer.root`
-Type: `string`
+##### `contentServer.extensions`
+Type: `string[]`\
+Default: `['.html']`
 
-Root directory which will be served by the content server.
+Extensions to resolve when no extension is present in the URL.
+
+##### `contentServer.hidden`
+Type: `boolean`\
+Default: `false`
+
+If the content server should serve the hidden files or not.
+
+##### `contentServer.index`
+Type: `string`\
+Default: `index.html`
+
+Name of the index file to serve automatically when serving a directory.
+
+##### `contentServer.middleware`
+Type: `Koa.Middleware | Koa.Middleware[]`
+
+Middleware(s) to use with content server's [Koa app](https://koajs.com) instance.
 
 ##### `contentServer.open`
-Type: `boolean | object`
+Type: `boolean | object`\
+Default: `false`
 
-Automatically opens the content server URL when ready. If set to `true`, opens the
-URL in your default browser. You can set it to options `object` for more configurations.
-The `object` accepts all [open](https://www.npmjs.com/package/open) options.
+Automatically opens the content server URL in browser when ready. If set to `true`, opens the
+URL in your default browser. You can also use an `object` for more configurations.
+The `object` accepts all [`open`](https://www.npmjs.com/package/open) options.
 
 Here's an example if you want to open the URL in Firefox browser
 ```js
@@ -77,8 +95,8 @@ start({
 Type: `object`
 
 Sets up custom proxies in the content server. This option can be an `object` with
-keys as paths that you want to redirect and value as a string (shorthand) or
-[http-proxy](https://github.com/http-party/node-http-proxy#options) options object.
+key as path that you want to redirect and value as a string (shorthand) or
+[`http-proxy`](https://github.com/http-party/node-http-proxy#options) options object.
 
 ```js
 const { start } = require('reboost');
@@ -97,12 +115,10 @@ start({
 })
 ```
 
-##### `contentServer.onReady`
-Type: `(app: Koa) => void`
+##### `contentServer.root`
+Type: `string`
 
-Expects a function as the option. The function will be called when the
-content server is ready. The first argument is the [Koa](https://koajs.com/) app
-instance used by the content server.
+Root directory which will be served by the content server.
 
 #### `entries`
 Type: `([string, string] | [string, string, string])[]`
