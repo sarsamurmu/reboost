@@ -1,5 +1,5 @@
 # Use Plugin
-Use plugins based on [anymatch](https://www.npmjs.com/package/anymatch) pattern.
+Use plugins based on [`anymatch`](https://www.npmjs.com/package/anymatch) patterns.
 
 ## Usage
 ### Setup
@@ -37,13 +37,13 @@ start({
 #### `include`
 Type: `Matcher`
 
-[Anymatch](https://www.npmjs.com/package/anymatch) pattern to test file paths.
+[`anymatch`](https://www.npmjs.com/package/anymatch) pattern to test file paths.
 If the test passes all plugin(s) in `use` will be used for the file.
 
 #### `exclude`
 Type: `Matcher`
 
-[Anymatch](https://www.npmjs.com/package/anymatch) pattern to test file paths.
+[`anymatch`](https://www.npmjs.com/package/anymatch) pattern to test file paths.
 If the test passes the file will be excluded.
 
 #### `use`

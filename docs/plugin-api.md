@@ -45,10 +45,10 @@ add server functionality, or do the initial setup in this function.
 
 The first argument of this function is an object with the following properties -
 - `config` - The configuration object passed when starting Reboost.
-- `app` - The [Koa](https://koajs.com/) app instance used by Reboost.
-- `router` - The [koa-router](https://github.com/koajs/router) instance used by Koa.
-- `resolve` - Same as plugin context's [resolve](#resolve-func) function
-- `chalk` - The [chalk](https://www.npmjs.com/package/chalk) module
+- `app` - The [`Koa`](https://koajs.com/) app instance used by Reboost.
+- `router` - The [`koa-router`](https://github.com/koajs/router) instance used by Koa.
+- `resolve` - Same as plugin context's [`resolve`](#resolve-func) function
+- `chalk` - The [`chalk`](https://www.npmjs.com/package/chalk) module
 
 
 #### `resolve`
@@ -116,8 +116,8 @@ Used to transform the JavaScript AST.
 
 The first argument is the babel generated AST of the code.
 The second argument is an object which includes two properties -
-- `traverse` - Babel's [traverse function](https://babeljs.io/docs/en/babel-traverse)
-- `types` - Babel's [types](https://babeljs.io/docs/en/babel-types)
+- `traverse` - Babel's [`traverse` function](https://babeljs.io/docs/en/babel-traverse)
+- `types` - Babel's [`types`](https://babeljs.io/docs/en/babel-types)
 
 The third argument is the absolute path to the file from which the AST is generated.
 
@@ -158,7 +158,7 @@ could not understand.
 The first argument should be the absolute path to the dependency file.
 
 #### `chalk`
-The [chalk](https://www.npmjs.com/package/chalk) module.
+The [`chalk`](https://www.npmjs.com/package/chalk) module.
 
 #### `getCompatibleSourceMap`
 Type: `(map: RawSourceMap) => RawSourceMap`
@@ -173,7 +173,7 @@ This function takes a source map object and returns the
 generated comment string for the source map object.
 
 #### `MagicString`
-The [magic-string](https://www.npmjs.com/package/magic-string) class.
+The [`magic-string`](https://www.npmjs.com/package/magic-string) class.
 
 #### `mergeSourceMaps`
 Type: `(oldMap: RawSourceMap, newMap: RawSourceMap) => RawSourceMap`
@@ -206,7 +206,7 @@ Type: `(basePath: string, requestedPath: string, overrides?: Partial<ResolveOpti
 
 This function takes two/three arguments, the first one is the base path, the second one is the requested path,
 then it returns the resolved path. You can use it to resolve modules, relative imports, etc. The third
-argument can be [enhanced-resolve](https://github.com/webpack/enhanced-resolve)'s resolve options,
+argument can be [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve)'s resolve options,
 which will be then merged with the resolve option used in the configurations and will be
 used as the resolve option to resolve the requested path.
 

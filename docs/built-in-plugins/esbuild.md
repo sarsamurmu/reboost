@@ -1,5 +1,5 @@
 # esbuild Plugin
-[esbuild](https://github.com/evanw/esbuild) is a fast and powerful transformer,
+[`esbuild`](https://github.com/evanw/esbuild) is a fast and powerful transformer,
 which you can use to transform TypeScript, JSX, or newer ECMAScript features.
 
 **NOTE**: `esbuild` does not do type checking. You should handle type checking manually.

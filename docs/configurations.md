@@ -53,7 +53,7 @@ Name of the index file to serve automatically when serving a directory.
 ##### `contentServer.middleware`
 Type: `Koa.Middleware | Koa.Middleware[]`
 
-Middleware(s) to use with content server's [Koa app](https://koajs.com) instance.
+Middleware(s) to use with content server's [`Koa`](https://koajs.com) app instance.
 
 ##### `contentServer.open`
 Type: `boolean | object`\
@@ -333,14 +333,14 @@ Options to use when generating source maps.
 Type: `Matcher`\
 Default: `/.*/`
 
-Files to include in source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
+Files to include in source map generation. Can be any of [`anymatch`](https://www.npmjs.com/package/anymatch)
 patterns. By default, source maps are generated for all files.
 
 ##### `sourceMaps.exclude`
 Type: `Matcher`\
 Default: `/node_modules/`
 
-Files to exclude from source map generation. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
+Files to exclude from source map generation. Can be any of [`anymatch`](https://www.npmjs.com/package/anymatch)
 patterns. By default, all files which are in `node_modules` are excluded.
 
 #### `watchOptions`
@@ -352,18 +352,18 @@ Options to use for watching files
 Type: `Matcher`\
 Default: `/.*/`
 
-Files to include in the watch-list. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
+Files to include in the watch-list. Can be any of [`anymatch`](https://www.npmjs.com/package/anymatch)
 patterns. By default, all files are watched except for excluded files.
 
 ##### `watchOptions.exclude`
 Type: `Matcher`\
 Default: `/node_modules/`
 
-Files to exclude from watch-list. Can be any of [anymatch](https://www.npmjs.com/package/anymatch)
+Files to exclude from watch-list. Can be any of [`anymatch`](https://www.npmjs.com/package/anymatch)
 patterns. By default, all files which are in `node_modules` are excluded.
 
 ##### `watchOptions.chokidar`
 Type: `chokidar.WatchOptions`\
 Default: `{}`
 
-Options to use when initializing [chokidar](https://www.npmjs.com/package/chokidar).
+Options to use when initializing [`chokidar`](https://www.npmjs.com/package/chokidar).
