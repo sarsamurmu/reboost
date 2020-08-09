@@ -113,7 +113,7 @@ export interface ReboostConfig {
   /** Options for content server */
   contentServer?: {
     /** Extensions to resolve when no extension is present in the URL */
-    extensions?: string[];
+    extensions?: boolean | string[];
     /** When enabled, also serves hidden files */
     hidden?: boolean;
     /** Name of the index file to serve automatically when serving a directory */

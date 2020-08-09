@@ -11,7 +11,6 @@ import path from 'path';
 
 import { getConfig } from './shared';
 import { isDirectory, uniqueID } from './utils';
-import { DefaultContentServerOptions } from './index';
 
 const createDirectoryServer = () => {
   const styles = /* css */`
