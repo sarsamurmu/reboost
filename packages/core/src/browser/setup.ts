@@ -169,26 +169,26 @@ socket.addEventListener('message', async ({ data }) => {
               debug('[HMR] Self accepted by', file);
               handler.accept(updatedModuleInstance);
               dependentsAccepted++;
+            } else {
+              dependentsAcceptedLevel2 = 0;
+
+              dependents.forEach((tree) => {
+                if ((handler = emitterFileData.listeners.get(tree.file)) && handler.accept) {
+                  debug('[HMR] Accepted by', tree.file);
+                  handler.accept(updatedModuleInstance);
+                  dependentsAcceptedLevel2++;
+                } else if (tree.dependents.length > 0) {
+                  nextBubbleUpDependents.push(...tree.dependents);
+                } else {
+                  debug('[HMR] Triggering Reload. The file has no parent -', tree.file);
+                  Reboost.HMRReload();
+                }
+              });
+
+              if (dependentsAcceptedLevel2 === dependents.length) dependentsAccepted++;
             }
 
-            dependentsAcceptedLevel2 = 0;
-
-            dependents.forEach((tree) => {
-              if ((handler = emitterFileData.listeners.get(tree.file)) && handler.accept) {
-                debug('[HMR] Accepted by', tree.file);
-                handler.accept(updatedModuleInstance);
-                dependentsAcceptedLevel2++;
-              } else if (tree.dependents.length > 0) {
-                nextBubbleUpDependents.push(...tree.dependents);
-              } else {
-                debug('[HMR] Triggering Reload. The file has no parent -', tree.file);
-                Reboost.HMRReload();
-              }
-            });
-
             HMR_Data_Map.delete(file);
-
-            if (dependentsAcceptedLevel2 === dependents.length) dependentsAccepted++;
           } else if (dependents.length > 0) {
             nextBubbleUpDependents.push(...dependents);
           } else {
