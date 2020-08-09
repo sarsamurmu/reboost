@@ -139,6 +139,7 @@ const createFileServer = () => {
   const { contentServer, debugMode } = getConfig();
   const { root } = contentServer;
   const sendOptions: SendOptions = {
+    root,
     extensions: contentServer.extensions,
     hidden: contentServer.hidden,
     index: contentServer.index
@@ -178,7 +179,7 @@ const createFileServer = () => {
       ctx.type = 'text/javascript';
       ctx.body = `const debugMode = ${getConfig().debugMode};\n\n`;
       ctx.body += debugMode ? loadInitCode() : initCode;
-      return;
+      return next();
     }
 
     try {
@@ -192,7 +193,7 @@ const createFileServer = () => {
         watchedFiles.add(sentFilePath);
       }
 
-      if (/^\.html?/.test(path.extname(sentFilePath))) {
+      if (/^\.html?$/.test(path.extname(sentFilePath))) {
         const htmlSource = await new Promise<string>((res) => {
           const stream = ctx.body as fs.ReadStream;
           const chunks: Buffer[] = [];
@@ -201,23 +202,23 @@ const createFileServer = () => {
           stream.on('end', () => res(Buffer.concat(chunks).toString()));
         });
 
-        const root = parseHTML(htmlSource, {
+        const htmlRoot = parseHTML(htmlSource, {
           comment: true,
           script: true,
           style: true,
           pre: true
         });
-        const body = root.querySelector('body');
+        const body = htmlRoot.querySelector('body');
 
         if (body) {
           body.appendChild(parseHTML(`<script src="${initScriptPath}"></script>`));
         }
 
-        ctx.body = root.toString();
+        ctx.body = htmlRoot.toString();
         ctx.remove('Content-Length');
       }
 
-      return;
+      return next();
     }
 
     sendDirectory(ctx, root);
