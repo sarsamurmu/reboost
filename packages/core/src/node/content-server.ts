@@ -139,7 +139,7 @@ const createFileServer = () => {
   const { root } = contentServer;
   const sendOptions: SendOptions = {
     root,
-    extensions: contentServer.extensions,
+    extensions: contentServer.extensions as any,
     hidden: contentServer.hidden,
     index: contentServer.index
   }
@@ -158,7 +158,9 @@ const createFileServer = () => {
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
 
-  const triggerReload = () => webSockets.forEach((ws) => ws.send(''));
+  const triggerReload = (filePath = '') => {
+    webSockets.forEach((ws) => ws.send(JSON.stringify(path.extname(filePath) === '.css')));
+  }
 
   watcher.on('change', triggerReload);
   watcher.on('unlink', (filePath) => {

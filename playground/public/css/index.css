@@ -1,0 +1,11 @@
+body {
+  padding: 10px;
+  font-family: sans-serif;
+}
+
+a {
+  display: block;
+  font-size: 20px;
+  padding: 5px;
+  text-decoration: none;
+}

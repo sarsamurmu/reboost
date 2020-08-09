@@ -13,7 +13,21 @@ const connect = () => {
     debug('[reboost] Connected to the content server');
   });
 
-  socket.addEventListener('message', () => self.location.reload());
+  socket.addEventListener('message', ({ data }) => {
+    const isCSS = JSON.parse(data) === true;
+
+    if (isCSS) {
+      document.querySelectorAll('link[rel=stylesheet]').forEach((link: HTMLLinkElement) => {
+        const url = new URL(link.href);
+        url.searchParams.set('reboostTime', Date.now() + '');
+        link.href = url.toString();
+      });
+
+      return;
+    }
+
+    self.location.reload();
+  });
 
   socket.addEventListener('close', () => {
     if (!lostConnection) {
