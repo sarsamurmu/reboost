@@ -22,7 +22,7 @@ export const postcssError = (pluginName: string, error: any, config: ReboostConf
   return new Error(errorMessage);
 }
 
-interface PostCSSPluginOptions {
+export interface PostCSSPluginOptions {
   ctx?: Record<string, any>;
 }
 

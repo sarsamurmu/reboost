@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { ReboostPlugin } from '../index';
 import { bind } from '../utils';
 
-interface UsePluginOptions {
+export interface UsePluginOptions {
   include: Matcher;
   exclude?: Matcher;
   use: ReboostPlugin | ReboostPlugin[];

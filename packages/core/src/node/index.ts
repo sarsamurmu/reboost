@@ -28,6 +28,7 @@ import { resolve } from './core-plugins/resolver';
 import { createProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
+export { PluginOptions } from './plugins';
 export * from './plugins/removed';
 
 export type { babelTypes, RawSourceMap }
@@ -113,7 +114,7 @@ export interface ReboostConfig {
   /** Options for content server */
   contentServer?: {
     /** Extensions to resolve when no extension is present in the URL */
-    extensions?: boolean | string[];
+    extensions?: false | string[];
     /** When enabled, also serves hidden files */
     hidden?: boolean;
     /** Name of the index file to serve automatically when serving a directory */
