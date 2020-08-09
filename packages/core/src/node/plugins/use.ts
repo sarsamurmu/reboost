@@ -10,7 +10,7 @@ interface UsePluginOptions {
   use: ReboostPlugin | ReboostPlugin[];
 }
 
-export const UsePlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, 'getId'>> => {
+const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, 'getId'>> => {
   // TODO: Remove `options.test` in v1.0
   const aOpt = options as any;
   if (aOpt.test) {
@@ -100,4 +100,8 @@ export const UsePlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugi
       }
     }
   }
+}
+
+export const UsePlugin = (...options: UsePluginOptions[]): ReboostPlugin[] => {
+  return options.map(createPlugin);
 }

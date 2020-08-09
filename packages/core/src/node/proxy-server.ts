@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { createFileHandler } from './file-handler';
-import { getAddress, getConfig } from './shared';
+import { getAddress, getConfig, getPlugins } from './shared';
 
 const webSockets = new Set<Context['websocket']>();
 
@@ -62,7 +62,7 @@ export const createRouter = () => {
     const pathToResolve = ctx.query.to;
     let finalPath: string;
 
-    for (const plugin of getConfig().plugins) {
+    for (const plugin of getPlugins()) {
       if (plugin.resolve) {
         const resolvedPath = await plugin.resolve(pathToResolve, relativeTo);
         if (resolvedPath) {

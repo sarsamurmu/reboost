@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostConfig, DefaultConfig } from './index';
+import { ReboostConfig, DefaultConfig, ReboostPlugin } from './index';
 
 let address: string;
 let config = DefaultConfig as ReboostConfig;
@@ -32,6 +32,7 @@ export const getAddress = () => address;
 export const setAddress = (aAddress: string) => address = aAddress;
 
 export const getConfig = () => config;
+export const getPlugins = () => config.plugins as ReboostPlugin[];
 export const setConfig = (aConfig: ReboostConfig) => config = aConfig;
 
 export const getFilesDir = () => path.join(getConfig().cacheDir, 'files');
@@ -42,7 +43,7 @@ export const getVersion = (): string => {
 }
 
 export const getUsedPlugins = () => {
-  return getConfig().plugins
+  return getPlugins()
     .filter((p) => p && p.name)
     .map((p) => {
       let id = p.name;

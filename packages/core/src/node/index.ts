@@ -132,7 +132,7 @@ export interface ReboostConfig {
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
   /** Plugins you want to use with Reboost */
-  plugins?: ReboostPlugin[];
+  plugins?: (ReboostPlugin | ReboostPlugin[])[];
   /** Directory to use as root */
   rootDir?: string;
   /** Resolve options to use when resolving files */
@@ -246,23 +246,29 @@ export const start = (config: ReboostConfig = {} as any) => {
         }
       }
 
-      config.resolve.modules = [config.resolve.modules].flat();
+      config.resolve.modules = [].concat(config.resolve.modules);
       config.resolve.modules.slice().forEach((modDirName) => {
         if (path.isAbsolute(modDirName)) return;
         (config.resolve.modules as string[]).push(path.join(config.rootDir, modDirName));
       });
 
-      config.plugins.push(...CorePlugins);
-      const pluginNames = config.plugins.map(({ name }) => name);
+      const plugins: ReboostPlugin[] = [];
+      config.plugins.forEach((plugin) => {
+        plugins.push(...(Array.isArray(plugin) ? plugin : [plugin]));
+      });
+      config.plugins = plugins;
+
+      plugins.push(...CorePlugins);
+      const pluginNames = plugins.map(({ name }) => name);
 
       if (!pluginNames.includes(esbuildPluginName)) {
-        config.plugins.push(esbuildPlugin());
+        plugins.push(esbuildPlugin());
       }
       if (!pluginNames.includes(CSSPluginName)) {
-        config.plugins.unshift(CSSPlugin());
+        plugins.unshift(CSSPlugin());
       }
       if (!pluginNames.includes(PostCSSPluginName)) {
-        config.plugins.unshift(PostCSSPlugin());
+        plugins.unshift(PostCSSPlugin());
       }
 
       if (config.dumpCache) rmDir(config.cacheDir);
@@ -329,7 +335,7 @@ export const start = (config: ReboostConfig = {} as any) => {
       }
 
       const setupPromises: Promise<void>[] = [];
-      config.plugins.forEach(({ setup }) => {
+      plugins.forEach(({ setup }) => {
         if (setup) {
           const promise = setup({
             config,

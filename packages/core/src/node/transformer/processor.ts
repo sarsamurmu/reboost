@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { ReboostPlugin, PluginContext } from '../index';
-import { getConfig } from '../shared';
+import { getConfig, getPlugins } from '../shared';
 import { bind, mergeSourceMaps } from '../utils';
 
 let pluginsInitiated = false;
@@ -29,7 +29,7 @@ const handleError = ({ message }: { message: string }) => {
 export const getPluginHooks = () => {
   if (!pluginsInitiated) {
     const def = (a: any) => !!a;
-    const plugins = getConfig().plugins.filter(def);
+    const plugins = getPlugins().filter(def);
     const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
       return plugins.map((plugin) => plugin[hookName]).filter(def);
     }
