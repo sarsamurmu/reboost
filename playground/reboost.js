@@ -49,8 +49,7 @@ start({
           ['@babel/plugin-proposal-pipeline-operator', { proposal: 'smart' }]
         ]
       })
-    }),
-    UsePlugin({
+    }, {
       include: '**/src/react-fast-refresh/**',
       use: ReactFastRefreshPlugin()
     })
