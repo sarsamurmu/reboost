@@ -162,6 +162,7 @@ export interface ReboostConfig {
 }
 
 const INCOMPATIBLE_BELOW = '0.8.0';
+const DEFAULT_PORT = 7456;
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
@@ -306,7 +307,10 @@ export const start = (config: ReboostConfig = {} as any) => {
         for (const details of interfaces[dev]) {
           if (details.family === 'IPv4' && !details.internal) {
             host = details.address;
-            port = await portFinder.getPortPromise({ host });
+            port = await portFinder.getPortPromise({
+              host,
+              port: DEFAULT_PORT
+            });
             break loop;
           }
         }
@@ -314,7 +318,7 @@ export const start = (config: ReboostConfig = {} as any) => {
 
       if (!host && !port) {
         host = 'localhost';
-        port = await portFinder.getPortPromise();
+        port = await portFinder.getPortPromise({ port: DEFAULT_PORT });
       }
 
       const fullAddress = `http://${host}:${port}`;

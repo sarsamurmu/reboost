@@ -10,15 +10,16 @@ const connect = () => {
   socket.addEventListener('open', () => {
     if (lostConnection) self.location.reload();
 
-    debug('Connected to the content server');
+    debug('[reboost] Connected to the content server');
   });
 
   socket.addEventListener('message', () => self.location.reload());
 
   socket.addEventListener('close', () => {
-    debug('Socket closed');
-
-    lostConnection = true;
+    if (!lostConnection) {
+      debug('[reboost] Lost connection to the content server');
+      lostConnection = true;
+    }
 
     setTimeout(() => connect(), 5000);
   });
