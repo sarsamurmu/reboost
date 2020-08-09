@@ -1,3 +1,12 @@
+## 0.10.0
+- Added support for live reload in content server
+- Reorganized options for content server
+- Added new option `port` to `config.contentServer`
+- Fixed bug with HMR
+- Properly exported types
+- Updated dependencies
+- Lots of minor fixes
+
 ## 0.9.0
 - Fixed esbuild plugin warning
 - Fixed security issues
