@@ -74,7 +74,7 @@ Object.defineProperty(Reboost, '[[Private]]', {
   configurable: false
 });
 
-Reboost.HMRReload = () => debugMode ? console.log('TRIGGER RELOAD') : location.reload();
+Reboost.HMRReload = () => debugMode ? console.log('TRIGGER RELOAD') : self.location.reload();
 
 const aSelf = self as any;
 if (!aSelf.process) {
@@ -108,7 +108,7 @@ const makeLoopGuard = (max: number) => {
 const socket = new WebSocket(`ws://${address.replace(/^http(s?):\/\//, '')}`);
 
 socket.addEventListener('open', () => {
-  console.log('[reboost] Connected to the server');
+  console.log('[reboost] Connected to the content server');
 });
 
 socket.addEventListener('message', async ({ data }) => {

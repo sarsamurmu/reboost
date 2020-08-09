@@ -31,7 +31,7 @@ export const createRouter = () => {
 
   router.get('/raw', async (ctx) => {
     const filePath = ctx.query.q;
-    if (fs.existsSync(filePath)) ctx.body = fs.createReadStream(filePath);
+    if (fs.existsSync(filePath)) ctx.body = await fs.promises.readFile(filePath);
   });
 
   const hmrCode = fs.readFileSync(path.resolve(__dirname, '../browser/hmr.js')).toString();
