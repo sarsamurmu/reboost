@@ -53,7 +53,7 @@ Name of the index file to serve automatically when serving a directory.
 ##### `contentServer.middleware`
 Type: `Koa.Middleware | Koa.Middleware[]`
 
-Middleware(s) to use with content server's [`Koa`](https://koajs.com) app instance.
+Middleware(s) to use with the content server's [`Koa`](https://koajs.com) app instance.
 
 ##### `contentServer.open`
 Type: `boolean | object`\
@@ -354,6 +354,9 @@ Default: `/.*/`
 
 Files to include in the watch-list. Can be any of [`anymatch`](https://www.npmjs.com/package/anymatch)
 patterns. By default, all files are watched except for excluded files.
+
+It only watches the files which are requested. So file watcher won't bloat up
+watching unnecessary files.
 
 ##### `watchOptions.exclude`
 Type: `Matcher`\
