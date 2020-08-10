@@ -19,7 +19,7 @@ start({
       // The following regex enables fast refresh for files
       // with .js, .ts, .jsx or .tsx extensions
       // Feel free to use any regex for your files
-      test: /\.[jt]sx?$/i,
+      include: /\.[jt]sx?$/i,
       use: ReactRefreshPlugin()
     })
   ]
