@@ -17,7 +17,7 @@ export = (plop: NodePlopAPI) => {
   const prompts = [
     {
       type: 'input',
-      name: 'appName',
+      name: 'name',
       message: "What is your app's name",
       validate: (val: string) => val.trim() !== ''
     },
@@ -32,11 +32,11 @@ export = (plop: NodePlopAPI) => {
       type: 'input',
       name: 'root',
       message: 'Where to extract the files',
-      default: (answers: any) => './' + answers.appName
+      default: (answers: any) => './' + answers.name
     },
     {
       type: 'confirm',
-      name: 'shouldInstall',
+      name: 'installDeps',
       message: 'Do you want to install dependencies (using "npm i")',
       default: true
     }
@@ -53,7 +53,8 @@ export = (plop: NodePlopAPI) => {
           base: '../templates/{{ template }}',
           templateFiles: '../templates/{{ template }}/**/*',
           data: {
-            versions
+            versions,
+            appName: answers.name
           },
           globOptions: {
             ignore: ['**/node_modules/**']
@@ -61,7 +62,7 @@ export = (plop: NodePlopAPI) => {
         }
       ];
 
-      if (answers.shouldInstall) {
+      if (answers.installDeps) {
         actions.push({
           type: 'npmInstall',
           path: path.join(process.cwd(), answers.root),
