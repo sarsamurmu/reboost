@@ -158,11 +158,16 @@ const createFileServer = () => {
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
 
-  const triggerReload = (filePath = '') => {
-    webSockets.forEach((ws) => ws.send(JSON.stringify(path.extname(filePath) === '.css')));
+  const triggerReload = (isCSS = false) => {
+    webSockets.forEach((ws) => ws.send(JSON.stringify(isCSS)));
   }
 
-  watcher.on('change', triggerReload);
+  watcher.on('change', (filePath) => {
+    console.log(chalk.blue(`Changed: ${path.relative(getConfig().rootDir, filePath)}`));
+
+    triggerReload(path.extname(filePath) === '.css');
+  });
+  
   watcher.on('unlink', (filePath) => {
     watchedFiles.delete(path.normalize(filePath));
     triggerReload();
