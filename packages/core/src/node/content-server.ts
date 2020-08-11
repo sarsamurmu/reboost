@@ -137,9 +137,9 @@ const createFileServer = () => {
   const sendDirectory = createDirectoryServer();
   const { contentServer, debugMode } = getConfig();
   const { root } = contentServer;
-  const sendOptions: SendOptions = {
+  const sendOptions: SendOptions & { root: string } = {
     root,
-    extensions: contentServer.extensions as any,
+    extensions: contentServer.extensions,
     hidden: contentServer.hidden,
     index: contentServer.index
   }
