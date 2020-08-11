@@ -129,7 +129,7 @@ const connectWebsocket = () => {
       const now = Date.now();
 
       // Apply HMR only if file's last updated time is greater that 0.8s
-      if (!fileLastUpdated || (((now - fileLastUpdated) / 1000) > 0.8)) {
+      if ((typeof fileLastUpdated === 'undefined') || (((now - fileLastUpdated) / 1000) > 0.8)) {
         await loadImporter;
 
         const guard = makeLoopGuard(1000);
