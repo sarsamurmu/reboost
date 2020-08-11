@@ -1,6 +1,7 @@
 import { ParameterizedContext } from 'koa';
 import getHash from 'md5-file';
 import chalk from 'chalk';
+import prettyTime from 'pretty-time';
 
 import fs from 'fs';
 import path from 'path';
@@ -145,10 +146,10 @@ export const createFileHandler = () => {
     }
 
     const filePath = ctx.query.q;
-    const timerName = chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}`);
+    let startTime: [number, number];
     let transformedCode: string;
 
-    if (config.showResponseTime) console.time(timerName);
+    if (config.showResponseTime) startTime = process.hrtime();
 
     if (fs.existsSync(filePath)) {
       const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
@@ -269,6 +270,12 @@ export const createFileHandler = () => {
     ctx.type = 'text/javascript';
     ctx.body = transformedCode;
 
-    if (config.showResponseTime) console.timeEnd(timerName);
+    if (config.showResponseTime) {
+      const endTime = process.hrtime(startTime);
+      console.log(
+        chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}:`),
+        chalk.white(prettyTime(endTime, endTime[0] > 0 ? 'ms' : 'micro'))
+      );
+    }
   }
 }

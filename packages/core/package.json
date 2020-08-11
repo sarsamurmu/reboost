@@ -59,6 +59,7 @@
     "postcss-modules-local-by-default": "^3.0.3",
     "postcss-modules-scope": "^2.2.0",
     "postcss-modules-values": "^3.0.0",
+    "pretty-time": "^1.1.0",
     "source-map": "^0.7.3"
   },
   "devDependencies": {
@@ -75,6 +76,7 @@
     "@types/postcss-modules-local-by-default": "^1.2.0",
     "@types/postcss-modules-scope": "^1.1.0",
     "@types/postcss-modules-values": "^3.0.0",
+    "@types/pretty-time": "^1.1.0",
     "chai": "*",
     "concurrently": "*",
     "mocha": "*",
