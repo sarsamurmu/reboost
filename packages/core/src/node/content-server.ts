@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig } from './shared';
-import { isDirectory, uniqueID } from './utils';
+import { isDirectory, uniqueID, getTimestamp } from './utils';
 
 const createDirectoryServer = () => {
   const styles = /* css */`
@@ -162,13 +162,17 @@ const createFileServer = () => {
     webSockets.forEach((ws) => ws.send(JSON.stringify(isCSS)));
   }
 
+  const rootRelative = (filePath: string) => path.relative(getConfig().rootDir, filePath);
+
   watcher.on('change', (filePath) => {
-    console.log(chalk.blue(`Changed: ${path.relative(getConfig().rootDir, filePath)}`));
+    console.log(chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
 
     triggerReload(path.extname(filePath) === '.css');
   });
   
   watcher.on('unlink', (filePath) => {
+    console.log(chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
+
     watchedFiles.delete(path.normalize(filePath));
     triggerReload();
   });

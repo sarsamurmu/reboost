@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import path from 'path';
 
 import { getConfig, saveFilesData } from './shared';
-import { diff } from './utils';
+import { diff, getTimestamp } from './utils';
 import { messageClient } from './proxy-server';
 import { removeDependents } from './file-handler';
 
@@ -15,11 +15,12 @@ export const createWatcher = () => {
   const dependenciesMap = new Map<string, string[]>();
   const dependentsMap = new Map<string, string[]>();
   const log = false && getConfig().debugMode;
+  const rootRelative = (filePath: string) => path.relative(getConfig().rootDir, filePath);
 
   watcher.on('change', (filePath) => {
     filePath = path.normalize(filePath);
     
-    console.log(chalk.blue(`Changed: ${path.relative(getConfig().rootDir, filePath)}`));
+    console.log(chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
     const dependents = dependentsMap.get(filePath);
@@ -35,7 +36,7 @@ export const createWatcher = () => {
   watcher.on('unlink', (filePath) => {
     filePath = path.normalize(filePath);
     
-    console.log(chalk.blue(`Deleted: ${path.relative(getConfig().rootDir, filePath)}`));
+    console.log(chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
     dependentsMap.delete(filePath);

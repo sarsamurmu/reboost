@@ -71,7 +71,13 @@ export const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>):
 export const diff = <T>(oldA: T[], newA: T[]) => ({
   added: newA.filter((a) => !oldA.includes(a)),
   removed: oldA.filter((a) => !newA.includes(a))
-})
+});
+
+export const getTimestamp = () => {
+  const date = new Date();
+  const f = (num: number) => ('' + num).length === 1 ? '0' + num : num;
+  return `[${f(date.getHours())}:${f(date.getMinutes())}:${f(date.getSeconds())}]`;
+}
 
 export const isVersionLessThan = (version: string, toCompareWith: string) => {
   const [aMajor, aMinor, aPatch] = version.split('.').map(Number);
