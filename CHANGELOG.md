@@ -1,3 +1,12 @@
+## 0.10.1
+- Added timestamp to file change logs
+- Proxy server now supports reconnecting
+- Content server now logs file change
+- Improved response time logger
+- Fixed bug with cache refreshing
+- Improved `create-app` templates
+- Updated dependencies
+
 ## 0.10.0
 - Added support for live reload in content server
 - Reorganized options for content server
