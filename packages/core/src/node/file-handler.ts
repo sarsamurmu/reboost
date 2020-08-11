@@ -8,8 +8,30 @@ import path from 'path';
 import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir } from './shared';
 import { ensureDir, uniqueID, diff, toPosix } from './utils';
 import { transformFile } from './transformer';
-import { createWatcher, removeFile } from './watcher';
+import { createWatcher } from './watcher';
 import { ReboostConfig } from './index';
+
+export const removeFile = (file: string) => {
+  const filesData = getFilesData().files;
+  const fileData = filesData[file];
+  if (fileData) {
+    filesData[file] = undefined;
+    const absoluteFilePath = path.join(getFilesDir(), fileData.uid);
+    fs.unlinkSync(absoluteFilePath);
+    if (fs.existsSync(absoluteFilePath + '.map')) {
+      fs.unlinkSync(absoluteFilePath + '.map');
+    }
+  }
+}
+
+export const removeDependents = (dependency: string) => {
+  const dependentsData = getFilesData().dependents;
+  const dependents = dependentsData[dependency];
+  if (dependents) {
+    dependentsData[dependency] = undefined;
+    dependents.forEach((dependent) => removeFile(dependent));
+  }
+}
 
 export const verifyFiles = () => {
   if (fs.existsSync(getFilesDir())) {
@@ -18,16 +40,12 @@ export const verifyFiles = () => {
       if (!fs.existsSync(file)) removeFile(file);
     });
 
-    const dependentsData = getFilesData().dependents;
-    const dependencies = Object.keys(dependentsData);
+    const dependencies = Object.keys(getFilesData().dependents);
     dependencies.forEach((dependency) => {
-      if (!fs.existsSync(dependency)) {
-        dependentsData[dependency].forEach((file) => {
-          removeFile(file);
-        });
-      }
+      if (!fs.existsSync(dependency)) removeDependents(dependency);
     });
   }
+
   saveFilesData();
 }
 

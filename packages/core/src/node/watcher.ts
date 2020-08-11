@@ -2,36 +2,12 @@ import { FSWatcher } from 'chokidar';
 import anymatch from 'anymatch';
 import chalk from 'chalk';
 
-import fs from 'fs';
 import path from 'path';
 
-import { getConfig, getFilesData, getFilesDir, saveFilesData } from './shared';
+import { getConfig, saveFilesData } from './shared';
 import { diff } from './utils';
 import { messageClient } from './proxy-server';
-
-export const removeFile = (file: string) => {
-  const filesData = getFilesData().files;
-  const fileData = filesData[file];
-  if (fileData) {
-    filesData[file] = undefined;
-    const absoluteFilePath = path.join(getFilesDir(), fileData.uid);
-    fs.unlinkSync(absoluteFilePath);
-    if (fs.existsSync(absoluteFilePath + '.map')) {
-      fs.unlinkSync(absoluteFilePath + '.map');
-    }
-  }
-}
-
-export const removeDependents = (dependency: string) => {
-  const dependentsData = getFilesData().dependents;
-  const dependents = dependentsData[dependency];
-  if (dependents) {
-    dependentsData[dependency] = undefined;
-    dependents.forEach((dependent) => {
-      removeFile(dependent);
-    });
-  }
-}
+import { removeDependents } from './file-handler';
 
 export const createWatcher = () => {
   const { watchOptions } = getConfig();
