@@ -94,7 +94,7 @@ start({
 ##### `contentServer.port`
 Type: `number`
 
-Port to use for the content server. Fallbacks to a random port when the
+Port to use for the content server. Fallbacks to any available port when the
 given port unavailable.
 
 ##### `contentServer.proxy`
