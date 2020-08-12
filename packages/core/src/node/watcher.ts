@@ -4,7 +4,7 @@ import chalk from 'chalk';
 
 import path from 'path';
 
-import { getConfig, saveFilesData } from './shared';
+import { getConfig, saveFilesData, addServiceStopper } from './shared';
 import { diff, getTimestamp } from './utils';
 import { messageClient } from './proxy-server';
 import { removeDependents } from './file-handler';
@@ -16,6 +16,8 @@ export const createWatcher = () => {
   const dependentsMap = new Map<string, string[]>();
   const log = false && getConfig().debugMode;
   const rootRelative = (filePath: string) => path.relative(getConfig().rootDir, filePath);
+
+  addServiceStopper(() => watcher.close());
 
   watcher.on('change', (filePath) => {
     filePath = path.normalize(filePath);

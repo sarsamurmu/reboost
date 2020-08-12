@@ -27,6 +27,12 @@ let filesData: {
   }>;
   dependents: Record<string, string[]>;
 };
+const serviceStoppers: (() => Promise<void> | void)[] = [];
+
+export const addServiceStopper = (cb: () => Promise<void> | void) => {
+  serviceStoppers.push(cb);
+}
+export const getServiceStoppers = () => serviceStoppers;
 
 export const getAddress = () => address;
 export const setAddress = (aAddress: string) => address = aAddress;

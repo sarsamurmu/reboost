@@ -13,6 +13,7 @@ import { getConfig, getPlugins } from '../shared';
 import { bind, mergeSourceMaps } from '../utils';
 
 let pluginsInitiated = false;
+let stopHooks: ReboostPlugin['stop'][];
 let resolveHooks: ReboostPlugin['resolve'][];
 let loadHooks: ReboostPlugin['load'][];
 let transformContentHooks: ReboostPlugin['transformContent'][];
@@ -29,11 +30,11 @@ const handleError = ({ message }: { message: string }) => {
 export const getPluginHooks = () => {
   if (!pluginsInitiated) {
     const def = (a: any) => !!a;
-    const plugins = getPlugins().filter(def);
     const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
-      return plugins.map((plugin) => plugin[hookName]).filter(def);
+      return getPlugins().map((plugin) => plugin[hookName]).filter(def);
     }
 
+    stopHooks = getHooks('stop');
     resolveHooks = getHooks('resolve');
     loadHooks = getHooks('load');
     transformContentHooks = getHooks('transformContent');
@@ -45,6 +46,7 @@ export const getPluginHooks = () => {
   }
 
   return {
+    stopHooks,
     resolveHooks,
     loadHooks,
     transformContentHooks,

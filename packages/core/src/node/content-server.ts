@@ -9,7 +9,7 @@ import { FSWatcher } from 'chokidar';
 import fs from 'fs';
 import path from 'path';
 
-import { getConfig } from './shared';
+import { getConfig, addServiceStopper } from './shared';
 import { isDirectory, uniqueID, getTimestamp } from './utils';
 
 const createDirectoryServer = () => {
@@ -157,6 +157,8 @@ const createFileServer = () => {
   const webSockets = new Set<Koa.Context['websocket']>();
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
+
+  addServiceStopper(() => watcher.close());
 
   const triggerReload = (isCSS = false) => {
     webSockets.forEach((ws) => ws.send(JSON.stringify(isCSS)));

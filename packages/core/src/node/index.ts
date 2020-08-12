@@ -12,13 +12,14 @@ import open from 'open';
 import MagicString from 'magic-string';
 import { ResolveOptions } from 'enhanced-resolve';
 
-import { networkInterfaces } from 'os';
 import fs from 'fs';
 import path from 'path';
+import { networkInterfaces } from 'os';
+import http from 'http';
 
 import { createContentServer } from './content-server';
 import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
-import { setAddress, setConfig, getFilesData, getUsedPlugins } from './shared';
+import { setAddress, setConfig, getFilesData, getUsedPlugins, getServiceStoppers, getPlugins, addServiceStopper } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
@@ -74,6 +75,7 @@ export interface ReboostPlugin {
       chalk: typeof chalk;
     }
   ) => void | Promise<void>;
+  stop?: () => void | Promise<void>;
   resolve?: (pathToResolve: string, relativeTo: string) => string | Promise<string>;
   load?: (this: PluginContext, filePath: string) => LoadedData | Promise<LoadedData>;
   transformContent?: (
@@ -218,14 +220,29 @@ export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['
 deepFreeze(DefaultConfig);
 deepFreeze(DefaultContentServerOptions);
 
+export interface ReboostService {
+  /** The function to stop Reboost */
+  stop: () => Promise<void>;
+  /** URL where the proxy server is listening */
+  proxyServer: string;
+  /** URLs where the content server is listening */
+  contentServer?: {
+    local: string;
+    external?: string;
+  }
+}
+
 export const start = (config: ReboostConfig = {} as any) => {
-  return new Promise<{
-    proxyServer: string;
-    contentServer?: {
-      local: string;
-      external?: string;
+  const stop = async () => {
+    for (const stopService of getServiceStoppers()) {
+      await stopService();
     }
-  }>((resolvePromise) => {
+    for (const { stop: stopPlugin } of getPlugins()) {
+      if (stopPlugin) await stopPlugin();
+    }
+  }
+
+  return new Promise<ReboostService>((resolvePromise) => {
     (async () => {
       config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
 
@@ -254,11 +271,11 @@ export const start = (config: ReboostConfig = {} as any) => {
         (config.resolve.modules as string[]).push(path.join(config.rootDir, modDirName));
       });
 
-      const plugins: ReboostPlugin[] = [];
+      let plugins: ReboostPlugin[] = [];
       config.plugins.forEach((plugin) => {
         plugins.push(...(Array.isArray(plugin) ? plugin : [plugin]));
       });
-      config.plugins = plugins;
+      config.plugins = plugins = plugins.filter((p) => !!p);
 
       plugins.push(...CorePlugins);
       const pluginNames = plugins.map(({ name }) => name);
@@ -355,8 +372,14 @@ export const start = (config: ReboostConfig = {} as any) => {
       await Promise.all(setupPromises);
       deepFreeze(config);
 
-      finalizeProxyServer().listen(port, host, async () => {
+      const serverStopper = (server: http.Server) => () => new Promise<void>((res) => {
+        server.close(() => res());
+      });
+
+      const httpProxyServer = finalizeProxyServer().listen(port, host, async () => {
         console.log(chalk.green('[reboost] Proxy server started'));
+
+        addServiceStopper(serverStopper(httpProxyServer));
 
         if (config.contentServer) {
           const contentServer = createContentServer();
@@ -368,7 +391,10 @@ export const start = (config: ReboostConfig = {} as any) => {
           const localPort = await portFinder.getPortPromise({
             port: config.contentServer.port
           });
-          contentServer.listen(localPort, () => startedAt(`localhost:${localPort}`));
+          const httpLocalContentServer = contentServer.listen(localPort, () => {
+            startedAt(`localhost:${localPort}`);
+            addServiceStopper(serverStopper(httpLocalContentServer));
+          });
 
           const openOptions = config.contentServer.open;
           if (openOptions) {
@@ -380,13 +406,17 @@ export const start = (config: ReboostConfig = {} as any) => {
               host,
               port: config.contentServer.port
             });
-            contentServer.listen(
+            const httpExternalContentServer = contentServer.listen(
               ipPort,
               host,
-              () => startedAt(`${host}:${ipPort}`)
+              () => {
+                startedAt(`${host}:${ipPort}`);
+                addServiceStopper(serverStopper(httpExternalContentServer));
+              }
             );
 
             return resolvePromise({
+              stop,
               proxyServer: fullAddress,
               contentServer: {
                 local: `http://localhost:${localPort}`,
@@ -396,6 +426,7 @@ export const start = (config: ReboostConfig = {} as any) => {
           }
 
           return resolvePromise({
+            stop,
             proxyServer: fullAddress,
             contentServer: {
               local: `http://localhost:${localPort}`
@@ -404,6 +435,7 @@ export const start = (config: ReboostConfig = {} as any) => {
         }
 
         resolvePromise({
+          stop,
           proxyServer: fullAddress
         });
       });

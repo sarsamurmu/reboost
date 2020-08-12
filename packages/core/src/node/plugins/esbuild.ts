@@ -33,11 +33,14 @@ export interface esbuildPluginOptions {
    * @default true
    */
   minifySyntax?: boolean;
-  /** Define values of variables */
+  /**
+   * Define values of variables
+   * @default { 'process.env.NODE_ENV': '"development"' }
+   */
   define?: Record<string, string>;
+  /** Pre-started service to use with esbuild */
+  service?: Promise<esbuild.Service>;
 }
-
-let esbuildServicePromise: Promise<esbuild.Service>;
 
 export const PluginName = 'core-esbuild-plugin';
 export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin => {
@@ -60,13 +63,16 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     minifySyntax: true,
     define: {
       'process.env.NODE_ENV': '"development"'
-    }
+    },
+    service: undefined,
   };
   let compatibleTypes: string[];
+  let esbuildServicePromise: Promise<esbuild.Service>;
 
   return {
     name: PluginName,
     setup({ config, chalk }) {
+      if (options.service) esbuildServicePromise = options.service;
       if (!esbuildServicePromise) esbuildServicePromise = esbuild.startService();
 
       defaultOptions.minify = !config.debugMode;
@@ -89,12 +95,13 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
         aOpts.jsx.fragment = aOpts.jsxFragment;
       }
     },
+    async stop() {
+      if (!options.service) (await esbuildServicePromise).stop();
+    },
     async transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
         try {
-          const esbuildService = await esbuildServicePromise;
-
-          const { js, jsSourceMap, warnings } = await esbuildService.transform(data.code, {
+          const { js, jsSourceMap, warnings } = await (await esbuildServicePromise).transform(data.code, {
             sourcemap: 'external',
             sourcefile: path.relative(this.config.rootDir, filePath),
             loader: options.loaders[data.type],

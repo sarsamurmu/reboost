@@ -29,7 +29,9 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
   const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
     return plugins.map((plugin) => plugin[hookName]).filter(def);
   }
+
   const setupHooks = getHooks('setup');
+  const stopHooks = getHooks('stop');
   const resolveHooks = getHooks('resolve');
   const loadHooks = getHooks('load');
   const transformContentHooks = getHooks('transformContent');
@@ -41,6 +43,9 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
     name: 'core-use-plugin',
     async setup(data) {
       for (const hook of setupHooks) await hook(data);
+    },
+    async stop() {
+      for (const hook of stopHooks) await hook();
     },
     async resolve(pathToResolve, relativeTo) {
       if (test(relativeTo)) {
