@@ -1,7 +1,9 @@
+import Koa from 'koa';
 import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map';
 
 import fs from 'fs';
 import path from 'path';
+import http from 'http';
 
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
@@ -91,6 +93,15 @@ export const isVersionLessThan = (version: string, toCompareWith: string) => {
   if (aPatch > bPatch) return false;
 
   return false;
+}
+
+export const onServerCreated = (app: Koa, cb: (server: http.Server) => void) => {
+  const defaultListenFunc = app.listen;
+  app.listen = (...args: any[]) => {
+    const server: ReturnType<typeof defaultListenFunc> = defaultListenFunc.apply(app, args);
+    cb(server);
+    return server;
+  }
 }
 
 const isUndefOrNull = (d: any) => d === null || d === undefined;

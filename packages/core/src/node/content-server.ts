@@ -1,16 +1,16 @@
 import Koa from 'koa';
 import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import sendFile, { SendOptions } from 'koa-send';
-import withWebsocket from 'koa-websocket';
 import { parse as parseHTML } from 'node-html-parser';
 import chalk from 'chalk';
 import { FSWatcher } from 'chokidar';
+import WebSocket from 'ws';
 
 import fs from 'fs';
 import path from 'path';
 
 import { getConfig, addServiceStopper } from './shared';
-import { isDirectory, uniqueID, getTimestamp } from './utils';
+import { isDirectory, uniqueID, getTimestamp, onServerCreated } from './utils';
 
 const createDirectoryServer = () => {
   const styles = /* css */`
@@ -154,7 +154,7 @@ const createFileServer = () => {
   const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js')).toString();
   const initCode = loadInitCode();
   const initScriptPath = `/reboost-${uniqueID(10)}`;
-  const webSockets = new Set<Koa.Context['websocket']>();
+  const webSockets = new Set<WebSocket>();
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
 
@@ -168,20 +168,22 @@ const createFileServer = () => {
 
   watcher.on('change', (filePath) => {
     console.log(chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
-
     triggerReload(path.extname(filePath) === '.css');
   });
   
   watcher.on('unlink', (filePath) => {
     console.log(chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
-
     watchedFiles.delete(path.normalize(filePath));
     triggerReload();
   });
 
-  const websocketMiddleware = ({ websocket }: Koa.Context) => {
-    webSockets.add(websocket);
-    websocket.on('close', () => webSockets.delete(websocket));
+  const onServerCreatedCallback: Parameters<typeof onServerCreated>[1] = (server) => {
+    const wss = new WebSocket.Server({ server });
+    wss.on('connection', (socket) => {
+      webSockets.add(socket);
+      socket.on('close', () => webSockets.delete(socket));
+    });
+    addServiceStopper('Content server websocket', () => wss.close());
   }
 
   const koaMiddleware = async (ctx: Koa.Context, next: Koa.Next) => {
@@ -238,13 +240,13 @@ const createFileServer = () => {
     await next();
   }
 
-  return [koaMiddleware, websocketMiddleware] as const;
+  return [koaMiddleware, onServerCreatedCallback] as const;
 }
 
 export const createContentServer = () => {
-  const contentServer = withWebsocket(new Koa());
+  const contentServer = new Koa();
   const config = getConfig();
-  const [koaMiddleware, websocketMiddleware] = createFileServer();
+  const [koaMiddleware, onServerCreatedCallback] = createFileServer();
 
   const { middleware } = config.contentServer;
   if (middleware) {
@@ -262,8 +264,8 @@ export const createContentServer = () => {
     }
   }
 
-  contentServer.ws.use(websocketMiddleware);
   contentServer.use(koaMiddleware);
+  onServerCreated(contentServer, onServerCreatedCallback);
 
   return contentServer;
 }

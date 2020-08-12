@@ -1,6 +1,5 @@
 import Koa from 'koa';
 import { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
-import KoaWebsocket from 'koa-websocket';
 import chalk from 'chalk';
 import portFinder from 'portfinder';
 import { Matcher } from 'anymatch';
@@ -373,7 +372,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   await Promise.all(setupPromises);
   deepFreeze(config);
 
-  const serverStopper = (server: http.Server, app: KoaWebsocket.App) => {
+  const serverStopper = (server: http.Server) => {
     const connections = new Map<string, net.Socket>();
 
     server.on('connection', (connection) => {
@@ -383,10 +382,8 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     });
 
     return () => new Promise<void>((res) => {
-      app.ws.server.close(() => {
-        connections.forEach((connection) => connection.destroy());
-        server.close(() => res());
-      });
+      connections.forEach((connection) => connection.destroy());
+      server.close(() => res());
     });
   }
 
@@ -398,7 +395,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   console.log(chalk.green('[reboost] Proxy server started'));
 
-  addServiceStopper('Proxy server', serverStopper(httpProxyServer, proxyServer));
+  addServiceStopper('Proxy server', serverStopper(httpProxyServer));
 
   if (config.contentServer) {
     const contentServer = createContentServer();
@@ -413,7 +410,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     const httpLocalContentServer = await startServer(contentServer, localPort);
 
     startedAt(`localhost:${localPort}`);
-    addServiceStopper('Local content server', serverStopper(httpLocalContentServer, contentServer));
+    addServiceStopper('Local content server', serverStopper(httpLocalContentServer));
 
     const openOptions = config.contentServer.open;
     if (openOptions) {
@@ -428,7 +425,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
       const httpExternalContentServer = await startServer(contentServer, externalPort, host);
 
       startedAt(`${host}:${externalPort}`);
-      addServiceStopper('External content server', serverStopper(httpExternalContentServer, contentServer));
+      addServiceStopper('External content server', serverStopper(httpExternalContentServer));
 
       return {
         stop,

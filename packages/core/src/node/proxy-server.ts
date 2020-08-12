@@ -1,14 +1,15 @@
-import Koa, { Context } from 'koa';
-import withWebSocket from 'koa-websocket';
+import Koa from 'koa';
 import cors from '@koa/cors';
+import WebSocket from 'ws';
 
 import fs from 'fs';
 import path from 'path';
 
 import { createFileHandler } from './file-handler';
-import { getAddress, getConfig, getPlugins } from './shared';
+import { getAddress, getConfig, getPlugins, addServiceStopper } from './shared';
+import { onServerCreated } from './utils';
 
-const webSockets = new Set<Context['websocket']>();
+const webSockets = new Set<WebSocket>();
 
 export const createRouter = (): Koa.Middleware => {
   const routedPaths: Record<string, (ctx: Koa.Context) => void | Promise<void>> = {};
@@ -80,25 +81,28 @@ export const createRouter = (): Koa.Middleware => {
 
   return async (ctx, next) => {
     if (routedPaths[ctx.path]) {
-      // TODO: Fix `as any`
-      await routedPaths[ctx.path](ctx as any);
+      await routedPaths[ctx.path](ctx);
     }
     return next();
   }
 }
 
 export const createProxyServer = () => {
-  const proxyServer = withWebSocket(new Koa());
+  const proxyServer = new Koa();
   const router = createRouter();
-
-  proxyServer.ws.use(({ websocket }) => {
-    webSockets.add(websocket);
-    websocket.on('close', () => webSockets.delete(websocket));
-  });
 
   proxyServer
     .use(cors({ origin: '*' }))
     .use(router);
+
+  onServerCreated(proxyServer, (server) => {
+    const wss = new WebSocket.Server({ server });
+    wss.on('connection', (socket) => {
+      webSockets.add(socket);
+      socket.on('close', () => webSockets.delete(socket));
+    });
+    addServiceStopper('Proxy server websocket', () => wss.close());
+  });
 
   return proxyServer;
 }
