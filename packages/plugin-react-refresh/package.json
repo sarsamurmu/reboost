@@ -26,13 +26,12 @@
   "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-react-refresh",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.11.1"
+  },
   "devDependencies": {
     "@types/babel__core": "^7.1.9",
-    "concurrently": "*",
-    "typescript": "*"
-  },
-  "dependencies": {
-    "@babel/core": "^7.11.1",
+    "concurrently": "^5.3.0",
     "typescript": "^3.9.7"
   }
 }
