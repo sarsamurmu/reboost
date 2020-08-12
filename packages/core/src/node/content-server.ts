@@ -228,6 +228,7 @@ const createFileServer = () => {
           body.appendChild(parseHTML(`<script src="${initScriptPath}"></script>`));
         }
 
+        ctx.type = 'text/html';
         ctx.body = htmlRoot.toString();
         ctx.remove('Content-Length');
       }
