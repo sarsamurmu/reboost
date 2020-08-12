@@ -26,12 +26,12 @@
   "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-vue",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
-  "devDependencies": {
-    "@types/hash-sum": "^1.0.0",
-    "typescript": "*"
-  },
   "dependencies": {
     "@vue/compiler-sfc": "^3.0.0-rc.5",
     "hash-sum": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/hash-sum": "^1.0.0",
+    "typescript": "^3.9.7"
   }
 }

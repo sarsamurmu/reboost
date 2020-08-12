@@ -33,6 +33,6 @@
   },
   "dependencies": {
     "@babel/core": "^7.11.1",
-    "react-refresh": "^0.8.3"
+    "typescript": "^3.9.7"
   }
 }
