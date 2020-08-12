@@ -46,7 +46,6 @@ add server functionality, or do the initial setup in this function.
 The first argument of this function is an object with the following properties -
 - `config` - The configuration object passed when starting Reboost.
 - `app` - The [`Koa`](https://koajs.com/) app instance used by Reboost.
-- `router` - The [`koa-router`](https://github.com/koajs/router) instance used by Koa.
 - `resolve` - Same as plugin context's [`resolve`](#resolve-func) function
 - `chalk` - The [`chalk`](https://www.npmjs.com/package/chalk) module
 
