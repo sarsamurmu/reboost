@@ -158,7 +158,7 @@ const createFileServer = () => {
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
 
-  addServiceStopper(() => watcher.close());
+  addServiceStopper('Content server file watcher', () => watcher.close());
 
   const triggerReload = (isCSS = false) => {
     webSockets.forEach((ws) => ws.send(JSON.stringify(isCSS)));

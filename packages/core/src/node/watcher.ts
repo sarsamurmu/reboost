@@ -17,7 +17,7 @@ export const createWatcher = () => {
   const log = false && getConfig().debugMode;
   const rootRelative = (filePath: string) => path.relative(getConfig().rootDir, filePath);
 
-  addServiceStopper(() => watcher.close());
+  addServiceStopper('Proxy server file watcher', () => watcher.close());
 
   watcher.on('change', (filePath) => {
     filePath = path.normalize(filePath);
