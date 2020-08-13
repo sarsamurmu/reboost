@@ -163,7 +163,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = '0.8.0';
+const INCOMPATIBLE_BELOW = '0.11.0';
 const DEFAULT_PORT = 7456;
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
