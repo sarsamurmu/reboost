@@ -9,7 +9,9 @@
     "clean": "node ../../rmDist",
     "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
     "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\"",
-    "test": "mocha -r ts-node/register/transpile-only --recursive tests/**/*.test.ts",
+    "test": "mocha --recursive test/**/*.test.js",
+    "test:build": "tsc -p test.tsconfig.json",
+    "test:watch": "tsc -p test.tsconfig.json -w",
     "coverage": "nyc npm run test"
   },
   "keywords": [
@@ -59,6 +61,7 @@
     "postcss-modules-values": "^3.0.0",
     "pretty-time": "^1.1.0",
     "source-map": "^0.7.3",
+    "tslib": "^2.0.1",
     "ws": "^7.3.1"
   },
   "devDependencies": {

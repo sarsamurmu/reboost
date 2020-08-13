@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { isVersionLessThan } from '../../src/node/utils';
+import { isVersionLessThan } from '../../dist/node/utils';
 
 describe('Utility functions', () => {
   it('compares versions', () => {
