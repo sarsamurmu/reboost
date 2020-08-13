@@ -5,17 +5,17 @@ import * as babelTypes from '@babel/types';
 import { getPluginHooks } from './processor';
 import { getAddress } from '../shared';
 
+export const resolveDependency = async (source: string, filePath: string) => {
+  for (const hook of getPluginHooks().resolveHooks) {
+    const resolvedPath = await hook(source, filePath);
+    if (resolvedPath) return resolvedPath;
+  }
+  console.log(chalk.red(`[reboost] Unable to resolve path "${source}" of "${filePath}"`));
+  return null;
+}
+
 export const resolveImports = async (ast: babelTypes.Node, filePath: string, imports: string[]) => {
   let error = false;
-
-  const resolvePath = async (source: string, filePath: string) => {
-    for (const hook of getPluginHooks().resolveHooks) {
-      const resolvedPath = await hook(source, filePath);
-      if (resolvedPath) return resolvedPath;
-    }
-    console.log(chalk.red(`[reboost] Unable to resolve path "${source}" of "${filePath}"`));
-    return null;
-  }
 
   const resolveDeclaration = async (astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>) => {
     if ((astPath.node as any).source) {
@@ -30,7 +30,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
           finalPath = source.replace(/^#/, '');
           routed = true;
         } else {
-          const resolvedPath = await resolvePath(source, filePath);
+          const resolvedPath = await resolveDependency(source, filePath);
           if (resolvedPath) {
             if (resolvedPath.startsWith('#/')) {
               finalPath = resolvedPath.replace(/^#/, '');
@@ -78,7 +78,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
         promiseExecutors.push(async () => {
           astPath.replaceWith(
             t.stringLiteral(
-              await resolvePath((astPath.node.arguments[0] as babelTypes.StringLiteral).value, filePath)
+              await resolveDependency((astPath.node.arguments[0] as babelTypes.StringLiteral).value, filePath)
             )
           );
         });

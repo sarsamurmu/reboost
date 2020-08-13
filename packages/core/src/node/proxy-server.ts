@@ -5,8 +5,9 @@ import WebSocket from 'ws';
 import fs from 'fs';
 import path from 'path';
 
+import { resolveDependency } from './transformer/import-resolver';
 import { createFileHandler } from './file-handler';
-import { getAddress, getConfig, getPlugins, addServiceStopper } from './shared';
+import { getAddress, getConfig, addServiceStopper } from './shared';
 import { onServerCreated } from './utils';
 
 const webSockets = new Set<WebSocket>();
@@ -61,17 +62,7 @@ export const createRouter = (): Koa.Middleware => {
   routedPaths['/resolve'] = async (ctx) => {
     const relativeTo = ctx.query.from;
     const pathToResolve = ctx.query.to;
-    let finalPath: string;
-
-    for (const plugin of getPlugins()) {
-      if (plugin.resolve) {
-        const resolvedPath = await plugin.resolve(pathToResolve, relativeTo);
-        if (resolvedPath) {
-          finalPath = resolvedPath;
-          break;
-        }
-      }
-    }
+    const finalPath = await resolveDependency(relativeTo, pathToResolve);
 
     if (finalPath) {
       ctx.type = 'text/plain';
