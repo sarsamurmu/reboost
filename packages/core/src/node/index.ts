@@ -68,7 +68,8 @@ export interface ReboostPlugin {
   setup?: (
     data: {
       config: ReboostConfig;
-      app: Koa;
+      proxyServer: Koa;
+      contentServer?: Koa;
       resolve: typeof resolve;
       chalk: typeof chalk;
     }
@@ -244,7 +245,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   if (!config.entries) {
     console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
-    process.exit(1);
+    return;
   }
 
   if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
@@ -313,6 +314,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   console.log(chalk.green('[reboost] Starting proxy server...'));
 
   const proxyServer = createProxyServer();
+  const contentServer = config.contentServer ? createContentServer() : undefined;
   const interfaces = networkInterfaces();
   let host: string;
   let port: number;
@@ -351,20 +353,19 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
   }
 
-  const setupPromises: Promise<void>[] = [];
-  plugins.forEach(({ setup }) => {
+  deepFreeze(config);
+
+  for (const { setup } of plugins) {
     if (setup) {
-      const promise = setup({
+      await setup({
         config,
-        app: proxyServer,
+        proxyServer,
+        contentServer,
         resolve,
         chalk
       });
-      if (promise) setupPromises.push(promise);
     }
-  });
-  await Promise.all(setupPromises);
-  deepFreeze(config);
+  }
 
   const startServer = (name: string, server: Koa, aPort: number, aHost = 'localhost') => new Promise((doneStart) => {
     const httpServer = server.listen(aPort, aHost, () => doneStart());
@@ -386,9 +387,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   console.log(chalk.green('[reboost] Proxy server started'));
 
-  if (config.contentServer) {
-    const contentServer = createContentServer();
-
+  if (contentServer) {
     const startedAt = (address: string) => {
       console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
     }
