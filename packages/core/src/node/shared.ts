@@ -27,10 +27,10 @@ let filesData: {
   }>;
   dependents: Record<string, string[]>;
 };
-const serviceStoppers: [string, () => Promise<void> | void][] = [];
+const serviceStoppers: [() => Promise<void> | void, string][] = [];
 
 export const addServiceStopper = (label: string, cb: () => Promise<void> | void) => {
-  serviceStoppers.push([label, cb]);
+  serviceStoppers.push([cb, label]);
 }
 export const getServiceStoppers = () => serviceStoppers;
 
