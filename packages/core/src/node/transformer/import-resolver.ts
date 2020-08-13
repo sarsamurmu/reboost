@@ -5,12 +5,12 @@ import * as babelTypes from '@babel/types';
 import { getPluginHooks } from './processor';
 import { getAddress } from '../shared';
 
-export const resolveDependency = async (source: string, filePath: string) => {
+export const resolveDependency = async (pathToResolve: string, relativeTo: string) => {
   for (const hook of getPluginHooks().resolveHooks) {
-    const resolvedPath = await hook(source, filePath);
+    const resolvedPath = await hook(pathToResolve, relativeTo);
     if (resolvedPath) return resolvedPath;
   }
-  console.log(chalk.red(`[reboost] Unable to resolve path "${source}" of "${filePath}"`));
+  console.log(chalk.red(`[reboost] Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
   return null;
 }
 

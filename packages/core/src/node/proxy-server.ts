@@ -60,9 +60,9 @@ export const createRouter = (): Koa.Middleware => {
   }
 
   routedPaths['/resolve'] = async (ctx) => {
-    const relativeTo = ctx.query.from;
-    const pathToResolve = ctx.query.to;
-    const finalPath = await resolveDependency(relativeTo, pathToResolve);
+    const relativeTo: string = ctx.query.from;
+    const pathToResolve: string = ctx.query.to;
+    const finalPath = await resolveDependency(pathToResolve, relativeTo);
 
     if (finalPath) {
       ctx.type = 'text/plain';
