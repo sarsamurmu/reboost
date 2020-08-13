@@ -45,10 +45,16 @@ add server functionality, or do the initial setup in this function.
 
 The first argument of this function is an object with the following properties -
 - `config` - The configuration object passed when starting Reboost.
-- `app` - The [`Koa`](https://koajs.com/) app instance used by Reboost.
+- `proxyServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's proxy server.
+- `contentServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's content server.
 - `resolve` - Same as plugin context's [`resolve`](#resolve-func) function
 - `chalk` - The [`chalk`](https://www.npmjs.com/package/chalk) module
 
+#### `stop`
+Type: `() => void`
+
+Used to stop the plugin. The provided function should
+stop any running service started by the plugin.
 
 #### `resolve`
 Type: `(importedPath: string, importer: string) => string`
