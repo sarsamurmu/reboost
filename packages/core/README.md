@@ -123,7 +123,7 @@ import { subtract } from './subtract';
 console.log('1 + 3 =', add(1, 3));
 console.log('10 - 5 =', subtract(10, 5));
 ```
-and HTML content (`public/index.html`)
+and the HTML content (`public/index.html`)
 ```html
 <!doctype html>
 <html>
