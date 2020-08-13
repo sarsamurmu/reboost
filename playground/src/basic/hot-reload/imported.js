@@ -1,4 +1,4 @@
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 exports.state = 20;
 

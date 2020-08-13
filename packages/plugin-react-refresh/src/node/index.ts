@@ -22,7 +22,7 @@ export = ({
         const preCode = /* js */`
           import { isReactRefreshBoundary } from ${JSON.stringify(this.resolve(__filename, '../browser/client-setup'))};
           import RefreshRuntime from ${JSON.stringify(this.resolve(__filename, 'react-refresh/runtime'))};
-          import { hot as ReboostHot } from 'reboost/hmr';
+          import { hot as ReboostHot } from 'reboost/hot';
 
           const __prevRefreshReg = window.$RefreshReg$;
           const __prevRefreshSig = window.$RefreshSig$;

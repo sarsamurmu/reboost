@@ -21,8 +21,13 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
     if ((astPath.node as any).source) {
       const source: string = (astPath.node as any).source.value;
 
-      if (source === 'reboost/hmr') {
-        (astPath.node as any).source.value = `/hmr?q=${encodeURI(filePath)}`;
+      if (source === 'reboost/hmr' || source === 'reboost/hot') {
+        // TODO: Remove it in v1.0
+        if (source === 'reboost/hmr') {
+          console.log(chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
+        }
+
+        (astPath.node as any).source.value = `/hot?q=${encodeURI(filePath)}`;
       } else {
         let finalPath = null;
         let routed = false;

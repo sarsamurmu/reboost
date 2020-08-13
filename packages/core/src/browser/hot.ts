@@ -1,6 +1,6 @@
 import type { ReboostGlobalWithPrivateObject } from './setup';
 
-export type HMR = Readonly<{
+export type Hot = Readonly<{
   data: Record<string, any>;
   id: string;
   self: Readonly<{
@@ -19,7 +19,7 @@ export interface HandlerObject {
   dispose?: (data: Record<string, any>) => void;
 }
 
-export type HMRMapType = Map<string, {
+export type HotMapType = Map<string, {
   declined: boolean;
   listeners: Map<string, HandlerObject>
 }>;
@@ -28,20 +28,20 @@ declare const address: string;
 declare const filePath: string;
 declare const Reboost: ReboostGlobalWithPrivateObject;
 
-let HMR_Map: ReboostGlobalWithPrivateObject['[[Private]]']['HMR_Map'];
-let HMR_Data_Map: ReboostGlobalWithPrivateObject['[[Private]]']['HMR_Data_Map'];
+let Hot_Map: ReboostGlobalWithPrivateObject['[[Private]]']['Hot_Map'];
+let Hot_Data_Map: ReboostGlobalWithPrivateObject['[[Private]]']['Hot_Data_Map'];
 
 const getEmitterFileData = (emitterFile: string) => {
-  if (!HMR_Map) ({ HMR_Map } = Reboost['[[Private]]']);
+  if (!Hot_Map) ({ Hot_Map } = Reboost['[[Private]]']);
 
-  if (!HMR_Map.has(emitterFile)) {
-    HMR_Map.set(emitterFile, {
+  if (!Hot_Map.has(emitterFile)) {
+    Hot_Map.set(emitterFile, {
       declined: false,
       listeners: new Map()
     });
   }
 
-  return HMR_Map.get(emitterFile);
+  return Hot_Map.get(emitterFile);
 }
 
 const getListenerFileData = (emitterFile: string, listenerFile: string) => {
@@ -59,11 +59,11 @@ const resolveDependency = async (dependency: string) => {
   return response.text();
 }
 
-const hot: HMR = {
+const hot: Hot = {
   get data() {
     return (
-      HMR_Data_Map ||
-      (HMR_Data_Map = Reboost['[[Private]]'].HMR_Data_Map)
+      Hot_Data_Map ||
+      (Hot_Data_Map = Reboost['[[Private]]'].Hot_Data_Map)
     ).get(filePath);
   },
   id: filePath,
@@ -92,7 +92,7 @@ const hot: HMR = {
     getEmitterFileData(await resolveDependency(dependency)).declined = true;
   },
   invalidate() {
-    Reboost.HMRReload();
+    Reboost.reload();
   }
 }
 

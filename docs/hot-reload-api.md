@@ -1,8 +1,8 @@
-# HMR API
+# Hot Reload API
 ### Self-accepting modules
 ```js
 import { setName } from './some-util';
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 export const name = 'Some name';
 
@@ -30,7 +30,7 @@ if (hot) { // Code will be stripped out when bundled using bundler
 ```js
 import { name } from './some-module'; // Actual code may differ, this is just an example
 import { setName, resetName } from './another-module';
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 setName(name);
 
@@ -51,14 +51,14 @@ if (hot) {
 }
 ```
 
-### Declining HMR updates
+### Declining Hot Reload updates
 ```js
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 if (hot) {
-  // `hot.decline` marks this module as not HMR updatable
+  // `hot.decline` marks this module as not Hot Reload-able
   // Even if another module accepts this module, it will not trigger any
-  // HMR updates. Whenever this module is updated (doing modification and saving it)
+  // Hot Reload updates. Whenever this module is updated (doing modification and saving it)
   // it will do a full page reload no matter what
 
   // Declining the module itself
@@ -69,13 +69,13 @@ if (hot) {
 }
 ```
 
-### Canceling ongoing HMR update
+### Canceling ongoing Hot Reload update
 ```js
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 if (hot) {
   hot.self.accept(() => {
-    // You can cancel an ongoing HMR update by calling `hot.invalidate`
+    // You can cancel an ongoing Hot Reload update by calling `hot.invalidate`
     // You can use it to cancel updates conditionally
     if (someCondition) {
       hot.invalidate();
@@ -88,7 +88,7 @@ if (hot) {
 ```js
 // main.js
 import any from 'dep.js';
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 if (hot) {
   hot.dispose('./dep.js', (data) => {
@@ -99,14 +99,14 @@ if (hot) {
 }
 
 // dep.js
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 if (hot) {
   console.log(hot.data);
   /*
     `hot.data` would be undefined when this module (`dep.js`) is being imported for the first time
 
-    But when this module is accepted by any module and updated by HMR
+    But when this module is accepted by any module and updated using Hot Reload
     `hot.data` would be the data which is passed from the `dispose` function
     in our case `hot.data` would be `{ VALUE: 'Hi, there' }`
    */
@@ -115,7 +115,7 @@ if (hot) {
 
 ### Getting ID of a module
 ```js
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 if (hot) {
   hot.id // ID of the module where `hot` is imported
@@ -127,9 +127,9 @@ if (hot) {
 ### Using a custom reload mechanism
 ```js
 // By default, Reboost uses the native `location.reload` function
-// to reload the page. But you can change it by assigning `HMRReload` property
+// to reload the page. But you can change it by assigning `reload` property
 // to the `Reboost` object of global `self` object
-self.Reboost.HMRReload = () => {
+self.Reboost.reload = () => {
   // Do your things to reload the page
 }
 ```

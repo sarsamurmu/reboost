@@ -37,7 +37,7 @@
 - Supports **CommonJS modules**.
 - Support for Plugins.
 - Import resolving.
-- Hot Module Replacement.
+- Built-in Hot Reload API.
 - Out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
 - Preprocessor support.
 - **Works with [Electron](https://www.electronjs.org/)**.
@@ -71,7 +71,7 @@ if you are not using ES modules, though using ES modules is recommended.
 [Configurations](/docs/configurations.md)\
 [Plugins](/docs/plugins.md)\
 [Plugin API](/docs/plugin-api.md)\
-[HMR API](/docs/hmr.md)\
+[Hot Reload API](/docs/hot-reload-api.md)\
 [Recipes](/docs/recipes.md)\
 [Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
 

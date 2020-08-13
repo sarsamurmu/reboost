@@ -1,5 +1,5 @@
 import './imported';
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 if (hot) {
   hot.accept('./imported.js', (mod) => {

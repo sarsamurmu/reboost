@@ -49,7 +49,7 @@ const getCSS = (css: string, sourceMap: RawSourceMap, filePath: string) => {
 }
 
 const getScript = (css: string) => `
-  import { hot } from 'reboost/hmr';
+  import { hot } from 'reboost/hot';
 
   let styleTag = document.createElement('style');
   let __styleTag;

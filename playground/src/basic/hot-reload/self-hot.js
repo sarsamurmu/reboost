@@ -1,4 +1,4 @@
-import { hot } from 'reboost/hmr';
+import { hot } from 'reboost/hot';
 
 export let state = 15;
 

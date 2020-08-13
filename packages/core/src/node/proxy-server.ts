@@ -34,13 +34,13 @@ export const createRouter = (): Koa.Middleware => {
     if (fs.existsSync(filePath)) ctx.body = await fs.promises.readFile(filePath);
   }
 
-  const hmrCode = fs.readFileSync(path.resolve(__dirname, '../browser/hmr.js')).toString();
+  const hotCode = fs.readFileSync(path.resolve(__dirname, '../browser/hot.js')).toString();
 
-  routedPaths['/hmr'] = (ctx) => {
+  routedPaths['/hot'] = (ctx) => {
     ctx.type = 'text/javascript';
     ctx.body = `const address = "${getAddress()}";\n`;
     ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
-    ctx.body += hmrCode;
+    ctx.body += hotCode;
   }
 
   const importerCode = fs.readFileSync(path.resolve(__dirname, '../browser/importer.js')).toString();

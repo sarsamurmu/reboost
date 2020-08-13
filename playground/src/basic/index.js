@@ -1,7 +1,7 @@
 import { add } from './add';
 import json from './jsonFile.json';
 import * as cMod from './common';
-import './hmr';
+import './hot-reload';
 import { render } from './render';
 
 console.log('Add', add(5, 5));
