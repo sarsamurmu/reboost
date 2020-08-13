@@ -1,3 +1,10 @@
+## 0.11.0
+- Removed unused dependencies
+- Made it ore lightweight
+- Added `stop` function to stop Reboost
+- Improve Plugin API
+- `HMR` is now `Hot Reload`
+
 ## 0.10.1
 - Added timestamp to file change logs
 - Proxy server now supports reconnecting
