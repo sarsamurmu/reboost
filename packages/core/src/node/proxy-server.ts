@@ -78,7 +78,7 @@ export const createRouter = (): Koa.Middleware => {
   }
 }
 
-export const createProxyServer = () => {
+export const initProxyServer = () => {
   const proxyServer = new Koa();
   const router = createRouter();
 

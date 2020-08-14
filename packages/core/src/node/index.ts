@@ -16,7 +16,7 @@ import path from 'path';
 import { networkInterfaces } from 'os';
 import net from 'net';
 
-import { createContentServer } from './content-server';
+import { initContentServer } from './content-server';
 import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
 import { setAddress, setConfig, getFilesData, getUsedPlugins, getServiceStoppers, getPlugins, addServiceStopper } from './shared';
 import { verifyFiles } from './file-handler';
@@ -25,7 +25,7 @@ import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuil
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
 import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
 import { resolve } from './core-plugins/resolver';
-import { createProxyServer } from './proxy-server';
+import { initProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
 export { PluginOptions } from './plugins';
@@ -313,8 +313,8 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   console.log(chalk.green('[reboost] Starting proxy server...'));
 
-  const proxyServer = createProxyServer();
-  const contentServer = config.contentServer ? createContentServer() : undefined;
+  const proxyServer = initProxyServer();
+  const contentServer = config.contentServer ? initContentServer() : undefined;
   const interfaces = networkInterfaces();
   let host: string;
   let port: number;

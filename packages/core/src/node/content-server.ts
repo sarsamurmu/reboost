@@ -244,7 +244,7 @@ const createFileServer = () => {
   return [koaMiddleware, onServerCreatedCallback] as const;
 }
 
-export const createContentServer = () => {
+export const initContentServer = () => {
   const contentServer = new Koa();
   const config = getConfig();
   const [koaMiddleware, onServerCreatedCallback] = createFileServer();
