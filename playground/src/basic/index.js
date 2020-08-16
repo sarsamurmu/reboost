@@ -3,6 +3,7 @@ import json from './jsonFile.json';
 import * as cMod from './common';
 import './hot-reload';
 import { render } from './render';
+import { count, incCount } from './counter';
 
 console.log('Add', add(5, 5));
 cMod.isSupported();
@@ -14,7 +15,9 @@ import('./subtract').then(({ subtract }) => {
   console.log('Subtract', subtract(5, 5));
 });
 
-console.log('New string 2');
+console.log('Count', count);
+console.log('Increased count', incCount());
+console.log('Count', count);
 
 render();
 
