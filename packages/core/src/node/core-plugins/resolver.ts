@@ -30,20 +30,27 @@ export const resolve = (
   return resolver.resolveSync({}, path.dirname(basePath), request) as string | null;
 }
 
-const cacheMap = new Map();
-export const ResolverPlugin: ReboostPlugin = {
-  name: 'core-resolver-plugin',
-  resolve(importedPath, importer) {
-    if (importedPath.startsWith('#/')) return importedPath;
+export const ResolverPlugin = (): ReboostPlugin => {
+  const cacheMap = new Map<string, string>();
 
-    const key = `${importer} -> ${importedPath}`;
-    if (cacheMap.has(key)) {
-      const resolvedPath = cacheMap.get(key);
-      if (fs.existsSync(resolvedPath)) return resolvedPath;
+  return {
+    name: 'core-resolver-plugin',
+    resolve(importedPath, importer) {
+      if (importedPath.startsWith('#/')) return importedPath;
+
+      const key = `${importer} -> ${importedPath}`;
+      if (cacheMap.has(key)) {
+        const resolvedPath = cacheMap.get(key);
+        if (fs.existsSync(resolvedPath)) return resolvedPath;
+      }
+
+      try {
+        const resolvedPath = resolve(importer, importedPath);
+        if (resolvedPath) cacheMap.set(key, resolvedPath);
+        return resolvedPath;
+      } catch (e) {
+        console.log(e.message);
+      }
     }
-
-    const resolvedPath = resolve(importer, importedPath);
-    if (resolvedPath) cacheMap.set(key, resolvedPath);
-    return resolvedPath;
   }
 }

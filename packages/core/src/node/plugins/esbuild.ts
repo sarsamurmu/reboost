@@ -61,9 +61,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     target: 'es2020',
     minify: true,
     minifySyntax: true,
-    define: {
-      'process.env.NODE_ENV': '"development"'
-    },
+    define: undefined,
     service: undefined,
   };
   let compatibleTypes: string[];

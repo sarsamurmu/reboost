@@ -10,6 +10,7 @@ export const resolveDependency = async (pathToResolve: string, relativeTo: strin
     const resolvedPath = await hook(pathToResolve, relativeTo);
     if (resolvedPath) return resolvedPath;
   }
+
   console.log(chalk.red(`[reboost] Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
   return null;
 }
@@ -17,9 +18,14 @@ export const resolveDependency = async (pathToResolve: string, relativeTo: strin
 export const resolveImports = async (ast: babelTypes.Node, filePath: string, imports: string[]) => {
   let error = false;
 
-  const resolveDeclaration = async (astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>) => {
-    if ((astPath.node as any).source) {
-      const source: string = (astPath.node as any).source.value;
+  const resolveDeclaration = async (
+    astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>
+  ): Promise<void> => {
+    const node = astPath.node as babelTypes.ImportDeclaration;
+    if (node.source) {
+      const source: string = node.source.value;
+
+      if (source.startsWith(getAddress())) return;
 
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
@@ -27,7 +33,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
           console.log(chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
         }
 
-        (astPath.node as any).source.value = `/hot?q=${encodeURI(filePath)}`;
+        node.source.value = `/hot?q=${encodeURI(filePath)}`;
       } else {
         let finalPath = null;
         let routed = false;
@@ -49,7 +55,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
           }
         }
 
-        (astPath.node as any).source.value = getAddress() + (routed
+        node.source.value = getAddress() + (routed
           ? encodeURI(finalPath)
           : finalPath
             ? `/transformed?q=${encodeURI(finalPath)}`
@@ -66,15 +72,11 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
       astProgram = astPath;
     },
     ImportDeclaration(astPath) {
-      promiseExecutors.push(async () => {
-        await resolveDeclaration(astPath);
-      });
+      promiseExecutors.push(() => resolveDeclaration(astPath));
       return false;
     },
     ExportDeclaration(astPath) {
-      promiseExecutors.push(async () => {
-        await resolveDeclaration(astPath);
-      });
+      promiseExecutors.push(() => resolveDeclaration(astPath));
       return false;
     },
     CallExpression(astPath) {
@@ -90,14 +92,14 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
       } else if (t.isImport(astPath.node.callee)) {
         // Rewrite dynamic imports
         const importDeclarations = astProgram.get('body').filter((p) => p.isImportDeclaration());
-        let importerDeclaration = importDeclarations.find(
+        let importerDeclaration = (importDeclarations.find(
           (dec) => (dec as NodePath<babelTypes.ImportDeclaration>).node.source.value.includes('#/importer')
-        ).node as babelTypes.ImportDeclaration;
+        ) || {}).node as babelTypes.ImportDeclaration;
         if (!importerDeclaration) {
           const identifier = astPath.scope.generateUidIdentifier('$importer');
           importerDeclaration = t.importDeclaration([
             t.importDefaultSpecifier(identifier)
-          ], t.stringLiteral('#/importer'));
+          ], t.stringLiteral(`${getAddress()}/importer`));
           astProgram.node.body.unshift(importerDeclaration);
         }
         const importerIdentifierName = importerDeclaration.specifiers[0].local.name;

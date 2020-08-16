@@ -112,6 +112,8 @@ export interface ReboostConfig {
   cacheDir?: string;
   /** Cache transformed files on memory */
   cacheOnMemory?: boolean;
+  /** Mode for CommonJS interoperability */
+  commonjsInteropMode?: 0 | 1 | 2;
   /** Options for content server */
   contentServer?: {
     /** Extensions to resolve when no extension is present in the URL */
@@ -133,6 +135,8 @@ export interface ReboostConfig {
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
+  /** Mode to set as `process.env.NODE_ENV` */
+  mode?: string;
   /** Plugins you want to use with Reboost */
   plugins?: (ReboostPlugin | ReboostPlugin[])[];
   /** Directory to use as root */
@@ -169,8 +173,10 @@ const DEFAULT_PORT = 7456;
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
   cacheOnMemory: true,
+  commonjsInteropMode: 1,
   contentServer: undefined,
   entries: null,
+  mode: 'development',
   plugins: [],
   rootDir: process.cwd(),
   resolve: {
@@ -274,7 +280,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   });
   config.plugins = plugins = plugins.filter((p) => !!p);
 
-  plugins.push(...CorePlugins);
+  plugins.push(...CorePlugins());
   const pluginNames = plugins.map(({ name }) => name);
 
   if (!pluginNames.includes(esbuildPluginName)) {

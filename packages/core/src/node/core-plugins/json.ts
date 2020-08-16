@@ -1,6 +1,6 @@
 import { ReboostPlugin } from '../index';
 
-export const JSONPlugin: ReboostPlugin = {
+export const JSONPlugin = (): ReboostPlugin => ({
   name: 'core-json-plugin',
   transformIntoJS(data, filePath) {
     if (data.type === 'json') {
@@ -19,4 +19,4 @@ export const JSONPlugin: ReboostPlugin = {
 
     return null;
   }
-}
+})
