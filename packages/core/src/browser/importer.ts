@@ -1,5 +1,4 @@
 export interface Importer {
-  require(mod: any): any;
   All(mod: any): any;
   Default(mod: any, sourcePath: string, importerPath: string): any;
   Dynamic(toImport: string, importerPath: string): any;
@@ -9,11 +8,6 @@ export interface Importer {
 declare const address: string;
 
 const importer: Importer = {
-  require(mod) {
-    // Used only by CJS interop mode 2
-    if (mod.__cjsModule) return mod.default;
-    return mod;
-  },
   All(mod) {
     if (mod.__cjsExports) return mod.__cjsExports;
     return mod;

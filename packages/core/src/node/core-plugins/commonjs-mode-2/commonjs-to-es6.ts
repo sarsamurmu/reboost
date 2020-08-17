@@ -22,7 +22,7 @@ const isModuleExports = (node: t.MemberExpression, scope: Scope) => (
   !scope.hasBinding('module')
 );
 
-const cjsModuleTrue = () => t.exportNamedDeclaration(
+const export__cjsModuleTrue = () => t.exportNamedDeclaration(
   t.variableDeclaration(
     'const',
     [t.variableDeclarator(t.identifier('__cjsModule'), t.booleanLiteral(true))]
@@ -38,14 +38,13 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
   const exportAlls: t.ExportAllDeclaration[] = [];
   const exportIdentifierMap: Record<string, t.Identifier> = {};
   const toRemove: NodePath[] = [];
-  const importerIdentifier = t.identifier(`importer_${id}`);
+  const interopFuncIdentifier = t.identifier(`__commonJS_${id}`);
   let program: NodePath<t.Program>;
   // If `exports.<member> = value;` is used
   let usedExports = false;
   // If `module.exports.<member> = value;` is used
   let usedModuleExports = false;
-  // If `require()` function is used
-  let usedRequire = false;
+  let usedInterop = false;
   let importIdx = 0;
   let exportIdx = 0;
 
@@ -79,13 +78,10 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
         }
 
         path.replaceWith(
-          t.callExpression(
-            t.memberExpression(importerIdentifier, t.identifier('require')),
-            [importIdentifier]
-          )
+          t.callExpression(interopFuncIdentifier, [importIdentifier])
         );
 
-        usedRequire = true;
+        usedInterop = true;
       }
     },
     MemberExpression(path) {
@@ -239,7 +235,7 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
 
       program.node.body.push(
         t.exportDefaultDeclaration(exportsObj),
-        cjsModuleTrue()
+        export__cjsModuleTrue()
       );
     }
   }
@@ -329,15 +325,28 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
           ? t.memberExpression(t.identifier('module'), t.identifier('exports'))
           : t.identifier('exports')
       ),
-      cjsModuleTrue()
+      export__cjsModuleTrue()
     )
   }
 
-  if (usedRequire) {
+  if (usedInterop) {
     program.node.body.unshift(
-      t.importDeclaration([
-        t.importDefaultSpecifier(importerIdentifier)
-      ], t.stringLiteral('#/importer'))
+      t.variableDeclaration(
+        'const',
+        [
+          t.variableDeclarator(
+            interopFuncIdentifier,
+            t.arrowFunctionExpression(
+              [t.identifier('mod')],
+              t.conditionalExpression(
+                t.memberExpression(t.identifier('mod'), t.identifier('__cjsModule')),
+                t.memberExpression(t.identifier('mod'), t.stringLiteral('default'), true),
+                t.identifier('mod')
+              )
+            )
+          )
+        ]
+      )
     );
   }
 }
