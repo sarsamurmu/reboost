@@ -74,6 +74,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       if (!esbuildServicePromise) esbuildServicePromise = esbuild.startService();
 
       defaultOptions.minify = !config.debugMode;
+      defaultOptions.minifySyntax = !config.debugMode;
       options = merge(defaultOptions, options);
       compatibleTypes = Object.keys(options.loaders);
 

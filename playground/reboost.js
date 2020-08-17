@@ -4,8 +4,7 @@ const {
   builtInPlugins: {
     FilePlugin,
     ReplacePlugin,
-    UsePlugin,
-    esbuildPlugin
+    UsePlugin
   }
 } = require('reboost');
 const BabelPlugin = require('@reboost/plugin-babel');
@@ -30,9 +29,6 @@ start({
     index: false
   },
   plugins: [
-    esbuildPlugin({
-      minifySyntax: false
-    }),
     UsePlugin({
       include: /.png$/,
       use: FilePlugin()
