@@ -83,8 +83,7 @@ Default: `true`
 Minify the generated code. Enabling it improves performance.
 
 #### `define`
-Type: `object`\
-Default: `{ 'process.env.NODE_ENV': '"development"' }`
+Type: `object`
 
 Substitute the keys of the object with their values.
 

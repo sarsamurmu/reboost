@@ -26,6 +26,114 @@ Enables file caching on memory. Improves response speed as it reads
 cached files from memory instead of the file system. May cause problems
 if you are working on a very large project.
 
+#### `commonJSInteropMode`
+Type: `0 | 1 | 2`\
+Default: `2`
+
+Mode to use for interoperability with CommonJS modules.
+
+If you set it to `0`, it disables CommonJS interop completely.
+
+If you set it to `1`, it transforms your file in the following way to
+support CommonJS modules -
+- Transformation for ES modules
+```js
+// Before
+import Def from 'mod1';
+import { part1, part2 } from 'mod2';
+import * as star from 'mod3';
+
+// After transformation
+// Importer is an object with helper functions
+import _importer from '/importer';
+
+import * as _import1 from 'mod1';
+const Def = _importer.Default(_import1);
+
+import * as _import2 from 'mod2';
+const part1 = _importer.Member(_import2, 'part1'),
+      part2 = importer.Member(_import2, 'part2');
+
+import * as _import3 from 'mod3';
+const start = _importer.All(_import3);
+```
+- Transformation for CommonJS modules
+```js
+// Before
+const mod = require('mod');
+
+module.exports.some = someExport;
+exports.other = someOtherExport;
+
+// After transformation
+import _importer from '/importer';
+import * as _import1 from 'mod';
+const module = {
+  exports: {}
+};
+const exports = module.exports;
+
+const mod = _importer.All(_import1);
+
+module.exports.some = someExport;
+exports.other = someOtherExport;
+
+export const __cjsExports = module.exports;
+```
+This mode will work in almost all situations. But there are also some trade-offs when
+using this mode. In this mode every import is constant, they are not live, it means
+exported `let` variables won't update. Let's see an example, here's what happens in
+real ES modules, you can read more about it [here](https://exploringjs.com/es6/ch_modules.html#sec_imports-as-views-on-exports)
+```js
+// counter.js
+export let count = 0;
+export function increase() {
+  count++;
+}
+
+// lib.js
+import { count, increase } from './counter.js';
+
+console.log(count); // 0
+increase();
+console.log(count); // 1
+increase();
+console.log(count); // 2
+```
+So as you can see, In module exported variables reflect their value everywhere they
+are imported. In Reboost if you use CommonJS interop mode `1`, every import will turn constant
+they won't reflect their original value if changed.
+
+But to the rescue, there is another mode. If you use CommonJS interop mode `2`, it will transform
+your files in the following way to support interoperability. It only transforms CommonJS modules
+```js
+// Before
+const mod = require('mod');
+
+module.exports.some = someExports;
+exports.other = someOtherExport;
+
+// After transformation
+import * as _import1 from 'mod';
+const __commonJS = mod => mod.__cjsModule ? mod['default'] : mod;
+const exports = {};
+const module = { exports };
+
+let _export_0, _export_1;
+
+const mod = __commonJS(_import1);
+
+module.exports.some = someExports;
+_export_0 = module.exports.some;
+exports.other = someOtherExport;
+_exports_1 = exports.other;
+
+export default module.exports;
+export const __cjsModule = true;
+```
+In this way module imports in ES modules are no longer constant, they reflect their values everywhere.
+This mode is default and recommended.
+
 #### `contentServer`
 Type: `object`
 
@@ -182,6 +290,12 @@ In browser
 window.coolLib // Module { add: (...), subtract: (...) }
 ```
 As you expected, exports are available through the `window` object
+
+#### `mode`
+Type: `string`\
+Default: `'development'`
+
+The mode to set as `process.env.NODE_ENV`.
 
 #### `plugins`
 Type: `ReboostPlugin[]`
