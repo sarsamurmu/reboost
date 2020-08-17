@@ -173,7 +173,7 @@ const DEFAULT_PORT = 7456;
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
   cacheOnMemory: true,
-  commonJSInteropMode: 1,
+  commonJSInteropMode: 2,
   contentServer: undefined,
   entries: null,
   mode: 'development',
