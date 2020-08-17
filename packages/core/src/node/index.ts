@@ -113,7 +113,7 @@ export interface ReboostConfig {
   /** Cache transformed files on memory */
   cacheOnMemory?: boolean;
   /** Mode for CommonJS interoperability */
-  commonjsInteropMode?: 0 | 1 | 2;
+  commonJSInteropMode?: 0 | 1 | 2;
   /** Options for content server */
   contentServer?: {
     /** Extensions to resolve when no extension is present in the URL */
@@ -173,7 +173,7 @@ const DEFAULT_PORT = 7456;
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
   cacheOnMemory: true,
-  commonjsInteropMode: 1,
+  commonJSInteropMode: 1,
   contentServer: undefined,
   entries: null,
   mode: 'development',

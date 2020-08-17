@@ -16,9 +16,9 @@ export const CorePlugins = (): ReboostPlugin[] => {
     NodeEnvPlugin()
   ];
 
-  if (getConfig().commonjsInteropMode > 0) {
+  if (getConfig().commonJSInteropMode > 0) {
     plugins.push(
-      getConfig().commonjsInteropMode === 1
+      getConfig().commonJSInteropMode === 1
         ? CommonJSMode1Plugin()
         : CommonJSMode2Plugin()
     )

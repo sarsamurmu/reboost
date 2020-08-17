@@ -48,6 +48,7 @@ export const createRouter = (): Koa.Middleware => {
   routedPaths['/importer'] = (ctx) => {
     ctx.type = 'text/javascript';
     ctx.body = `const address = "${getAddress()}";\n`;
+    ctx.body += `const commonJSInteropMode = ${getConfig().commonJSInteropMode};\n\n`;
     ctx.body += importerCode;
   }
 

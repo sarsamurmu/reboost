@@ -6,10 +6,11 @@ export interface Importer {
 }
 
 declare const address: string;
+declare const commonJSInteropMode: number;
 
 const importer: Importer = {
   All(mod) {
-    if (mod.__cjsExports) return mod.__cjsExports;
+    if (commonJSInteropMode === 1 && mod.__cjsExports) return mod.__cjsExports;
     return mod;
   },
   Default(mod, sourcePath, importerPath) {
