@@ -23,7 +23,10 @@ export const postcssError = (pluginName: string, error: any, config: ReboostConf
 }
 
 export interface PostCSSPluginOptions {
+  /** PostCSS config context */
   ctx?: Record<string, any>;
+  /** PostCSS config directory */
+  path?: string;
 }
 
 export const PluginName = 'core-postcss-plugin';
@@ -33,29 +36,25 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
     if (data.type === 'css') {
       return new Promise((resolve) => {
         const loadConfigOptions = {
-          path: path.dirname(filePath),
+          path: options.path || path.dirname(filePath),
           ctx: {
             file: {
               extname: path.extname(filePath),
               dirname: path.dirname(filePath),
               basename: path.basename(filePath)
             },
-            options: {},
+            options: options.ctx || {},
             env: 'development'
           }
-        }
-
-        if (options.ctx) loadConfigOptions.ctx.options = options.ctx;
+        };
 
         loadConfig(
           loadConfigOptions.ctx,
           loadConfigOptions.path,
-          {
-            stopDir: this.config.rootDir
-          }
+          { stopDir: this.config.rootDir }
         ).then(({ plugins, options }) => {
           postcss(plugins)
-            .process(data.code, Object.assign(
+            .process(data.code, Object.assign<ProcessOptions, ProcessOptions, ProcessOptions>(
               {},
               options,
               {
@@ -65,7 +64,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
                   inline: false,
                   annotation: false
                 }
-              } as ProcessOptions
+              }
             ))
             .then((result) => {
               const { css, map, warnings, messages } = result;
