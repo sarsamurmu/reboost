@@ -1,6 +1,6 @@
 import { add } from './add';
 import json from './jsonFile.json';
-import * as cMod from './common';
+import * as cMod from './common.cjs';
 import './hot-reload';
 import { render } from './render';
 import { count, incCount } from './counter';

@@ -23,7 +23,9 @@ start({
     ['./src/svelte/index.js', './public/dist/svelte.js'],
     ['./src/vue/index.js', './public/dist/vue.js']
   ],
-  commonJSInteropMode: 2,
+  commonJSInterop: {
+    mode: 2
+  },
   contentServer: {
     root: './public',
     index: false

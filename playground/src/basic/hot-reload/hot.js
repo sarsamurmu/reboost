@@ -1,11 +1,11 @@
-import './imported';
+import './imported.cjs';
 import { hot } from 'reboost/hot';
 
 if (hot) {
-  hot.accept('./imported.js', (mod) => {
+  hot.accept('./imported.cjs', (mod) => {
     console.log(`New module's state is`, mod.state);
   });
-  hot.dispose('./imported.js', (data) => {
+  hot.dispose('./imported.cjs', (data) => {
     console.log('Disposing hot');
     data.value = 'some value';
   });
