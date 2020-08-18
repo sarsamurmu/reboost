@@ -114,9 +114,9 @@ export interface ReboostConfig {
   cacheOnMemory?: boolean;
   /** Mode for CommonJS interoperability */
   commonJSInterop?: {
-    mode: 0 | 1 | 2,
-    include: Matcher;
-    exclude: Matcher;
+    mode: 0 | 1 | 2;
+    include?: Matcher;
+    exclude?: Matcher;
   };
   /** Options for content server */
   contentServer?: {
