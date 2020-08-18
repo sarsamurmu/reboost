@@ -26,7 +26,12 @@ Enables file caching on memory. Improves response speed as it reads
 cached files from memory instead of the file system. May cause problems
 if you are working on a very large project.
 
-#### `commonJSInteropMode`
+#### `commonJSInterop`
+Type: `object`
+
+Options for CommonJS interoperability.
+
+##### `commonJSInterop.mode`
 Type: `0 | 1 | 2`\
 Default: `2`
 
@@ -100,12 +105,13 @@ console.log(count); // 1
 increase();
 console.log(count); // 2
 ```
-So as you can see, In module exported variables reflect their value everywhere they
+So as you can see, In module, exported variables reflect their value everywhere they
 are imported. In Reboost if you use CommonJS interop mode `1`, every import will turn constant
-they won't reflect their original value if changed.
+and they won't reflect their original value if changed.
 
 But to the rescue, there is another mode. If you use CommonJS interop mode `2`, it will transform
-your files in the following way to support interoperability. It only transforms CommonJS modules
+your files in the following way to support interoperability. It only transforms CommonJS modules,
+not ES modules
 ```js
 // Before
 const mod = require('mod');
@@ -132,8 +138,30 @@ export { _export_0 as some, _export_1 as other }
 export default module.exports;
 export const __cjsModule = true;
 ```
-In this way module imports in ES modules are no longer constant, they reflect their values everywhere.
+In this way module imports in ES modules are no longer constant, they reflect their live values everywhere.
 This mode is default and recommended.
+
+**Tips**
+- If you are using CommonJS as your default module style, use mode `1`.
+- If you are using ES modules with CommonJS modules
+  - Use mode `1` if you don't care about live binding.
+  - Use mode `2` if you want to use CommonJS and also want live binding.
+- If you know that every module you are using in your project are ES modules
+  (including your dependencies), use mode `0`. It will increase the performance.
+
+##### `commonJSInterop.include`
+Type: `Matcher`
+
+Files to transform to support the interoperability. This option only makes sense in mode `2`,
+it have no effects on mode `1`. When set to mode `2`, this option defaults to `/node_modules|\.cjs/`,
+meaning that every file in `node_modules` directory and files which has `.cjs` extension
+will be transformed to support interoperability.
+
+##### `commonJSInterop.exclude`
+Type: `Matcher`
+
+Same as `commonJSInterop.include`, but for excluding files. In mode `2` it defaults to
+`() => false`, meaning that no file will be excluded which are included.
 
 #### `contentServer`
 Type: `object`

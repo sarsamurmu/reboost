@@ -1,6 +1,21 @@
 # Recipes
 Here's how you can make Reboost work with different files/frameworks.
 
+## CommonJS modules
+If all of your files are CommonJS module, use this configuration
+```js
+const { start } = require('reboost');
+
+start({
+  // Other options
+  commonJSInterop: {
+    mode: 1
+  }
+})
+```
+Please see [`commonJSInterop`](/docs/configurations.md#commonjsinterop) configuration
+for more information and cases.
+
 ## React
 Works out of the box.
 
@@ -41,7 +56,7 @@ start({
 ```
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
 
-## Vue
+## Vue 3
 Reboost supports Vue 3 using [VuePlugin](https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-vue).
 
 Change configuration to match this
@@ -96,7 +111,7 @@ const PrimaryButton = () => (
 )
 ```
 
-## Sass
+## Sass or SCSS
 Use [SassPlugin](../packages/plugin-sass/README.md) to generate CSS out of Sass/SCSS,
 generated CSS will be handled by [CSSPlugin](./plugins/css.md).
 
