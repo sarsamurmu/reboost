@@ -128,6 +128,7 @@ _export_0 = module.exports.some;
 exports.other = someOtherExport;
 _exports_1 = exports.other;
 
+export { _export_0 as some, _export_1 as other }
 export default module.exports;
 export const __cjsModule = true;
 ```
