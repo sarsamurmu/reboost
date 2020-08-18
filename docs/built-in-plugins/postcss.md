@@ -78,3 +78,11 @@ module.exports = ({ file, options, env }) => {
   }
 }
 ```
+
+#### `path`
+Type: `string`
+
+The path to search for `postcss.config.js` file. Using this option you can specify
+another directory that should be searched for the config file, like when you store
+your config files in different directories. Works same as [`postcss-loader`](https://www.npmjs.com/package/postcss-loader#path)'s
+`path` option. The value should be a path to a directory, not a path to a file.
