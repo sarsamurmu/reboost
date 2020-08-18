@@ -44,21 +44,21 @@
 
 ## What are supported
 - ES Modules
-- CommonJS Modules
-- CSS
+- [CommonJS Modules](/docs/recipes.md#commonjs-modules)
+- [CSS](/docs/recipes.md#css-and-css-modules)
 - JSON
-- CSS Modules
+- [CSS Modules](/docs/recipes.md#css-and-css-modules)
 - JSX
 - JS/TS Decorators
 - Babel
 - PostCSS
-- Preact
-- React (with Fast Refresh)
-- Sass/SCSS
-- Svelte
-- TypeScript
-- Vue
-- and almost anything as long as you can implement it as a [plugin](/docs/plugin-api.md)
+- [Preact](/docs/recipes.md#preact)
+- [React (with Fast Refresh)](/docs/recipes.md#react-with-fast-refresh)
+- [Sass/SCSS](/docs/recipes.md#sass-or-scss)
+- [Svelte](/docs/recipes.md#svelte)
+- [TypeScript](/docs/recipes.md#typescript)
+- [Vue 3](/docs/recipes.md#vue-3)
+- and almost anything as long as you can implement it as [a plugin](/docs/plugin-api.md)
 
 See the [Recipes](/docs/recipes.md) for many template configurations.
 
