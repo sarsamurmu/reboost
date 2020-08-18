@@ -44,6 +44,7 @@ Default:
   js: 'tsx',
   jsx: 'tsx',
   mjs: 'tsx',
+  cjs: 'tsx',
   es6: 'tsx',
   es: 'tsx',
   ts: 'tsx',
