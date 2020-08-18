@@ -8,6 +8,7 @@ let config = DefaultConfig as ReboostConfig;
 let filesData: {
   version: string;
   usedPlugins: string;
+  mode: string;
   files: Record<string, {
     /** Unique ID of the file */
     uid: string;
@@ -71,6 +72,7 @@ export const getFilesData = () => {
       filesData = {
         version: getVersion(),
         usedPlugins: getUsedPlugins(),
+        mode: getConfig().mode,
         files: {},
         dependents: {}
       };

@@ -167,7 +167,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = '0.11.0';
+const INCOMPATIBLE_BELOW = '0.12.0';
 const DEFAULT_PORT = 7456;
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
@@ -299,14 +299,21 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   const oldCacheFilesDir = path.join(config.cacheDir, 'files_data.json');
   if (fs.existsSync(oldCacheFilesDir)) rmDir(oldCacheFilesDir);
 
-  const isCacheIncompatible = isVersionLessThan(getFilesData().version, INCOMPATIBLE_BELOW);
-  const isPluginsChanged = getFilesData().usedPlugins !== getUsedPlugins();
-  if (isCacheIncompatible || isPluginsChanged) {
-    console.log(chalk.cyan(
-      isCacheIncompatible
-        ? '[reboost] Cache version is incompatible, clearing cached files...'
-        : '[reboost] Plugin change detected, clearing cached files...'
-    ));
+  let shouldClearCache = false;
+  let clearCacheReason = '';
+  if (isVersionLessThan(getFilesData().version, INCOMPATIBLE_BELOW)) {
+    shouldClearCache = true;
+    clearCacheReason = 'Cache version is incompatible';
+  } else if (getFilesData().usedPlugins !== getUsedPlugins()) {
+    shouldClearCache = true;
+    clearCacheReason = 'Plugin change detected';
+  } else if (getFilesData().mode !== config.mode) {
+    shouldClearCache = true;
+    clearCacheReason = 'Mode change detected';
+  }
+  
+  if (shouldClearCache) {
+    console.log(chalk.cyan(`[reboost] ${clearCacheReason}, clearing cached files...`));
     rmDir(config.cacheDir);
     console.log(chalk.cyan('[reboost] Clear cache complete'));
   }
