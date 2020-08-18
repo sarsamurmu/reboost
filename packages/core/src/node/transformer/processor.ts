@@ -118,7 +118,7 @@ export const process = async (
     }
   }
 
-  if (!['js', 'mjs', 'es6', 'es'].includes(type)) {
+  if (!['js', 'mjs', 'es6', 'es', 'cjs'].includes(type)) {
     let message = `${filePath}: File with type "${type}" is not supported. `;
     message += 'You may need proper loader to transform this kind of files into JS.';
     return handleError({ message });

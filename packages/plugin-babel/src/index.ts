@@ -6,7 +6,7 @@ import { ReboostPlugin } from 'reboost';
 
 export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
   let babel: typeof Babel;
-  const compatibleTypes = ['js', 'jsx', 'ts', 'tsx', 'es', 'es6', 'mjs'];
+  const compatibleTypes = ['js', 'jsx', 'ts', 'tsx', 'es', 'es6', 'mjs', 'cjs'];
 
   return {
     name: 'babel-plugin',
