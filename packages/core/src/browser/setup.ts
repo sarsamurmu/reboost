@@ -3,6 +3,7 @@ import type { Importer } from './importer';
 
 declare const address: string;
 declare const debugMode: boolean;
+declare const mode: string;
 
 type MapValue<T extends Map<any, any>> = ReturnType<T['get']>;
 
@@ -78,7 +79,11 @@ Reboost.reload = () => debugMode ? console.log('TRIGGER RELOAD') : self.location
 
 const aSelf = self as any;
 if (!aSelf.process) {
-  aSelf.process = { env: { NODE_ENV: 'development' } };
+  aSelf.process = { env: { NODE_ENV: mode } };
+} else {
+  let a = aSelf.process;
+  if (a) a = a.env;
+  if (a) a.NODE_ENV = mode;
 }
 aSelf['Reboost'] = Reboost;
 

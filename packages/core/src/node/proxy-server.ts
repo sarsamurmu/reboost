@@ -25,7 +25,8 @@ export const createRouter = (): Koa.Middleware => {
   routedPaths['/setup'] = (ctx) => {
     ctx.type = 'text/javascript';
     ctx.body = `const address = "${getAddress()}";\n`;
-    ctx.body += `const debugMode = ${getConfig().debugMode};\n\n`;
+    ctx.body += `const debugMode = ${getConfig().debugMode};\n`;
+    ctx.body += `const mode = "${getConfig().mode}";\n\n`;
     ctx.body += getConfig().debugMode ? loadSetupCode() : setupCode;
   }
 
