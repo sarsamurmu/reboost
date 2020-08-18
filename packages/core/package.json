@@ -7,11 +7,11 @@
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "node ../../rmDist",
-    "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
-    "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\"",
+    "build": "tsc -p ./src/browser && tsc -p ./src/node",
+    "watch": "concurrently \"tsc -p ./src/browser -w\" \"tsc -p ./src/node -w\"",
     "test": "mocha --recursive test/**/*.test.js",
-    "test:build": "tsc -p test.tsconfig.json",
-    "test:watch": "tsc -p test.tsconfig.json -w",
+    "test:build": "tsc -p ./test-src/build.tsconfig.json && node test-src/rewrite",
+    "test:watch": "concurrently \"tsc -p ./test-src/build.tsconfig.json -w\" \"node test-src/rewrite -w\"",
     "coverage": "nyc npm run test"
   },
   "keywords": [

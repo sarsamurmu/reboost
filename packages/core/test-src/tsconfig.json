@@ -1,0 +1,16 @@
+{
+  "extends": "../../../base.tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "../test",
+    "declaration": false,
+    "importHelpers": true,
+    "baseUrl": "../",
+    "paths": {
+      "src-node/*": ["./src/node/*"]
+    },
+  },
+  "include": [
+    "**/*"
+  ]
+}

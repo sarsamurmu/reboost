@@ -1,11 +1,11 @@
 {
-  "extends": "../../base.tsconfig.json",
+  "extends": "../../../../base.tsconfig.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "outDir": "./dist/node",
+    "outDir": "../../dist/node",
     "importHelpers": true
   },
   "include": [
-    "src/node"
+    "**/*"
   ]
 }

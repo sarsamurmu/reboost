@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../../base.tsconfig.json",
+  "extends": "../../plugins.tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
     "outDir": "./dist/browser"
