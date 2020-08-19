@@ -342,7 +342,8 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
 
   if (
     !usedModuleExports && !usedExports &&
-    exportAlls.length === 1 && modExports.length === 0 && !hasOtherExports
+    exportAlls.length === 1 && modExports.length === 0 &&
+    !hasOtherExports && !__esModule
   ) {
     const namespaceIdentifier = t.identifier(`for_default_${id}`);
     const defaultExportIdentifier = t.identifier(`default_export_${id}`);
