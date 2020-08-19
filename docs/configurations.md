@@ -144,7 +144,7 @@ This mode is default and recommended.
 **Tips**
 - If you are using CommonJS as your default module style, use mode `1`.
 - If you are using ES modules with CommonJS modules
-  - Use mode `1` if you don't care about live binding.
+  - Use mode `1` if you don't mind live binding.
   - Use mode `2` if you want to use CommonJS and also want live binding.
 - If you know that every module you are using in your project are ES modules
   (including your dependencies), use mode `0`. It will increase the performance.
@@ -153,7 +153,7 @@ This mode is default and recommended.
 Type: `Matcher`
 
 Files to transform to support the interoperability. This option only makes sense in mode `2`,
-it have no effects on mode `1`. When set to mode `2`, this option defaults to `/node_modules|\.cjs/`,
+it has no effects on mode `1`. When set to mode `2`, this option defaults to `/node_modules|\.cjs/`,
 meaning that every file in `node_modules` directory and files which has `.cjs` extension
 will be transformed to support interoperability.
 
