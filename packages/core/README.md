@@ -164,7 +164,7 @@ node reboost
 ```
 You can see your code is working without any problem.
 
-Read more about Reboost in its [Documentations](#docs).
+Read more about Reboost in the [Documentations](#docs).
 
 <!-- Reboost is highly inspired by these awesome projects - [Vite](https://github.com/vitejs/vite),
 [Snowpack](https://github.com/pikapkg/snowpack), [esbuild](https://github.com/evanw/esbuild). -->
