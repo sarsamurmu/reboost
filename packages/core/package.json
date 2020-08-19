@@ -38,12 +38,12 @@
     "@koa/cors": "^3.1.0",
     "@types/babel__generator": "^7.6.1",
     "@types/babel__traverse": "^7.0.13",
-    "@types/koa": "^2.11.3",
+    "@types/koa": "^2.11.4",
     "anymatch": "^3.1.1",
     "chalk": "^4.1.0",
     "chokidar": "^3.4.2",
     "enhanced-resolve": "^5.0.0-beta.10",
-    "esbuild": "^0.6.21",
+    "esbuild": "^0.6.26",
     "icss-utils": "^4.1.1",
     "koa": "^2.13.0",
     "koa-proxies": "^0.11.0",
@@ -69,7 +69,7 @@
     "@types/koa-send": "^4.1.2",
     "@types/koa__cors": "^3.0.1",
     "@types/mock-fs": "^4.10.0",
-    "@types/node": "^14.0.27",
+    "@types/node": "^14.6.0",
     "@types/postcss-load-config": "^2.0.1",
     "@types/postcss-modules-extract-imports": "^2.0.0",
     "@types/postcss-modules-local-by-default": "^1.2.0",
@@ -81,7 +81,6 @@
     "mocha": "^8.1.1",
     "mock-fs": "^4.12.0",
     "nyc": "^15.1.0",
-    "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   }
 }
