@@ -1,13 +1,12 @@
 import { ParameterizedContext } from 'koa';
 import getHash from 'md5-file';
 import chalk from 'chalk';
-import prettyTime from 'pretty-time';
 
 import fs from 'fs';
 import path from 'path';
 
 import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir } from './shared';
-import { ensureDir, uniqueID, diff, toPosix } from './utils';
+import { ensureDir, uniqueID, diff, toPosix, getReadableHRTime } from './utils';
 import { transformFile } from './transformer';
 import { createWatcher } from './watcher';
 import { ReboostConfig } from './index';
@@ -274,7 +273,7 @@ export const createFileHandler = () => {
       const endTime = process.hrtime(startTime);
       console.log(
         chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}:`),
-        chalk.white(prettyTime(endTime, endTime[0] > 0 ? 'ms' : 'micro'))
+        chalk.white(getReadableHRTime(endTime))
       );
     }
   }

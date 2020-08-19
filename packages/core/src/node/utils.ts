@@ -104,6 +104,12 @@ export const onServerCreated = (app: Koa, cb: (server: http.Server) => void) => 
   }
 }
 
+export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => (
+  seconds
+    ? `${seconds}s ${Math.floor(nanoseconds / 1e6)}ms`
+    : `${Math.floor(nanoseconds / 1e6)}ms ${Math.floor((nanoseconds % 1e6) / 1e3)}μs`
+);
+
 const isUndefOrNull = (d: any) => d === null || d === undefined;
 
 /**
