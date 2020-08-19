@@ -29,6 +29,14 @@
   bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 </blockquote>
 
+## What it does
+When developing a web app, as your number of modules increases,
+your compile-time slows down, it's a big problem, it takes a lot of precious
+time which you could have used to develop your app. Since ES2015 (aka ES6) modules
+are supported natively by browsers. If you can connect (or you can say serve) them
+up correctly, it will work on browsers without the need for bundling. Here, Reboost
+does that for you - the serving part. So you can develop your app faster.
+
 ## Features
 - **No bundling**. So the server start time is *fast*.
 - Transforms only the **required/changed files**.
@@ -73,6 +81,7 @@ if you are not using ES modules, though using ES modules is recommended.
 [Plugin API](/docs/plugin-api.md)\
 [Hot Reload API](/docs/hot-reload-api.md)\
 [Recipes](/docs/recipes.md)\
+[FAQs/Troubleshooting](/docs/faqs-and-troubleshooting.md)\
 [Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
 
 ## Quickstart
@@ -153,24 +162,12 @@ after that run the script using `node`, open your terminal in that directory and
 ```shell
 node reboost
 ```
-You can see your code is working without any problem
+You can see your code is working without any problem.
 
-### What if I want to use any other server?
-Reboost's content server is static, it just serves the file. If you want
-to use any other server (like browser-sync or your own http server) you can do that,
-you've to just serve the generated scripts which are in your output directory.
-Reboost will handle the rest.
+Read more about Reboost in its [Documentations](#docs).
 
-## Motivation
-When developing a web app, as your number of modules increases,
-your compile-time slows down, it's a big problem, it takes a lot of precious
-time which you could have used to develop your app. Since ES2015 (aka ES6) modules
-are supported natively by browsers. If you can connect (or you can say serve) them
-up correctly, it will work on browsers without the need for bundling. Here, Reboost
-does that for you - the serving part. So you can develop your app faster.
-
-Reboost is highly inspired by these awesome projects - [Vite](https://github.com/vitejs/vite),
-[Snowpack](https://github.com/pikapkg/snowpack), [esbuild](https://github.com/evanw/esbuild).
+<!-- Reboost is highly inspired by these awesome projects - [Vite](https://github.com/vitejs/vite),
+[Snowpack](https://github.com/pikapkg/snowpack), [esbuild](https://github.com/evanw/esbuild). -->
 
 # License
 Licensed under the [MIT License](/LICENSE).
