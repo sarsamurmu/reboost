@@ -3,7 +3,7 @@
 - New option `mode` to set mode.
   For example - set it to `development` or `production`
 - Added option `path` in PostCSS plugin
-
+- Updated dependencies
 
 ## 0.11.0
 - Removed unused dependencies
