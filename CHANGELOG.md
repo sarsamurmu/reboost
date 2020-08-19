@@ -1,3 +1,10 @@
+## 0.12.0
+- New CommonJS interoperability mode with better interoperability
+- New option `mode` to set mode.
+  For example - set it to `development` or `production`
+- Added option `path` in PostCSS plugin
+
+
 ## 0.11.0
 - Removed unused dependencies
 - Made it ore lightweight
