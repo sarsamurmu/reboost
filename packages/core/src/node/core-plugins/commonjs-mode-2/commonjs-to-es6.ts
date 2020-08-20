@@ -139,8 +139,7 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
           if (
             exportName === '__esModule' &&
             parent.parentPath.isAssignmentExpression() &&
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
-            (parent.parentPath.get('right') as NodePath).evaluateTruthy() === true
+            (parent.parentPath.get('right') as NodePath).evaluateTruthy()
           ) {
             // module.exports.__esModule = <truthyValue>;
             __esModule = true;
@@ -180,8 +179,7 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
         if (
           exportName === '__esModule' &&
           path.parentPath.isAssignmentExpression() &&
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
-          (path.parentPath.get('right') as NodePath).evaluateTruthy() === true
+          (path.parentPath.get('right') as NodePath).evaluateTruthy()
         ) {
           // exports.__esModule = <truthyValue>;
           __esModule = true;
@@ -342,8 +340,7 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
 
   if (
     !usedModuleExports && !usedExports &&
-    exportAlls.length === 1 && modExports.length === 0 &&
-    !hasOtherExports && !__esModule
+    exportAlls.length === 1 && modExports.length === 0 && !hasOtherExports
   ) {
     const namespaceIdentifier = t.identifier(`for_default_${id}`);
     const defaultExportIdentifier = t.identifier(`default_export_${id}`);
