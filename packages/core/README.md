@@ -58,7 +58,7 @@ does that for you - the serving part. So you can develop your app faster.
 - [CSS Modules](/docs/recipes.md#css-and-css-modules)
 - JSX
 - JS/TS Decorators
-- Babel
+- [Babel](/docs/recipes.md#babel)
 - PostCSS
 - [Preact](/docs/recipes.md#preact)
 - [React (with Fast Refresh)](/docs/recipes.md#react-with-fast-refresh)
