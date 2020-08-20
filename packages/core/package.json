@@ -9,10 +9,10 @@
     "clean": "node ../../rmDist",
     "build": "tsc -p ./src/browser && tsc -p ./src/node",
     "watch": "concurrently \"tsc -p ./src/browser -w\" \"tsc -p ./src/node -w\"",
-    "test": "mocha --recursive test/**/*.test.js",
-    "test:build": "tsc -p ./test-src/build.tsconfig.json && node test-src/rewrite",
-    "test:watch": "concurrently \"tsc -p ./test-src/build.tsconfig.json -w\" \"node test-src/rewrite -w\"",
-    "coverage": "nyc npm run test"
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:build": "tsc -p ./tests-src/build.tsconfig.json",
+    "test:build:watch": "npm run test:build -- -w"
   },
   "keywords": [
     "fast",
@@ -66,6 +66,7 @@
   "devDependencies": {
     "@types/babel__code-frame": "^7.0.1",
     "@types/icss-utils": "^4.1.0",
+    "@types/jest": "^26.0.10",
     "@types/koa-send": "^4.1.2",
     "@types/koa__cors": "^3.0.1",
     "@types/mock-fs": "^4.10.0",
@@ -76,11 +77,9 @@
     "@types/postcss-modules-scope": "^1.1.0",
     "@types/postcss-modules-values": "^3.0.0",
     "@types/ws": "^7.2.6",
-    "chai": "^4.2.0",
     "concurrently": "^5.3.0",
-    "mocha": "^8.1.1",
+    "jest": "^26.4.1",
     "mock-fs": "^4.12.0",
-    "nyc": "^15.1.0",
     "typescript": "^3.9.7"
   }
 }

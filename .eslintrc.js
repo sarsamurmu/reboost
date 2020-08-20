@@ -68,7 +68,7 @@ module.exports = {
       env: {
         es2020: true,
         node: true,
-        mocha: true
+        jest: true
       }
     }
   ]

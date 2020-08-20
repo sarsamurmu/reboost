@@ -1,5 +1,4 @@
 node_modules
 dist
-test
+tests
 coverage
-.nyc_output

@@ -1,8 +1,6 @@
-.nyc_output/
 coverage/
 src/
 test/
 test-src/
 
 *tsconfig.json
-nyc.config.js

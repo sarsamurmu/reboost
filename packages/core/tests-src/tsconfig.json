@@ -2,7 +2,7 @@
   "extends": "../../../base.tsconfig.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "outDir": "../test",
+    "outDir": "../tests",
     "declaration": false,
     "importHelpers": true,
     "baseUrl": "../",

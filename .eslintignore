@@ -2,4 +2,4 @@ packages/create-app/templates
 playground
 coverage
 dist
-test
+tests
