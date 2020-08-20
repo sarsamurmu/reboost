@@ -57,7 +57,7 @@ const Def = _importer.Default(_import1);
 
 import * as _import2 from 'mod2';
 const part1 = _importer.Member(_import2, 'part1'),
-      part2 = importer.Member(_import2, 'part2');
+      part2 = _importer.Member(_import2, 'part2');
 
 import * as _import3 from 'mod3';
 const start = _importer.All(_import3);
