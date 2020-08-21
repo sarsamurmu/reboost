@@ -3,5 +3,6 @@ src/
 tests/
 tests-src/
 
-*tsconfig.json
-jest.config.js
+**/*tsconfig.json
+**/jest.config.js
+**/tsconfig.tsbuildinfo
