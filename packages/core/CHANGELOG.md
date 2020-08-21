@@ -1,3 +1,7 @@
+## 0.12.1
+- Minor fixes
+- Updated dependencies
+
 ## 0.12.0
 - New CommonJS interoperability mode with better interoperability
 - New option `mode` to set mode.
