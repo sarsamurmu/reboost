@@ -1,4 +1,3 @@
 src/
 
-**/*tsconfig.json
-**/tsconfig.tsbuildinfo
+*tsconfig.json

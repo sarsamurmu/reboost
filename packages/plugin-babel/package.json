@@ -33,6 +33,6 @@
     "@types/babel__core": "^7.1.9"
   },
   "devDependencies": {
-    "typescript": "^4.0.2"
+    "typescript": "^3.9.7"
   }
 }

@@ -8,6 +8,9 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "declaration": true,
-    "incremental": true
-  }
+    "useDefineForClassFields": false
+  },
+  "exclude": [
+    "**/node_modules/**"
+  ]
 }
