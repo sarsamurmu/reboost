@@ -153,77 +153,7 @@ export const createFileHandler = () => {
     if (fs.existsSync(filePath)) {
       const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
 
-      if (getFilesData().files[filePath]) {
-        const fileData = getFilesData().files[filePath];
-        const outputFilePath = path.join(filesDir, fileData.uid);
-        let hash: string;
-
-        if (
-          await depsChanged(filePath) ||
-          (
-            (fileData.mtime !== mtime) &&
-            (fileData.hash !== (hash = await getHash(filePath)))
-          )
-        ) {
-          let pure = true;
-          const {
-            code,
-            map,
-            imports,
-            dependencies,
-            error
-          } = await transformFile(filePath);
-          transformedCode = code;
-
-          if (map) {
-            // Remove other source maps
-            transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
-            transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
-            fs.writeFile(`${outputFilePath}.map`, map, noop);
-          }
-
-          if (!error) {
-            if (map || imports.length) pure = undefined;
-            fs.writeFile(outputFilePath, transformedCode, noop);
-            fileData.hash = hash;
-            fileData.mtime = mtime;
-            fileData.address = getAddress();
-            fileData.pure = pure;
-            await updateDependencies(filePath, dependencies);
-            saveFilesData();
-          }
-
-          if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
-          watcher.setDependencies(filePath, dependencies);
-        } else {
-          const pure = fileData.pure;
-          const currentAddress = getAddress();
-          transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
-
-          if (!pure && (fileData.address !== currentAddress)) {
-            const addressRegex = new RegExp(fileData.address, 'g');
-            transformedCode = transformedCode.replace(addressRegex, currentAddress);
-
-            fs.writeFile(outputFilePath, transformedCode, noop);
-
-            if (fs.existsSync(`${outputFilePath}.map`)) {
-              const fileMap = fs.readFileSync(`${outputFilePath}.map`).toString();
-              fs.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress), noop);
-            }
-
-            fileData.address = currentAddress;
-            saveFilesData();
-          }
-
-          if (fileData.mtime !== mtime) {
-            fileData.mtime = mtime;
-            saveFilesData();
-          }
-
-          if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
-          watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
-        }
-      } else {
+      const makeNewCache = async () => {
         let pure = true;
         const uid = uniqueID();
         const outputFilePath = path.join(filesDir, uid);
@@ -260,6 +190,88 @@ export const createFileHandler = () => {
 
         if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, dependencies);
+      }
+
+      if (getFilesData().files[filePath]) {
+        const fileData = getFilesData().files[filePath];
+        const outputFilePath = path.join(filesDir, fileData.uid);
+        let hash: string;
+
+        try {
+          if (
+            await depsChanged(filePath) ||
+            (
+              (fileData.mtime !== mtime) &&
+              (fileData.hash !== (hash = await getHash(filePath)))
+            )
+          ) {
+            let pure = true;
+            const {
+              code,
+              map,
+              imports,
+              dependencies,
+              error
+            } = await transformFile(filePath);
+            transformedCode = code;
+
+            if (map) {
+              // Remove other source maps
+              transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
+              transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
+              fs.writeFile(`${outputFilePath}.map`, map, noop);
+            }
+
+            if (!error) {
+              if (map || imports.length) pure = undefined;
+              fs.writeFile(outputFilePath, transformedCode, noop);
+              fileData.hash = hash;
+              fileData.mtime = mtime;
+              fileData.address = getAddress();
+              fileData.pure = pure;
+              await updateDependencies(filePath, dependencies);
+              saveFilesData();
+            }
+
+            if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+            watcher.setDependencies(filePath, dependencies);
+          } else {
+            const pure = fileData.pure;
+            const currentAddress = getAddress();
+            transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
+
+            if (!pure && (fileData.address !== currentAddress)) {
+              const addressRegex = new RegExp(fileData.address, 'g');
+              transformedCode = transformedCode.replace(addressRegex, currentAddress);
+
+              fs.writeFile(outputFilePath, transformedCode, noop);
+
+              if (fs.existsSync(`${outputFilePath}.map`)) {
+                const fileMap = fs.readFileSync(`${outputFilePath}.map`).toString();
+                fs.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress), noop);
+              }
+
+              fileData.address = currentAddress;
+              saveFilesData();
+            }
+
+            if (fileData.mtime !== mtime) {
+              fileData.mtime = mtime;
+              saveFilesData();
+            }
+
+            if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+            watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
+          }
+        } catch (e) {
+          if (e.message.includes('ENOENT')) {
+            await makeNewCache();
+          } else {
+            console.log(e);
+          }
+        }
+      } else {
+        await makeNewCache();
       }
     } else {
       const message = `[reboost] The requested file does not exist: ${filePath}.`;

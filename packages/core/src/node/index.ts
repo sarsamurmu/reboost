@@ -307,17 +307,16 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   const oldCacheFilesDir = path.join(config.cacheDir, 'files_data.json');
   if (fs.existsSync(oldCacheFilesDir)) rmDir(oldCacheFilesDir);
 
-  let shouldClearCache = false;
+  let shouldClearCache = true;
   let clearCacheReason = '';
   if (isVersionLessThan(getFilesData().version, INCOMPATIBLE_BELOW)) {
-    shouldClearCache = true;
     clearCacheReason = 'Cache version is incompatible';
   } else if (getFilesData().usedPlugins !== getUsedPlugins()) {
-    shouldClearCache = true;
     clearCacheReason = 'Plugin change detected';
   } else if (getFilesData().mode !== config.mode) {
-    shouldClearCache = true;
     clearCacheReason = 'Mode change detected';
+  } else {
+    shouldClearCache = false;
   }
   
   if (shouldClearCache) {
