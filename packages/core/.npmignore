@@ -1,6 +1,7 @@
 coverage/
 src/
-test/
-test-src/
+tests/
+tests-src/
 
 *tsconfig.json
+jest.config.js
