@@ -1,0 +1,249 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`does not export default <exportsObj> when default export is available 1`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.default = 0;
+export_0_ = module.exports.default;
+export { export_0_ as default };"
+`;
+
+exports[`does not export default <exportsObj> when default export is available 2`] = `
+"const exports = {};
+let export_0_;
+exports.default = 0;
+export_0_ = exports.default;
+export { export_0_ as default };"
+`;
+
+exports[`does not export default <exportsObj> when the module is declared __esModule using <exportObj>.__esModule 1`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.__esModule = true;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+export { export_0_ as item1 };"
+`;
+
+exports[`does not export default <exportsObj> when the module is declared __esModule using <exportObj>.__esModule 2`] = `
+"const exports = {};
+let export_0_;
+exports.__esModule = true;
+exports.item1 = 0;
+export_0_ = exports.item1;
+export { export_0_ as item1 };"
+`;
+
+exports[`does not export default <exportsObj> when the module is declared __esModule using Object.defineProperty 1`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+export { export_0_ as item1 };"
+`;
+
+exports[`does not export default <exportsObj> when the module is declared __esModule using Object.defineProperty 2`] = `
+"const exports = {};
+let export_0_;
+exports.item1 = 0;
+export_0_ = exports.item1;
+export { export_0_ as item1 };"
+`;
+
+exports[`does not fix <exportsObj> if <exportsObj>'s variable is already declared in the Program scope 1`] = `
+"const module = {
+  exports: {}
+};
+module.exports.item1 = 0;"
+`;
+
+exports[`does not fix <exportsObj> if <exportsObj>'s variable is already declared in the Program scope 2`] = `
+"const exports = {};
+exports.item1 = 0;"
+`;
+
+exports[`does not fix <exportsObj> if <exportsObj>'s variable is already declared in the current scope 1`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+{
+  const module = {
+    exports: {}
+  };
+  module.exports.item2 = 0;
+}
+export { export_0_ as item1 };
+export default module.exports;
+export const __cjsModule = true;"
+`;
+
+exports[`does not fix <exportsObj> if <exportsObj>'s variable is already declared in the current scope 2`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+callback(module => {
+  module.exports.item2 = 0;
+});
+export { export_0_ as item1 };
+export default module.exports;
+export const __cjsModule = true;"
+`;
+
+exports[`does not fix <exportsObj> if <exportsObj>'s variable is already declared in the current scope 3`] = `
+"const exports = {};
+let export_0_;
+exports.item1 = 0;
+export_0_ = exports.item1;
+{
+  const exports = {};
+  exports.item2 = 0;
+}
+export { export_0_ as item1 };
+export default exports;
+export const __cjsModule = true;"
+`;
+
+exports[`does not fix <exportsObj> if <exportsObj>'s variable is already declared in the current scope 4`] = `
+"const exports = {};
+let export_0_;
+exports.item1 = 0;
+export_0_ = exports.item1;
+callback(exports => {
+  exports.item2 = 0;
+});
+export { export_0_ as item1 };
+export default exports;
+export const __cjsModule = true;"
+`;
+
+exports[`does not fix require calls if "require" variable is already declared in Program scope 1`] = `
+"const require = mod => someFunc(mod);
+
+const module_1 = require('module_1');"
+`;
+
+exports[`does not fix require calls if "require" variable is already declared in current scope 1`] = `
+"const __commonJS_ = mod => mod.__cjsModule ? mod[\\"default\\"] : mod;
+
+import * as imported_0_ from \\"module_1\\";
+
+const module_1 = __commonJS_(imported_0_);
+
+{
+  const require = mod => someFunc(mod);
+
+  const result = require('someThing');
+}"
+`;
+
+exports[`does not fix require calls if "require" variable is already declared in current scope 2`] = `
+"const __commonJS_ = mod => mod.__cjsModule ? mod[\\"default\\"] : mod;
+
+import * as imported_0_ from \\"module_1\\";
+
+const module_1 = __commonJS_(imported_0_);
+
+callback(require => {
+  const result = require('someThing');
+});"
+`;
+
+exports[`does not fix require calls if call signature is different 1`] = `
+"const result_1 = require('someThing', 0);
+
+const result_2 = require(100);"
+`;
+
+exports[`does not fix require calls if it is built-in module 1`] = `
+"const fs = require('fs');
+
+const path = require('path');"
+`;
+
+exports[`fixes <exportsObj> 1`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+module['exports']['item1'] = 1;
+export_0_ = module.exports.item1;
+export { export_0_ as item1 };
+export default module.exports;
+export const __cjsModule = true;"
+`;
+
+exports[`fixes <exportsObj> 2`] = `
+"const exports = {};
+let export_0_;
+exports.item1 = 0;
+export_0_ = exports.item1;
+exports['item1'] = 1;
+export_0_ = exports.item1;
+export { export_0_ as item1 };
+export default exports;
+export const __cjsModule = true;"
+`;
+
+exports[`fixes <exportsObj> 3`] = `
+"const exports = {};
+const module = {
+  exports
+};
+let export_0_, export_1_;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+module.exports.item1 = 1;
+export_0_ = module.exports.item1;
+exports.item2 = 0;
+export_1_ = exports.item2;
+exports.item2 = 1;
+export_1_ = exports.item2;
+export { export_0_ as item1, export_1_ as item2 };
+export default module.exports;
+export const __cjsModule = true;"
+`;
+
+exports[`fixes module.exports = require() exports default from the exported module if only one exports is available 1`] = `
+"import * as for_default_ from \\"module_1\\";
+let default_export_;
+export * from \\"module_1\\";
+if (\\"default\\" in for_default_) default_export_ = for_default_[\\"default\\"];
+export default default_export_;"
+`;
+
+exports[`fixes module.exports = require() just exports all from the module when other exports is available 1`] = `
+"const module = {
+  exports: {}
+};
+let export_0_;
+module.exports.item1 = 0;
+export_0_ = module.exports.item1;
+export { export_0_ as item1 };
+export * from \\"module_1\\";
+export default module.exports;
+export const __cjsModule = true;"
+`;
+
+exports[`fixes require calls 1`] = `
+"const __commonJS_ = mod => mod.__cjsModule ? mod[\\"default\\"] : mod;
+
+import * as imported_0_ from \\"module_1\\";
+
+const module_1 = __commonJS_(imported_0_);
+
+const module_1_1 = __commonJS_(imported_0_);"
+`;

@@ -3,8 +3,6 @@ import traverse, { NodePath, Scope } from '@babel/traverse';
 
 import { builtinModules } from 'module';
 
-import { uniqueID } from '../../utils';
-
 const isRequireFunc = (node: t.CallExpression, scope: Scope) => (
   t.isIdentifier(node.callee, { name: 'require' }) &&
   node.arguments.length === 1 &&
@@ -29,8 +27,7 @@ const export__cjsModuleTrue = () => t.exportNamedDeclaration(
   )
 );
 
-export const transformCommonJSToES6 = (ast: t.Node) => {
-  const id = uniqueID(6);
+export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
   const insertAfters: [NodePath, t.Node][] = [];
   const modImports: t.ImportDeclaration[] = [];
   const modExports: t.ExportSpecifier[] = [];
@@ -131,7 +128,10 @@ export const transformCommonJSToES6 = (ast: t.Node) => {
           usedExportType = 'module.exports';
         }
 
-        if (t.isMemberExpression(parent.node) && !parent.node.computed) {
+        if (
+          t.isMemberExpression(parent.node) &&
+          (parent.node.computed ? t.isStringLiteral(parent.node.property) : true)
+        ) {
           // module.exports.any
           exportName = (parent.node.property as t.Identifier).name ||
             (parent.node.property as t.StringLiteral).value;

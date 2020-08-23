@@ -10,12 +10,22 @@ exports[`transforms conditional expressions does nothing if not confident 1`] = 
 
 exports[`transforms if expressions alternate 1`] = `"doDev();"`;
 
-exports[`transforms if expressions alternate if statement 1`] = `"if (someTest) { doSomeTest(); } else { doElse(); }"`;
+exports[`transforms if expressions alternate if statement 1`] = `
+"if (someTest) {
+  doSomeTest();
+} else {
+  doElse();
+}"
+`;
 
 exports[`transforms if expressions consequent with alternate 1`] = `"doDev();"`;
 
 exports[`transforms if expressions consequent without alternate 1`] = `""`;
 
-exports[`transforms if expressions does nothing if not confident 1`] = `"if (false || unknownVariable) { doProd(); }"`;
+exports[`transforms if expressions does nothing if not confident 1`] = `
+"if (false || unknownVariable) {
+  doProd();
+}"
+`;
 
 exports[`transforms into boolean if \`===\` expression is used 1`] = `"const isDev = true;"`;

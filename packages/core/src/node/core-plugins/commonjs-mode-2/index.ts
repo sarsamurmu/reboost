@@ -3,6 +3,9 @@ import anymatch from 'anymatch';
 import { ReboostPlugin } from '../../index';
 import { transformCommonJSToES6 } from './commonjs-to-es6';
 import { getConfig } from '../../shared';
+import { uniqueID } from '../../utils';
+
+export const runTransformation = transformCommonJSToES6;
 
 export const CommonJSMode2Plugin = (): ReboostPlugin => {
   const test = (file: string) => (
@@ -14,7 +17,7 @@ export const CommonJSMode2Plugin = (): ReboostPlugin => {
     name: 'core-commonjs-mode-2-plugin',
     transformAST(ast, _, filePath) {
       if (test(filePath)) {
-        transformCommonJSToES6(ast);
+        transformCommonJSToES6(ast, uniqueID(6));
       }
     }
   }

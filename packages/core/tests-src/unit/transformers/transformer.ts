@@ -7,6 +7,6 @@ export const createTransformer = (transform: (ast: any) => void) => (code: strin
   });
   transform(ast);
   return generate(ast, {
-    concise: true,
+    compact: false
   }).code;
 }
