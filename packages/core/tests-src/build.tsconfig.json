@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "sourceMap": true,
     "baseUrl": "../",
     "paths": {
       "src-node/*": ["./dist/node/*"]

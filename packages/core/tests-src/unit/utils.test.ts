@@ -1,3 +1,7 @@
+import mockFS from 'mock-fs';
+
+import fs from 'fs';
+
 import * as utils from 'src-node/utils';
 
 test('transforms path to posix', () => {
@@ -18,19 +22,153 @@ test('generates unique ID', () => {
 
 test('checks if a data type is object', () => {
   expect(utils.isObject({})).toBe(true);
-  expect(utils.isObject(null)).not.toBe(true);
-  expect(utils.isObject(new (class {}))).not.toBe(true);
+  expect(utils.isObject(null)).toBe(false);
+  expect(utils.isObject(new (class {}))).toBe(false);
 });
 
-test('compares versions', () => {
-  expect(utils.isVersionLessThan('0.0.0', '0.0.1')).toBe(true);
-  expect(utils.isVersionLessThan('0.0.0', '0.0.1')).toBe(true);
-  expect(utils.isVersionLessThan('0.0.0', '0.1.0')).toBe(true);
-  expect(utils.isVersionLessThan('0.0.0', '1.0.0')).toBe(true);
+test('merges two objects', () => {
+  expect(utils.merge(
+    {
+      common: { prop2: 9 },
+      prop1: 4
+    },
+    {
+      common: { prop1: 7 },
+      prop2: 1
+    }
+  )).toEqual({
+    common: { prop1: 7, prop2: 9 },
+    prop1: 4,
+    prop2: 1
+  });
+});
 
-  expect(utils.isVersionLessThan('0.0.1', '0.0.10')).toBe(true);
-  expect(utils.isVersionLessThan('0.1.0', '0.10.0')).toBe(true);
-  expect(utils.isVersionLessThan('1.0.0', '10.0.0')).toBe(true);
+test('clones an object', () => {
+  const main = {
+    prop1: 7,
+    prop2: { prop21: 6, prop22: 4 },
+    arr: [1, 2, 3]
+  };
+  const mainCopy = {
+    prop1: 7,
+    prop2: { prop21: 6, prop22: 4 },
+    arr: [1, 2, 3]
+  };
+  const clone = utils.clone(main);
+  
+  clone.prop1 = clone.prop2.prop21 = 0;
+  clone.arr.push(4, 5, 6);
 
-  expect(utils.isVersionLessThan('0.7.0', '0.6.1')).toBe(false);
+  expect(main).toEqual(mainCopy);
+});
+
+test('ensures a directory', () => {
+  const dirPath = '/some-dir/with/nested/dirs';
+  const availableDirPath = '/path/to/available/dir';
+  mockFS({
+    [availableDirPath]: {
+      'file-a': ''
+    }
+  });
+
+  utils.ensureDir(dirPath);
+  expect(fs.existsSync(dirPath)).toBe(true);
+
+  // Does nothing if the directory already exists
+  expect(() => utils.ensureDir(availableDirPath)).not.toThrow();
+
+  mockFS.restore();
+});
+
+test('checks if a file is directory', () => {
+  const dirPath = '/path/to/a/dir';
+  const filePath = '/path/to/a/file';
+  mockFS({
+    [dirPath]: {},
+    [filePath]: ''
+  });
+
+  expect(utils.isDirectory(dirPath)).toBe(true);
+  expect(utils.isDirectory(filePath)).toBe(false);
+
+  mockFS.restore();
+});
+
+test('removes a directory', () => {
+  const dirPath = '/path/to/a/dir';
+  const unavailableDirPath = 'path/to/unavailable/dir';
+  mockFS({
+    [dirPath]: {
+      'file-a': '',
+      'file-b': '',
+      'nested': {
+        'file-x': '',
+        'file-y': ''
+      }
+    }
+  });
+
+  utils.rmDir(dirPath);
+  expect(fs.existsSync(dirPath)).toBe(false);
+
+  // Does nothing if the directory does not exist
+  expect(() => utils.rmDir(unavailableDirPath)).not.toThrow();
+
+  mockFS.restore();
+});
+
+test('deeply freezes an object', () => {
+  const obj = {
+    prop1: 6,
+    prop2: {
+      prop21: 7,
+      prop22: 1,
+      arr: [1, 2, 3]
+    },
+    arr: [4, 5, 6]
+  };
+  const cant = {
+    assign: /cannot assign/i,
+    add: /cannot add property/i
+  };
+
+  utils.deepFreeze(obj);
+
+  expect(() => obj.prop1 = 0).toThrowError(cant.assign);
+  expect(() => obj.prop2.prop21 = 0).toThrowError(cant.assign);
+  expect(() => (obj as any).prop3 = 0).toThrowError(cant.add);
+  expect(() => (obj.prop2 as any).prop23 = 0).toThrowError(cant.add);
+  expect(() => obj.arr.push(0)).toThrowError(cant.add);
+  expect(() => obj.prop2.arr.push(0)).toThrowError(cant.add);
+});
+
+test('binds a function', () => {
+  const bound = utils.bind(function (this: { val: number }) {
+    return this.val;
+  }, { val: 0 });
+
+  expect(bound()).toBe(0);
+});
+
+test('finds diff in old and new arrays', () => {
+  const oldArr = [1, 2, 3, 4];
+  const newArr = [3, 4, 5, 6];
+  const { added, removed } = utils.diff(oldArr, newArr);
+
+  expect(added).toEqual(expect.arrayContaining([5, 6]));
+  expect(removed).toEqual(expect.arrayContaining([1, 2]));
+});
+
+test('checks if a version is less then another version', () => {
+  ([
+    ['0.0.0', '0.0.1', true],
+    ['0.0.0', '0.1.0', true],
+    ['0.0.0', '1.0.0', true],
+    ['0.0.1', '0.0.0', false],
+    ['0.1.0', '0.0.0', false],
+    ['1.0.0', '0.0.0', false],
+    ['1.1.1', '1.1.1', false]
+  ] as [string, string, boolean][]).forEach(([version, toCompareWith, expected]) => {
+    expect(utils.isVersionLessThan(version, toCompareWith)).toBe(expected);
+  });
 });

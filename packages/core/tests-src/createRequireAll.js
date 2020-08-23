@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const destFile = path.join(__dirname, '../tests/requireAll.test.js');
+const destFile = path.join(__dirname, '../__tests__/requireAll.test.js');
 const destDir = path.dirname(destFile);
 let fileContent = '';
 

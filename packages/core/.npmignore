@@ -1,6 +1,6 @@
 coverage/
 src/
-tests/
+__tests__/
 tests-src/
 
 *tsconfig.json

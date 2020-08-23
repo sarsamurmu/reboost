@@ -38,22 +38,26 @@ const evaluateParents = (parent: NodePath) => {
   }
 }
 
+export const runTransformation = (ast: t.Node, mode: string) => {
+  traverse(ast, {
+    MemberExpression(path) {
+      if (
+        t.isIdentifier(path.node.object, { name: 'process' }) &&
+        t.isIdentifier(path.node.property, { name: 'env' }) &&
+        t.isMemberExpression(path.parentPath.node) &&
+        t.isIdentifier(path.parentPath.node.property, { name: 'NODE_ENV' })
+      ) {
+        const parent = path.parentPath;
+        parent.replaceWith(t.stringLiteral(mode));
+        evaluateParents(parent.parentPath);
+      }
+    }
+  });
+}
+
 export const NodeEnvPlugin = (): ReboostPlugin => ({
   name: 'core-node-env-plugin',
   transformAST(ast) {
-    traverse(ast, {
-      MemberExpression(path) {
-        if (
-          t.isIdentifier(path.node.object, { name: 'process' }) &&
-          t.isIdentifier(path.node.property, { name: 'env' }) &&
-          t.isMemberExpression(path.parentPath.node) &&
-          t.isIdentifier(path.parentPath.node.property, { name: 'NODE_ENV' })
-        ) {
-          const parent = path.parentPath;
-          parent.replaceWith(t.stringLiteral(getConfig().mode));
-          evaluateParents(parent.parentPath);
-        }
-      }
-    });
+    runTransformation(ast, getConfig().mode);
   }
 })

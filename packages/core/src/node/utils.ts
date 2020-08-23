@@ -19,12 +19,12 @@ export const uniqueID = (length = 32) => Array(length).fill(0).map(() => (Math.r
 
 export const isObject = (data: any) => !!data && data.constructor === Object;
 
-export const merge = <T extends Record<string, any>>(source: T, target: Partial<T>) => {
+export const merge = <T extends Record<string, any>>(source: T, target: Record<string, any>) => {
   for (const key in target) {
     if (isObject(source[key]) && isObject(target[key])) {
       merge(source[key], target[key]);
     } else {
-      source[key] = target[key];
+      (source as any)[key] = target[key];
     }
   }
   return source;

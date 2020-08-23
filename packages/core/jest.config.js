@@ -1,12 +1,16 @@
 module.exports = {
-  roots: ['tests'],
+  roots: ['__tests__'],
+  testMatch: [
+    '**/__tests__/**/*.test.js'
+  ],
   coverageReporters: [
-    'lcov', 'text-summary', 'html'
+    'lcov', 'text-summary'
   ],
   collectCoverageFrom: [
     'dist/node/**/*.js'
   ],
   moduleNameMapper: {
     '^src-node/(.*)$': '<rootDir>/dist/node/$1'
-  }
+  },
+  snapshotResolver: '<rootDir>/tests-src/snapshotResolver.js'
 }
