@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`does not transform CommonJS modules if "exports" is defined 1`] = `
+"const exports = {};
+exports.item1 = 0;"
+`;
+
+exports[`does not transform CommonJS modules if "module" is defined 1`] = `
+"const module = {
+  exports: {}
+};
+module.exports.item1 = 0;"
+`;
+
+exports[`does not transform CommonJS modules if "require" function's call signature is different 1`] = `
+"const module_1 = require('someThing', 0);
+
+const result = require(100);"
+`;
+
+exports[`does not transform CommonJS modules if "require" is defined 1`] = `
+"const require = mod => someFunc(mod);
+
+const module_1 = require('module_1');"
+`;
+
+exports[`transforms CommonJS modules "require" calls 1`] = `
+"import _$importer from \\"#/importer\\";
+import * as _$import from \\"module_1\\";
+
+const _$imported_ = _$importer.All(_$import, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");
+
+const module_1 = _$imported_;"
+`;
+
+exports[`transforms CommonJS modules both 1`] = `
+"const exports = {};
+const module = {
+  exports
+};
+module.exports.item1 = 0;
+exports.item2 = 0;
+export const __cjsExports = module.exports;"
+`;
+
+exports[`transforms CommonJS modules only "exports" 1`] = `
+"const exports = {};
+exports.item1 = 0;
+export const __cjsExports = exports;"
+`;
+
+exports[`transforms CommonJS modules only "module.exports" 1`] = `
+"const module = {
+  exports: {}
+};
+module.exports.item1 = 0;
+export const __cjsExports = module.exports;"
+`;
+
+exports[`transforms ES modules 1`] = `
+"import _$importer from \\"#/importer\\";
+import * as _$import from \\"module_1\\";
+
+const Def = _$importer.Default(_$import, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");
+
+import * as _$import2 from \\"module_2\\";
+
+const part1 = _$importer.Member(_$import2, \\"part1\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\"),
+      part2 = _$importer.Member(_$import2, \\"part2\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\");
+
+import * as _$import3 from \\"module_3\\";
+
+const all = _$importer.All(_$import3, __reboost_resolve(\\"module_3\\"), \\"my-file.js\\");"
+`;
