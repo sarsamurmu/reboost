@@ -258,14 +258,12 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
   if (exportIdentifierMap) {
     const exportIdentifiers = Object.values(exportIdentifierMap);
-    if (exportIdentifiers.length) {
-      program.node.body.unshift(
-        t.variableDeclaration(
-          'let',
-          exportIdentifiers.map((name) => t.variableDeclarator(name))
-        )
-      );
-    }
+    program.node.body.unshift(
+      t.variableDeclaration(
+        'let',
+        exportIdentifiers.map((name) => t.variableDeclarator(name))
+      )
+    );
   }
 
   if (usedModuleExports) {

@@ -15,7 +15,8 @@ describe('fixes <exportsObj>', () => {
   test('when bracket notation is used', () => {
     match(`
       module.exports['item1'] = 0;
-      exports['item2'] = 0;
+      module['exports'].item2 = 0;
+      exports['item3'] = 0;
     `);
   });
 

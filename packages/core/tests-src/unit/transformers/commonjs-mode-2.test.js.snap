@@ -192,12 +192,14 @@ exports[`fixes <exportsObj> when bracket notation is used 1`] = `
 const module = {
   exports
 };
-let export_0_, export_1_;
+let export_0_, export_1_, export_2_;
 module.exports['item1'] = 0;
 export_0_ = module.exports.item1;
-exports['item2'] = 0;
-export_1_ = exports.item2;
-export { export_0_ as item1, export_1_ as item2 };
+module['exports'].item2 = 0;
+export_1_ = module.exports.item2;
+exports['item3'] = 0;
+export_2_ = exports.item3;
+export { export_0_ as item1, export_1_ as item2, export_2_ as item3 };
 export default module.exports;
 export const __cjsModule = true;"
 `;
