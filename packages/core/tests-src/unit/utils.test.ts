@@ -49,17 +49,14 @@ test('clones an object', () => {
     prop2: { prop21: 6, prop22: 4 },
     arr: [1, 2, 3]
   };
-  const mainCopy = {
-    prop1: 7,
-    prop2: { prop21: 6, prop22: 4 },
-    arr: [1, 2, 3]
-  };
   const clone = utils.clone(main);
   
+  expect(clone).toEqual(main);
+
   clone.prop1 = clone.prop2.prop21 = 0;
   clone.arr.push(4, 5, 6);
 
-  expect(main).toEqual(mainCopy);
+  expect(clone).not.toEqual(main);
 });
 
 test('ensures a directory', () => {
