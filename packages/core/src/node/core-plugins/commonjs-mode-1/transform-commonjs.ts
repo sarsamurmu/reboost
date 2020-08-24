@@ -3,12 +3,10 @@ import traverse, { NodePath } from '@babel/traverse';
 
 import { builtinModules } from 'module';
 
-import { uniqueID } from '../../utils';
-
-export const transformCommonJS = (ast: t.Node) => {
+export const transformCommonJS = (ast: t.Node, id: string) => {
   let program: NodePath<t.Program>;
-  let cjsModule = false;
-  const uid = uniqueID(4);
+  let usedModuleExports = false;
+  let usedExports = false;
   const modImports: t.ImportDeclaration[] = [];
   const importIdentifierMap: Record<string, t.Identifier> = {};
 
@@ -19,10 +17,12 @@ export const transformCommonJS = (ast: t.Node) => {
     CallExpression(path) {
       if (
         t.isIdentifier(path.node.callee, { name: 'require' }) &&
-        t.isStringLiteral(path.node.arguments[0])
+        path.node.arguments.length === 1 &&
+        t.isStringLiteral(path.node.arguments[0]) &&
+        !path.scope.hasBinding('require')
       ) {
         const importPath = path.node.arguments[0].value;
-        const importIdentifier = importIdentifierMap[importPath] || path.scope.generateUidIdentifier(`$imported_${uid}`);
+        const importIdentifier = importIdentifierMap[importPath] || path.scope.generateUidIdentifier(`$imported_${id}`);
 
         // Don't resolve built-in modules like path, fs, etc.
         if (builtinModules.includes(importPath)) return;
@@ -41,8 +41,8 @@ export const transformCommonJS = (ast: t.Node) => {
       }
     },
     MemberExpression(path) {
-      if (cjsModule) return;
       if (
+        !usedModuleExports &&
         t.isIdentifier(path.node.object, { name: 'module' }) &&
         (
           path.node.computed
@@ -50,50 +50,61 @@ export const transformCommonJS = (ast: t.Node) => {
             : t.isIdentifier(path.node.property, { name: 'exports' })
         )
       ) {
-        if (!path.scope.hasBinding('module')) cjsModule = true;
-      } else if (t.isIdentifier(path.node.object, { name: 'exports' })) {
-        if (!path.scope.hasBinding('exports')) cjsModule = true;
+        if (!path.scope.hasBinding('module')) usedModuleExports = true;
+      } else if (!usedExports && t.isIdentifier(path.node.object, { name: 'exports' })) {
+        if (!path.scope.hasBinding('exports')) usedExports = true;
       }
     }
   });
 
-  if (cjsModule) {
-    const moduleExportsExp = t.memberExpression(t.identifier('module'), t.identifier('exports'));
+  if (usedModuleExports || usedExports) {
+    if (usedModuleExports) {
+      program.node.body.unshift(
+        t.variableDeclaration(
+          'const',
+          [
+            t.variableDeclarator(
+              t.identifier('module'),
+              t.objectExpression([
+                t.objectProperty(
+                  t.identifier('exports'),
+                  usedExports ? t.identifier('exports') : t.objectExpression([]),
+                  false,
+                  usedExports
+                )
+              ])
+            ),
+          ]
+        )
+      );
+    }
 
-    program.node.body.unshift(
-      t.variableDeclaration(
-        'const',
-        [
-          t.variableDeclarator(
-            t.identifier('module'),
-            t.objectExpression([
-              t.objectProperty(
-                t.identifier('exports'),
-                t.objectExpression([])
-              )
-            ])
-          ),
-        ]
-      ),
-      t.variableDeclaration(
-        'const',
-        [
-          t.variableDeclarator(
-            t.identifier('exports'),
-            moduleExportsExp
-          )
-        ]
-      )
-    );
+    if (usedExports) {
+      program.node.body.unshift(
+        t.variableDeclaration(
+          'const',
+          [
+            t.variableDeclarator(
+              t.identifier('exports'),
+              t.objectExpression([])
+            )
+          ]
+        )
+      );
+    }
 
     program.node.body.push(
       t.exportNamedDeclaration(
         t.variableDeclaration(
           'const',
-          [t.variableDeclarator(
-            t.identifier('__cjsExports'),
-            moduleExportsExp
-          )]
+          [
+            t.variableDeclarator(
+              t.identifier('__cjsExports'),
+              usedModuleExports
+                ? t.memberExpression(t.identifier('module'), t.identifier('exports'))
+                : t.identifier('exports')
+            )
+          ]
         )
       )
     );
