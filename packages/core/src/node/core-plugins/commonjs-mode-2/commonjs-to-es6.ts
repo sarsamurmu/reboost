@@ -28,23 +28,50 @@ const export__cjsModuleTrue = () => t.exportNamedDeclaration(
 );
 
 export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
-  const insertAfters: [NodePath, t.Node][] = [];
-  const modImports: t.ImportDeclaration[] = [];
-  const modExports: t.ExportSpecifier[] = [];
-  const importIdentifierMap: Record<string, t.Identifier> = {};
-  const exportAlls: t.ExportAllDeclaration[] = [];
-  const exportIdentifierMap: Record<string, t.Identifier> = {};
-  const toRemove: NodePath[] = [];
-  const interopFuncIdentifier = t.identifier(`__commonJS_${id}`);
+  // Most of variables are initialized lazily
+  let importIdx = 0;
+  let importIdentifierMap: Record<string, t.Identifier>;
+  let modImports: t.ImportDeclaration[];
+  let exportIdx = 0;
+  let exportIdentifierMap: Record<string, t.Identifier>;
+  // There can be only one `export * from ''`
+  let exportAll: t.ExportAllDeclaration;
+  let exportAllParent: NodePath;
+  let modExports: t.ExportSpecifier[];
+  let insertAfters: [NodePath, t.Node][];
+  let interopFuncIdentifier: t.Identifier;
   let program: NodePath<t.Program>;
   // If `exports.<member> = value;` is used
-  let usedExports = false;
+  let usedExports: boolean;
   // If `module.exports.<member> = value;` is used
-  let usedModuleExports = false;
-  let usedInterop = false;
-  let __esModule = false;
-  let importIdx = 0;
-  let exportIdx = 0;
+  let usedModuleExports: boolean;
+  let is__esModule: boolean;
+
+  const fixRequireCallExpression = (path: NodePath<t.CallExpression>) => {
+    const importPath = (path.node.arguments[0] as t.StringLiteral).value;
+    const importIdentifier = (importIdentifierMap || (importIdentifierMap = {}))[importPath] ||
+      t.identifier(`imported_${importIdx++}_${id}`);
+
+    // Don't resolve built-in modules like path, fs, etc.
+    if (builtinModules.includes(importPath)) return;
+
+    if (!(importPath in importIdentifierMap)) {
+      importIdentifierMap[importPath] = importIdentifier;
+      (modImports || (modImports = [])).push(
+        t.importDeclaration(
+          [t.importNamespaceSpecifier(importIdentifier)],
+          t.stringLiteral(importPath)
+        )
+      );
+    }
+
+    path.replaceWith(
+      t.callExpression(
+        (interopFuncIdentifier || (interopFuncIdentifier = t.identifier(`__commonJS_${id}`))),
+        [importIdentifier]
+      )
+    );
+  }
 
   traverse(ast, {
     Program(path) {
@@ -63,27 +90,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
           return;
         }
 
-        const importPath = (path.node.arguments[0] as t.StringLiteral).value;
-        const importIdentifier = importIdentifierMap[importPath] || t.identifier(`imported_${importIdx++}_${id}`);
-
-        // Don't resolve built-in modules like path, fs, etc.
-        if (builtinModules.includes(importPath)) return;
-
-        if (!(importPath in importIdentifierMap)) {
-          importIdentifierMap[importPath] = importIdentifier;
-          modImports.push(
-            t.importDeclaration(
-              [t.importNamespaceSpecifier(importIdentifier)],
-              t.stringLiteral(importPath)
-            )
-          );
-        }
-
-        path.replaceWith(
-          t.callExpression(interopFuncIdentifier, [importIdentifier])
-        );
-
-        usedInterop = true;
+        fixRequireCallExpression(path);
       }
     },
     MemberExpression(path) {
@@ -117,7 +124,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
         // Object.defineProperty(exports, '__esModule', { value: true });
         // Object.defineProperty(module.exports, '__esModule', { value: true });
 
-        __esModule = true;
+        is__esModule = true;
         parent.remove();
         return;
       }
@@ -142,7 +149,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
             (parent.parentPath.get('right') as NodePath).evaluateTruthy()
           ) {
             // module.exports.__esModule = <truthyValue>;
-            __esModule = true;
+            is__esModule = true;
           }
 
           markUsedModuleExports();
@@ -159,13 +166,27 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
           isRequireFunc(parent.node.right, parent.scope)
         ) {
           // module.exports = require('some/code');
-          exportAlls.push(
-            t.exportAllDeclaration(
-              t.stringLiteral((parent.node.right.arguments[0] as t.StringLiteral).value)
-            )
+          /*
+            Code can be like this
+            ```
+            module.exports.item1 = 0;
+            module.exports.item2 = 0;
+            module.exports = require('some');
+            ```
+            Now `module.export.item{1,2}` are no longer available,
+            this mean `module.exports = require()` basically resets other exports,
+            so we are going to do the same
+          */
+          exportAll = t.exportAllDeclaration(
+            t.stringLiteral((parent.node.right.arguments[0] as t.StringLiteral).value)
           );
+          exportAllParent = parent;
 
-          toRemove.push(parent);
+          // Reset previous exports
+          exportIdx = 0;
+          exportIdentifierMap = undefined;
+          modExports = undefined;
+          insertAfters = undefined;
         } else {
           markUsedModuleExports();
         }
@@ -182,7 +203,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
           (path.parentPath.get('right') as NodePath).evaluateTruthy()
         ) {
           // exports.__esModule = <truthyValue>;
-          __esModule = true;
+          is__esModule = true;
         }
 
         usedExports = true;
@@ -194,9 +215,10 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
         exportName !== '__esModule' &&
         /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(exportName)
       ) {
-        exportIdentifier = exportIdentifierMap[exportName] || t.identifier(`export_${exportIdx++}_${id}`);
+        exportIdentifier = (exportIdentifierMap || (exportIdentifierMap = {}))[exportName] ||
+          t.identifier(`export_${exportIdx++}_${id}`);
 
-        insertAfters.push([
+        (insertAfters || (insertAfters = [])).push([
           path.findParent((p) => p.isExpressionStatement()),
           t.expressionStatement(
             t.assignmentExpression(
@@ -214,7 +236,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
         if (!(exportName in exportIdentifierMap)) {
           exportIdentifierMap[exportName] = exportIdentifier;
-          modExports.push(
+          (modExports || (modExports = [])).push(
             t.exportSpecifier(exportIdentifier, t.identifier(exportName))
           );
         }
@@ -224,77 +246,24 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
   const hasOtherExports = program.get('body').some((p) => p.isExportDeclaration());
 
-  insertAfters.forEach(([path, toInsert]) => path && path.insertAfter(toInsert));
-  toRemove.forEach((path) => path.remove());
+  if (insertAfters) insertAfters.forEach(([path, toInsert]) => path && path.insertAfter(toInsert));
 
-  const exportIdentifiers = Object.values(exportIdentifierMap);
-  if (exportIdentifiers.length) {
-    program.node.body.unshift(
-      t.variableDeclaration(
-        'let',
-        exportIdentifiers.map((name) => t.variableDeclarator(name))
-      )
-    );
+  if (exportAllParent) {
+    if (exportIdentifierMap) {
+      fixRequireCallExpression(exportAllParent.get('right') as NodePath<t.CallExpression>);
+    } else {
+      exportAllParent.remove();
+    }
   }
 
-  if (
-    exportAlls.length > 1 &&
-    !('default' in exportIdentifierMap) &&
-    !__esModule
-  ) {
-    const array: [t.Identifier, t.StringLiteral][] = [];
-    const expressions: t.ExpressionStatement[] = [];
-    const exportsObj = usedModuleExports
-      ? t.memberExpression(t.identifier('module'), t.identifier('exports'))
-      : usedExports
-        ? t.identifier('exports')
-        : t.identifier(`all_exports_obj_${id}`);
-    let idx = 0;
-
-    exportAlls.forEach((exp) => {
-      array.push([t.identifier(`all_imports_${idx++}_${id}`), exp.source]);
-    });
-
-    array.forEach(([identifier, source]) => {
-      modImports.push(
-        t.importDeclaration(
-          [t.importNamespaceSpecifier(identifier)],
-          source
-        )
-      );
-
-      expressions.push(
-        t.expressionStatement(
-          t.callExpression(
-            t.memberExpression(
-              t.identifier('Object'),
-              t.identifier('assign')
-            ),
-            [
-              exportsObj,
-              t.objectExpression([
-                t.spreadElement(identifier),
-                t.spreadElement(exportsObj)
-              ])
-            ]
-          )
-        )
-      );
-    });
-
-    program.node.body.unshift(...expressions);
-
-    if (!usedModuleExports && !usedExports) {
+  if (exportIdentifierMap) {
+    const exportIdentifiers = Object.values(exportIdentifierMap);
+    if (exportIdentifiers.length) {
       program.node.body.unshift(
         t.variableDeclaration(
-          'const',
-          [t.variableDeclarator(exportsObj, t.objectExpression([]))]
+          'let',
+          exportIdentifiers.map((name) => t.variableDeclarator(name))
         )
-      );
-
-      program.node.body.push(
-        t.exportDefaultDeclaration(exportsObj),
-        export__cjsModuleTrue()
       );
     }
   }
@@ -334,20 +303,20 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
     );
   }
 
-  program.node.body.unshift(...modImports);
-  if (modExports.length) program.node.body.push(t.exportNamedDeclaration(null, modExports));
-  program.node.body.push(...exportAlls);
+  if (modImports) program.node.body.unshift(...modImports);
+  if (modExports) program.node.body.push(t.exportNamedDeclaration(null, modExports));
+  if (exportAll) program.node.body.push(exportAll);
 
   if (
-    !usedModuleExports && !usedExports &&
-    exportAlls.length === 1 && modExports.length === 0 && !hasOtherExports
+    !exportIdentifierMap &&
+    exportAll && !modExports && !hasOtherExports
   ) {
     const namespaceIdentifier = t.identifier(`for_default_${id}`);
     const defaultExportIdentifier = t.identifier(`default_export_${id}`);
     program.node.body.unshift(
       t.importDeclaration(
         [t.importNamespaceSpecifier(namespaceIdentifier)],
-        exportAlls[0].source
+        exportAll.source
       ),
       t.variableDeclaration(
         'let',
@@ -378,8 +347,9 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
   }
 
   if (
+    exportIdentifierMap &&
     !('default' in exportIdentifierMap) &&
-    !__esModule &&
+    !is__esModule &&
     (usedModuleExports || usedExports)
   ) {
     program.node.body.push(
@@ -392,7 +362,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
     )
   }
 
-  if (usedInterop) {
+  if (interopFuncIdentifier) {
     program.node.body.unshift(
       t.variableDeclaration(
         'const',

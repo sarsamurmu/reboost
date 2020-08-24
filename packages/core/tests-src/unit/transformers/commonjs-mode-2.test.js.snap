@@ -172,33 +172,37 @@ exports[`does not fix require calls if it is built-in module 1`] = `
 const path = require('path');"
 `;
 
-exports[`fixes <exportsObj> 1`] = `
-"const module = {
-  exports: {}
+exports[`fixes <exportsObj> uses same identifier for same exported name 1`] = `
+"const exports = {};
+const module = {
+  exports
 };
 let export_0_;
 module.exports.item1 = 0;
 export_0_ = module.exports.item1;
-module['exports']['item1'] = 1;
-export_0_ = module.exports.item1;
+exports.item1 = 0;
+export_0_ = exports.item1;
 export { export_0_ as item1 };
 export default module.exports;
 export const __cjsModule = true;"
 `;
 
-exports[`fixes <exportsObj> 2`] = `
+exports[`fixes <exportsObj> when bracket notation is used 1`] = `
 "const exports = {};
-let export_0_;
-exports.item1 = 0;
-export_0_ = exports.item1;
-exports['item1'] = 1;
-export_0_ = exports.item1;
-export { export_0_ as item1 };
-export default exports;
+const module = {
+  exports
+};
+let export_0_, export_1_;
+module.exports['item1'] = 0;
+export_0_ = module.exports.item1;
+exports['item2'] = 0;
+export_1_ = exports.item2;
+export { export_0_ as item1, export_1_ as item2 };
+export default module.exports;
 export const __cjsModule = true;"
 `;
 
-exports[`fixes <exportsObj> 3`] = `
+exports[`fixes <exportsObj> when dot notation is used 1`] = `
 "const exports = {};
 const module = {
   exports
@@ -206,11 +210,7 @@ const module = {
 let export_0_, export_1_;
 module.exports.item1 = 0;
 export_0_ = module.exports.item1;
-module.exports.item1 = 1;
-export_0_ = module.exports.item1;
 exports.item2 = 0;
-export_1_ = exports.item2;
-exports.item2 = 1;
 export_1_ = exports.item2;
 export { export_0_ as item1, export_1_ as item2 };
 export default module.exports;
@@ -225,14 +225,35 @@ if (\\"default\\" in for_default_) default_export_ = for_default_[\\"default\\"]
 export default default_export_;"
 `;
 
-exports[`fixes module.exports = require() just exports all from the module when other exports is available 1`] = `
-"const module = {
-  exports: {}
+exports[`fixes module.exports = require() resets previous exports 1`] = `
+"import * as for_default_ from \\"module_1\\";
+let default_export_;
+const exports = {};
+const module = {
+  exports
 };
-let export_0_;
+module.exports.item1 = 0;
+exports.item2 = 0;
+export * from \\"module_1\\";
+if (\\"default\\" in for_default_) default_export_ = for_default_[\\"default\\"];
+export default default_export_;"
+`;
+
+exports[`fixes module.exports = require() transforms require call when other exports are available after the statement 1`] = `
+"const __commonJS_ = mod => mod.__cjsModule ? mod[\\"default\\"] : mod;
+
+import * as imported_0_ from \\"module_1\\";
+const exports = {};
+const module = {
+  exports
+};
+let export_0_, export_1_;
+module.exports = __commonJS_(imported_0_);
 module.exports.item1 = 0;
 export_0_ = module.exports.item1;
-export { export_0_ as item1 };
+exports.item2 = 0;
+export_1_ = exports.item2;
+export { export_0_ as item1, export_1_ as item2 };
 export * from \\"module_1\\";
 export default module.exports;
 export const __cjsModule = true;"

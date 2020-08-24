@@ -4,23 +4,27 @@ import { createTransformer } from './transformer';
 const t = createTransformer((ast) => runTransformation(ast, ''));
 const match = (code: string) => expect(t(code)).toMatchSnapshot();
 
-test('fixes <exportsObj>', () => {
-  match(`
-    module.exports.item1 = 0;
-    module['exports']['item1'] = 1;
-  `);
+describe('fixes <exportsObj>', () => {
+  test('when dot notation is used', () => {
+    match(`
+      module.exports.item1 = 0;
+      exports.item2 = 0;
+    `);
+  });
 
-  match(`
-    exports.item1 = 0;
-    exports['item1'] = 1;
-  `);
+  test('when bracket notation is used', () => {
+    match(`
+      module.exports['item1'] = 0;
+      exports['item2'] = 0;
+    `);
+  });
 
-  match(`
-    module.exports.item1 = 0;
-    module.exports.item1 = 1;
-    exports.item2 = 0;
-    exports.item2 = 1;
-  `);
+  test('uses same identifier for same exported name', () => {
+    match(`
+      module.exports.item1 = 0;
+      exports.item1 = 0;
+    `);
+  });
 });
 
 describe("does not fix <exportsObj> if <exportsObj>'s variable is already declared", () => {
@@ -163,10 +167,19 @@ describe('fixes module.exports = require()', () => {
     `);
   });
 
-  test('just exports all from the module when other exports is available', () => {
+  test('transforms require call when other exports are available after the statement', () => {
     match(`
       module.exports = require('module_1');
       module.exports.item1 = 0;
+      exports.item2 = 0;
+    `);
+  });
+
+  test('resets previous exports', () => {
+    match(`
+      module.exports.item1 = 0;
+      exports.item2 = 0;
+      module.exports = require('module_1');
     `);
   });
 });
