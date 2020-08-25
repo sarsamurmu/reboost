@@ -75,7 +75,7 @@ Reboost works with both CommonJS and ES modules, so you can try it even
 if you are not using ES modules, though using ES modules is recommended.
 
 ## Docs
-[Changelog](/CHANGELOG.md)\
+[Changelog](CHANGELOG.md)\
 [Configurations](/docs/configurations.md)\
 [Plugins](/docs/plugins.md)\
 [Plugin API](/docs/plugin-api.md)\
