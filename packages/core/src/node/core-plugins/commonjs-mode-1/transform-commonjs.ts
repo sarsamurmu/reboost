@@ -24,6 +24,8 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
       program = path;
     },
     ImportDeclaration(path) {
+      if (path.node.specifiers.length === 0) return;
+
       const declarators: t.VariableDeclarator[] = [];
       const identifier = t.identifier(`import_${importIdx++}_${id}`);
 

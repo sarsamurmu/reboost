@@ -24,13 +24,19 @@ exports[`does not transform CommonJS modules if "require" is defined 1`] = `
 const module_1 = require('module_1');"
 `;
 
-exports[`transforms CommonJS modules "require" calls 1`] = `
+exports[`does not transform CommonJS modules if built-in modules are imported using "require" 1`] = `
+"const fs = require('fs');
+
+const path = require('path');"
+`;
+
+exports[`transforms CommonJS modules - "require" calls 1`] = `
 "import importer_ from \\"#/importer\\";
 import * as imported_0_ from \\"module_1\\";
 const module_1 = importer_.All(imported_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
 `;
 
-exports[`transforms CommonJS modules both 1`] = `
+exports[`transforms CommonJS modules - both 1`] = `
 "const exports = {};
 const module = {
   exports
@@ -40,13 +46,21 @@ exports.item2 = 0;
 export const __cjsExports = module.exports;"
 `;
 
-exports[`transforms CommonJS modules only "exports" 1`] = `
+exports[`transforms CommonJS modules - only "exports" 1`] = `
 "const exports = {};
 exports.item1 = 0;
 export const __cjsExports = exports;"
 `;
 
-exports[`transforms CommonJS modules only "module.exports" 1`] = `
+exports[`transforms CommonJS modules - only "module.exports": using bracket notation 1`] = `
+"const module = {
+  exports: {}
+};
+module['exports'].item1 = 0;
+export const __cjsExports = module.exports;"
+`;
+
+exports[`transforms CommonJS modules - only "module.exports": using dot notation 1`] = `
 "const module = {
   exports: {}
 };
@@ -54,13 +68,23 @@ module.exports.item1 = 0;
 export const __cjsExports = module.exports;"
 `;
 
-exports[`transforms ES modules 1`] = `
+exports[`transforms ES modules which has import just for side effect 1`] = `"import 'module_1';"`;
+
+exports[`transforms ES modules which has imports with name: all 1`] = `
 "import importer_ from \\"#/importer\\";
 import * as import_0_ from \\"module_1\\";
-const Def = importer_.Default(import_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");
-import * as import_1_ from \\"module_2\\";
-const part1 = importer_.Member(import_1_, \\"part1\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\"),
-      part2 = importer_.Member(import_1_, \\"part2\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\");
-import * as import_2_ from \\"module_3\\";
-const all = importer_.All(import_2_, __reboost_resolve(\\"module_3\\"), \\"my-file.js\\");"
+const all = importer_.All(import_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
+`;
+
+exports[`transforms ES modules which has imports with name: default 1`] = `
+"import importer_ from \\"#/importer\\";
+import * as import_0_ from \\"module_1\\";
+const Def = importer_.Default(import_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
+`;
+
+exports[`transforms ES modules which has imports with name: named 1`] = `
+"import importer_ from \\"#/importer\\";
+import * as import_0_ from \\"module_1\\";
+const part1 = importer_.Member(import_0_, \\"part1\\", __reboost_resolve(\\"module_1\\"), \\"my-file.js\\"),
+      part2 = importer_.Member(import_0_, \\"part2\\", __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
 `;

@@ -3,7 +3,7 @@ import { createTransformer } from './transformer';
 
 const t = createTransformer((ast) => runTransformation(ast, 'my-file.js', ''));
 
-describe('transforms CommonJS modules', () => {
+describe('transforms CommonJS modules -', () => {
   test('only "exports"', () => {
     expect(t(`
       exports.item1 = 0;
@@ -13,7 +13,11 @@ describe('transforms CommonJS modules', () => {
   test('only "module.exports"', () => {
     expect(t(`
       module.exports.item1 = 0;
-    `)).toMatchSnapshot();
+    `)).toMatchSnapshot('using dot notation');
+
+    expect(t(`
+      module['exports'].item1 = 0;
+    `)).toMatchSnapshot('using bracket notation');
   });
 
   test('both', () => {
@@ -58,12 +62,33 @@ describe('does not transform CommonJS modules', () => {
       const result = require(100);
     `)).toMatchSnapshot();
   });
+
+  test('if built-in modules are imported using "require"', () => {
+    expect(t(`
+      const fs = require('fs');
+      const path = require('path');
+    `)).toMatchSnapshot();
+  });
 });
 
-test('transforms ES modules', () => {
-  expect(t(`
-    import Def from 'module_1';
-    import { part1, part2 } from 'module_2';
-    import * as all from 'module_3';
-  `)).toMatchSnapshot();
+describe('transforms ES modules', () => {
+  test('which has imports with name', () => {
+    expect(t(`
+      import Def from 'module_1';
+    `)).toMatchSnapshot('default');
+
+    expect(t(`
+      import { part1, part2 } from 'module_1';
+    `)).toMatchSnapshot('named');
+
+    expect(t(`
+      import * as all from 'module_1';
+    `)).toMatchSnapshot('all');
+  });
+
+  test('which has import just for side effect', () => {
+    expect(t(`
+      import 'module_1';
+    `)).toMatchSnapshot();
+  });
 });
