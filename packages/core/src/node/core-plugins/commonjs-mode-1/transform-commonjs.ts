@@ -3,16 +3,75 @@ import traverse, { NodePath } from '@babel/traverse';
 
 import { builtinModules } from 'module';
 
-export const transformCommonJS = (ast: t.Node, id: string) => {
+const getReboostResolveCall = (source: string) => t.callExpression(
+  t.identifier('__reboost_resolve'),
+  [t.stringLiteral(source)]
+);
+
+export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => {
   let program: NodePath<t.Program>;
-  let usedModuleExports = false;
-  let usedExports = false;
-  const modImports: t.ImportDeclaration[] = [];
-  const importIdentifierMap: Record<string, t.Identifier> = {};
+  let usedModuleExports: boolean;
+  let usedExports: boolean;
+  let modImports: t.ImportDeclaration[];
+  let importIdentifierMap: Record<string, t.Identifier>;
+  const importerIdentifier: t.Identifier = t.identifier(`importer_${id}`);
+  let usedImporter: boolean;
+  let replacements: [NodePath<t.ImportDeclaration>, t.ImportDeclaration, t.VariableDeclarator[]][];
+  let importIdx = 0;
 
   traverse(ast, {
     Program(path) {
       program = path;
+    },
+    ImportDeclaration(path) {
+      const declarators: t.VariableDeclarator[] = [];
+      const identifier = t.identifier(`import_${importIdx++}_${id}`);
+
+      usedImporter = true;
+
+      path.node.specifiers.forEach((specifier) => {
+        let usage;
+        let importedName;
+        const localName = specifier.local.name;
+        const commons = [
+          getReboostResolveCall(path.node.source.value),
+          t.stringLiteral(filePath)
+        ];
+
+        if (t.isImportDefaultSpecifier(specifier)) {
+          usage = 'Default';
+        } else if (t.isImportNamespaceSpecifier(specifier)) {
+          usage = 'All';
+        } else if (t.isImportSpecifier(specifier)) {
+          usage = 'Member';
+          importedName = specifier.imported.name;
+        }
+
+        declarators.push(
+          t.variableDeclarator(
+            t.identifier(localName),
+            t.callExpression(
+              t.memberExpression(
+                importerIdentifier,
+                t.identifier(usage)
+              ),
+              importedName ? [
+                identifier,
+                t.stringLiteral(importedName),
+                ...commons
+              ] : [identifier, ...commons]
+            )
+          )
+        );
+      });
+
+      (replacements || (replacements = [])).push([
+        path,
+        t.importDeclaration([
+          t.importNamespaceSpecifier(identifier)
+        ], t.stringLiteral(path.node.source.value)),
+        declarators
+      ]);
     },
     CallExpression(path) {
       if (
@@ -22,14 +81,15 @@ export const transformCommonJS = (ast: t.Node, id: string) => {
         !path.scope.hasBinding('require')
       ) {
         const importPath = path.node.arguments[0].value;
-        const importIdentifier = importIdentifierMap[importPath] || path.scope.generateUidIdentifier(`$imported_${id}`);
+        const importIdentifier = (importIdentifierMap || (importIdentifierMap = {}))[importPath] ||
+          t.identifier(`imported_${importIdx++}_${id}`);
 
         // Don't resolve built-in modules like path, fs, etc.
         if (builtinModules.includes(importPath)) return;
 
         if (!(importPath in importIdentifierMap)) {
           importIdentifierMap[importPath] = importIdentifier;
-          modImports.push(
+          (modImports || (modImports = [])).push(
             t.importDeclaration(
               [t.importNamespaceSpecifier(importIdentifier)],
               t.stringLiteral(importPath)
@@ -37,7 +97,21 @@ export const transformCommonJS = (ast: t.Node, id: string) => {
           );
         }
 
-        path.replaceWith(importIdentifier);
+        usedImporter = true;
+
+        path.replaceWith(
+          t.callExpression(
+            t.memberExpression(
+              importerIdentifier,
+              t.identifier('All'),
+            ),
+            [
+              importIdentifier,
+              getReboostResolveCall(importPath),
+              t.stringLiteral(filePath)
+            ]
+          )
+        );
       }
     },
     MemberExpression(path) {
@@ -110,5 +184,22 @@ export const transformCommonJS = (ast: t.Node, id: string) => {
     );
   }
 
-  program.node.body.unshift(...modImports);
+  if (modImports) program.node.body.unshift(...modImports);
+
+  if (usedImporter) {
+    if (replacements) {
+      replacements.forEach(([path, replacement, declarators]) => {
+        if (declarators.length) {
+          path.insertAfter(t.variableDeclaration('const', declarators));
+        }
+        path.replaceWith(replacement);
+      });
+    }
+
+    program.node.body.unshift(
+      t.importDeclaration([
+        t.importDefaultSpecifier(importerIdentifier)
+      ], t.stringLiteral('#/importer'))
+    );
+  }
 }

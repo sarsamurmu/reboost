@@ -25,12 +25,9 @@ const module_1 = require('module_1');"
 `;
 
 exports[`transforms CommonJS modules "require" calls 1`] = `
-"import _$importer from \\"#/importer\\";
-import * as _$import from \\"module_1\\";
-
-const _$imported_ = _$importer.All(_$import, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");
-
-const module_1 = _$imported_;"
+"import importer_ from \\"#/importer\\";
+import * as imported_0_ from \\"module_1\\";
+const module_1 = importer_.All(imported_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
 `;
 
 exports[`transforms CommonJS modules both 1`] = `
@@ -58,17 +55,12 @@ export const __cjsExports = module.exports;"
 `;
 
 exports[`transforms ES modules 1`] = `
-"import _$importer from \\"#/importer\\";
-import * as _$import from \\"module_1\\";
-
-const Def = _$importer.Default(_$import, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");
-
-import * as _$import2 from \\"module_2\\";
-
-const part1 = _$importer.Member(_$import2, \\"part1\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\"),
-      part2 = _$importer.Member(_$import2, \\"part2\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\");
-
-import * as _$import3 from \\"module_3\\";
-
-const all = _$importer.All(_$import3, __reboost_resolve(\\"module_3\\"), \\"my-file.js\\");"
+"import importer_ from \\"#/importer\\";
+import * as import_0_ from \\"module_1\\";
+const Def = importer_.Default(import_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");
+import * as import_1_ from \\"module_2\\";
+const part1 = importer_.Member(import_1_, \\"part1\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\"),
+      part2 = importer_.Member(import_1_, \\"part2\\", __reboost_resolve(\\"module_2\\"), \\"my-file.js\\");
+import * as import_2_ from \\"module_3\\";
+const all = importer_.All(import_2_, __reboost_resolve(\\"module_3\\"), \\"my-file.js\\");"
 `;

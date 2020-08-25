@@ -5,7 +5,7 @@ import { transformCommonJSToES6 } from './commonjs-to-es6';
 import { getConfig } from '../../shared';
 import { uniqueID } from '../../utils';
 
-export const runTransformation = transformCommonJSToES6;
+export { transformCommonJSToES6 as runTransformation }
 
 export const CommonJSMode2Plugin = (): ReboostPlugin => {
   const test = (file: string) => (
