@@ -4,71 +4,70 @@ import { createTransformer } from './transformer';
 const nEnv = 'process.env.NODE_ENV';
 const dev = "'development'";
 const t = createTransformer((ast) => runTransformation(ast, 'development'));
-const match = (code: string) => expect(t(code)).toMatchSnapshot();
 
 test('transforms into boolean if `===` expression is used', () => {
-  match(`
+  expect(t(`
     const isDev = ${nEnv} === ${dev};
-  `);
+  `)).toMatchSnapshot();
 });
 
 test('does not transforms into boolean if not confident', () => {
-  match(`
+  expect(t(`
     const shouldDo = ${nEnv} === ${dev} && unknownVariable;
-  `);
+  `)).toMatchSnapshot();
 });
 
 describe('transforms conditional expressions', () => {
   test('consequent', () => {
-    match(`
+    expect(t(`
       const scriptToUse = ${nEnv} === ${dev} ? 'dev.js' : 'prod.js';
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('alternate', () => {
-    match(`
+    expect(t(`
       const scriptToUse = ${nEnv} !== ${dev} ? 'prod.js' : 'dev.js';
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('does nothing if not confident', () => {
-    match(`
+    expect(t(`
       const shouldDo = ${nEnv} === ${dev} && unknownVariable ? 'yes' : 'no';
-    `);
+    `)).toMatchSnapshot();
   });
 });
 
 describe('transforms if expressions', () => {
   test('consequent with alternate', () => {
-    match(`
+    expect(t(`
       if (${nEnv} === ${dev}) {
         doDev();
       } else {
         doProd();
       }
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('consequent without alternate', () => {
-    match(`
+    expect(t(`
       if (${nEnv} !== ${dev}) {
         doDev();
       }
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('alternate', () => {
-    match(`
+    expect(t(`
       if (${nEnv} !== ${dev}) {
         doProd();
       } else {
         doDev();
       }
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('alternate if statement', () => {
-    match(`
+    expect(t(`
       if (${nEnv} !== ${dev}) {
         doProd();
       } else if (someTest) {
@@ -76,14 +75,14 @@ describe('transforms if expressions', () => {
       } else {
         doElse();
       }
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('does nothing if not confident', () => {
-    match(`
+    expect(t(`
       if (${nEnv} !== ${dev} || unknownVariable) {
         doProd();
       }
-    `);
+    `)).toMatchSnapshot();
   });
 });

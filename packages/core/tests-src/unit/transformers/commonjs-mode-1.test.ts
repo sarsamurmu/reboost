@@ -2,69 +2,68 @@ import { runTransformation } from 'src-node/core-plugins/commonjs-mode-1';
 import { createTransformer } from './transformer';
 
 const t = createTransformer((ast) => runTransformation(ast, 'my-file.js', ''));
-const match = (code: string) => expect(t(code)).toMatchSnapshot();
 
 describe('transforms CommonJS modules', () => {
   test('only "exports"', () => {
-    match(`
+    expect(t(`
       exports.item1 = 0;
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('only "module.exports"', () => {
-    match(`
+    expect(t(`
       module.exports.item1 = 0;
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('both', () => {
-    match(`
+    expect(t(`
       module.exports.item1 = 0;
       exports.item2 = 0;
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('"require" calls', () => {
-    match(`
+    expect(t(`
       const module_1 = require('module_1');
-    `);
+    `)).toMatchSnapshot();
   });
 });
 
 describe('does not transform CommonJS modules', () => {
   test('if "module" is defined', () => {
-    match(`
+    expect(t(`
       const module = { exports: {} };
       module.exports.item1 = 0;
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('if "exports" is defined', () => {
-    match(`
+    expect(t(`
       const exports = {};
       exports.item1 = 0;
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('if "require" is defined', () => {
-    match(`
+    expect(t(`
       const require = (mod) => someFunc(mod);
       const module_1 = require('module_1');
-    `);
+    `)).toMatchSnapshot();
   });
 
   test('if "require" function\'s call signature is different', () => {
-    match(`
+    expect(t(`
       const module_1 = require('someThing', 0);
       const result = require(100);
-    `);
+    `)).toMatchSnapshot();
   });
 });
 
 test('transforms ES modules', () => {
-  match(`
+  expect(t(`
     import Def from 'module_1';
     import { part1, part2 } from 'module_2';
     import * as all from 'module_3';
-  `);
+  `)).toMatchSnapshot();
 });
