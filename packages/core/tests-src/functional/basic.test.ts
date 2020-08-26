@@ -4,7 +4,7 @@ import { start } from 'src-node/index';
 
 jest.setTimeout(15000);
 
-describe('does basic things', async () => {
+describe('does basic things', () => {
   const fixture = createFixture({
     'public': {
       'index.html': /* html */`
