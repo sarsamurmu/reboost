@@ -3,6 +3,7 @@ module.exports = {
   testMatch: [
     '**/__tests__/**/*.test.js'
   ],
+  testEnvironment: 'node',
   coverageReporters: [
     'lcov', 'text-summary'
   ],

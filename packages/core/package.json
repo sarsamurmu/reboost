@@ -80,10 +80,12 @@
     "@types/postcss-modules-local-by-default": "^1.2.0",
     "@types/postcss-modules-scope": "^1.1.0",
     "@types/postcss-modules-values": "^3.0.0",
+    "@types/puppeteer": "^3.0.1",
     "@types/ws": "^7.2.6",
     "concurrently": "^5.3.0",
     "jest": "^26.4.1",
     "mock-fs": "^4.13.0",
+    "puppeteer": "^5.2.1",
     "typescript": "^3.9.7"
   }
 }
