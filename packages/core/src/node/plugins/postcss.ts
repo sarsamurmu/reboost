@@ -70,10 +70,12 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
               const { css, map, warnings, messages } = result;
 
               try {
-                warnings().forEach((warning) => {
-                  const { text, line, column } = warning;
-                  console.log(this.chalk.yellow(`PostCSS: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n(${line}:${column}) ${text}`));
-                });
+                if (this.config.log) {
+                  warnings().forEach((warning) => {
+                    const { text, line, column } = warning;
+                    console.log(this.chalk.yellow(`PostCSS: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n(${line}:${column}) ${text}`));
+                  });
+                }
               } catch (e) {
                 // Do nothing
 

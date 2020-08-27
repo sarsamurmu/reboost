@@ -49,7 +49,8 @@ export const ResolverPlugin = (): ReboostPlugin => {
         if (resolvedPath) cacheMap.set(key, resolvedPath);
         return resolvedPath;
       } catch (e) {
-        console.log(e.message);
+        const { message } = e;
+        if (!/can't\s+resolve\s+.*?in\s+/i.test(message)) console.error(e.message);
       }
     }
   }

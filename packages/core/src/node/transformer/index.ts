@@ -9,7 +9,7 @@ import path from 'path';
 
 import { PluginContext } from '../index';
 import { getConfig, getAddress } from '../shared';
-import { mergeSourceMaps, toPosix } from '../utils';
+import { mergeSourceMaps, toPosix, tLog } from '../utils';
 import { resolve } from '../core-plugins/resolver';
 import { process } from './processor';
 import { resolveImports } from './import-resolver';
@@ -30,7 +30,7 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
     if (fs.existsSync(absolutePath)) {
       map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
     } else {
-      console.log(chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
+      tLog('info', chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
       map.sourcesContent.push(`Unable to find file in "${absolutePath}".`);
     }
   });

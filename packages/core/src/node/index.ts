@@ -17,7 +17,7 @@ import { networkInterfaces } from 'os';
 import net from 'net';
 
 import { initContentServer } from './content-server';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan } from './utils';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog } from './utils';
 import { setAddress, setConfig, getFilesData, getUsedPlugins, getServiceStoppers, getPlugins, addServiceStopper } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
@@ -139,6 +139,14 @@ export interface ReboostConfig {
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
+  /** Options for logging */
+  log?: false | {
+    info?: boolean;
+    /** The time it takes to serve a file */
+    responseTime?: boolean;
+    /** Files which are being added or removed from the watch list */
+    watchList?: boolean;
+  };
   /** Mode to set as `process.env.NODE_ENV` */
   mode?: string;
   /** Plugins you want to use with Reboost */
@@ -151,13 +159,12 @@ export interface ReboostConfig {
     'cachePredicate' | 'cacheWithContext' | 'fileSystem' | 'unsafeCache' |
     'resolver' | 'fullySpecified' | 'resolveToContext' | 'useSyncFileSystemCalls'
   >;
-  /** When enabled, logs the time it takes to serve a file */
-  showResponseTime?: boolean;
-  /** Options for sourceMaps */
+  /** Options for source maps */
   sourceMaps?: {
     include?: Matcher;
     exclude?: Matcher;
   };
+  /** Options for file watcher */
   watchOptions?: {
     include?: Matcher;
     exclude?: Matcher;
@@ -167,7 +174,7 @@ export interface ReboostConfig {
   /* Developer options */
   /** If you want to run reboost in debug mode */
   debugMode?: boolean;
-  /** Clears cache whenever reboost starts. Only for use while debugging. */
+  /** Clears cache whenever Reboost starts. Only for use while debugging. */
   dumpCache?: boolean;
 }
 
@@ -184,6 +191,11 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   },
   contentServer: undefined,
   entries: null,
+  log: {
+    info: true,
+    responseTime: false,
+    watchList: false,
+  },
   mode: 'development',
   plugins: [],
   rootDir: process.cwd(),
@@ -204,7 +216,6 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
     roots: undefined,
     symlinks: true
   },
-  showResponseTime: false,
   sourceMaps: {
     include: /.*/,
     exclude: /node_modules/
@@ -262,7 +273,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     return;
   }
 
-  if (!path.isAbsolute(config.rootDir)) console.log(chalk.red('rootDir should be an absolute path'));
+  if (!path.isAbsolute(config.rootDir)) tLog('info', chalk.red('rootDir should be an absolute path'));
   if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
   if (!config.watchOptions.include) config.watchOptions.include = /.*/;
   if (config.contentServer) {
@@ -320,18 +331,18 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   }
   
   if (shouldClearCache) {
-    console.log(chalk.cyan(`[reboost] ${clearCacheReason}, clearing cached files...`));
+    tLog('info', chalk.cyan(`[reboost] ${clearCacheReason}, clearing cached files...`));
     rmDir(config.cacheDir);
-    console.log(chalk.cyan('[reboost] Clear cache complete'));
+    tLog('info', chalk.cyan('[reboost] Clear cache complete'));
   }
 
   if (fs.existsSync(config.cacheDir)) {
-    console.log(chalk.cyan('[reboost] Refreshing cache...'));
+    tLog('info', chalk.cyan('[reboost] Refreshing cache...'));
     verifyFiles();
-    console.log(chalk.cyan('[reboost] Refresh cache complete'));
+    tLog('info', chalk.cyan('[reboost] Refresh cache complete'));
   }
 
-  console.log(chalk.green('[reboost] Starting proxy server...'));
+  tLog('info', chalk.green('[reboost] Starting proxy server...'));
 
   const proxyServer = initProxyServer();
   const contentServer = config.contentServer ? initContentServer() : undefined;
@@ -370,7 +381,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
     fs.writeFileSync(outputPath, fileContent);
-    console.log(chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
+    tLog('info', chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
   }
 
   deepFreeze(config);
@@ -405,11 +416,11 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   await startServer('Proxy server', proxyServer, port, host);
 
-  console.log(chalk.green('[reboost] Proxy server started'));
+  tLog('info', chalk.green('[reboost] Proxy server started'));
 
   if (contentServer) {
     const startedAt = (address: string) => {
-      console.log(chalk.green(`[reboost] Content server started at: http://${address}`));
+      tLog('info', chalk.green(`[reboost] Content server started at: http://${address}`));
     }
 
     const localPort = await portFinder.getPortPromise({

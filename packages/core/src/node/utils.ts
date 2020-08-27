@@ -5,6 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 
+import { ReboostConfig } from './index';
+import { getConfig } from './shared';
+
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
 } : T;
@@ -110,6 +113,16 @@ export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => {
   }
   const ms = Math.floor(nanoseconds / 1e6);
   return (ms ? `${ms}ms ` : '') + `${Math.floor((nanoseconds % 1e6) / 1e3)}μs`;
+}
+
+export const logEnabled = (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
+  const config = getConfig();
+  // Sorry for extra negation *_*
+  return !(!config.log || !config.log[type]);
+}
+
+export const tLog = (type: Parameters<typeof logEnabled>[0], ...toLog: any[]) => {
+  if (logEnabled(type)) console.log(...toLog);
 }
 
 const isUndefOrNull = (d: any) => d === null || d === undefined;

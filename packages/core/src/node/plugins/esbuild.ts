@@ -82,6 +82,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       // TODO: Remove in v1.0
       const aOpts = options as esbuildPluginOptions & { jsxFactory: string; jsxFragment: string; };
       const showWarning = (oldOpt: string, newOpt: string) => {
+        if (!config.log) return;
         let message = `esbuildPlugin: options.${oldOpt} is deprecated and will be removed in next major release. `;
         message += `Use options.${newOpt} instead.`;
         console.log(chalk.yellow(message));
@@ -113,15 +114,18 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
             define: options.define
           });
 
-          warnings.forEach(({ location: { line, column, lineText, file }, text }) => {
-            const lText = text.toLowerCase();
-            if (lText.includes('unsupported source map')) return;
+          if (this.config.log) {
+            warnings.forEach(({ location: { line, column, lineText, file }, text }) => {
+              const lText = text.toLowerCase();
+              if (lText.includes('unsupported source map')) return;
 
-            let msg = `esbuild: Warning "${file}"\n\n`;
-            msg += `(${line}:${column}) ${text}\n`;
-            msg += `| ${lineText}`;
-            console.log(this.chalk.yellow(msg));
-          });
+              let msg = `esbuild: Warning "${file}"\n\n`;
+              msg += `(${line}:${column}) ${text}\n`;
+              msg += `| ${lineText}`;
+              
+              console.log(this.chalk.yellow(msg));
+            });
+          }
 
           return {
             code: js,

@@ -10,7 +10,7 @@ import path from 'path';
 
 import { ReboostPlugin, PluginContext } from '../index';
 import { getConfig, getPlugins } from '../shared';
-import { bind, mergeSourceMaps } from '../utils';
+import { bind, mergeSourceMaps, tLog } from '../utils';
 
 let pluginsInitiated = false;
 let stopHooks: ReboostPlugin['stop'][];
@@ -22,8 +22,7 @@ let transformJSContentHooks: ReboostPlugin['transformJSContent'][];
 let transformASTHooks: ReboostPlugin['transformAST'][];
 
 const handleError = ({ message }: { message: string }) => {
-  console.log(chalk.red(message));
-
+  tLog('info', chalk.red(message));
   return { error: message };
 }
 
@@ -187,7 +186,7 @@ export const process = async (
       });
     }
 
-    console.log(consoleMessage);
+    tLog('info', consoleMessage);
 
     return {
       error: message

@@ -3,6 +3,7 @@ import chalk from 'chalk';
 
 import { ReboostPlugin } from '../index';
 import { bind } from '../utils';
+import { getConfig } from '../shared';
 
 export interface UsePluginOptions {
   include: Matcher;
@@ -15,9 +16,11 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
   const aOpt = options as any;
   if (aOpt.test) {
     if (!options.include) options.include = aOpt.test;
-    let message = 'UsePlugin: options.test is deprecated and will be removed in next major release. ';
-    message += 'Use options.include instead.'
-    console.log(chalk.yellow(message));
+    if (getConfig().log) {
+      let message = 'UsePlugin: options.test is deprecated and will be removed in next major release. ';
+      message += 'Use options.include instead.'
+      console.log(chalk.yellow(message));
+    }
   }
 
   const test = (string: string) => (

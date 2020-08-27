@@ -9,6 +9,7 @@ import { CommonJSMode2Plugin } from './commonjs-mode-2/';
 
 import { ReboostPlugin } from '../index';
 import { getConfig } from '../shared';
+import { tLog } from '../utils';
 
 export const CorePlugins = (): ReboostPlugin[] => {
   const plugins = [
@@ -19,7 +20,7 @@ export const CorePlugins = (): ReboostPlugin[] => {
   ];
 
   // TODO: Remove in next release
-  console.log(chalk.cyan(
+  tLog('info', chalk.cyan(
     'CommonJS interoperability has changed in the last release.\n' +
     'If your all files are CommonJS modules, your code may not work in this release.\n' +
     'Please see the configuration docs to fix this issue - ' +

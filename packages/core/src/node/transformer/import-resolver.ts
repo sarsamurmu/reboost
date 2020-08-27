@@ -4,6 +4,7 @@ import * as babelTypes from '@babel/types';
 
 import { getPluginHooks } from './processor';
 import { getAddress } from '../shared';
+import { tLog } from '../utils';
 
 export const resolveDependency = async (pathToResolve: string, relativeTo: string) => {
   for (const hook of getPluginHooks().resolveHooks) {
@@ -11,7 +12,7 @@ export const resolveDependency = async (pathToResolve: string, relativeTo: strin
     if (resolvedPath) return resolvedPath;
   }
 
-  console.log(chalk.red(`[reboost] Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
+  tLog('info', chalk.red(`[reboost] Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
   return null;
 }
 
@@ -30,7 +31,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
         if (source === 'reboost/hmr') {
-          console.log(chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
+          tLog('info', chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
         }
 
         node.source.value = `/hot?q=${encodeURI(filePath)}`;
@@ -59,7 +60,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
           ? encodeURI(finalPath)
           : finalPath
             ? `/transformed?q=${encodeURI(finalPath)}`
-            : `/unresolved?import=${encodeURI(source)}`);
+            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`);
       }
     }
   }

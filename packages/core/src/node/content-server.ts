@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getConfig, addServiceStopper } from './shared';
-import { isDirectory, uniqueID, getTimestamp, onServerCreated } from './utils';
+import { isDirectory, uniqueID, getTimestamp, onServerCreated, tLog } from './utils';
 
 const createDirectoryServer = () => {
   const styles = /* css */`
@@ -147,7 +147,7 @@ const createFileServer = () => {
   // TODO: Remove it in v1.0
   for (const key in contentServer) {
     if (['maxage', 'maxAge', 'immutable', 'gzip', 'brotli', 'format', 'setHeaders', 'onReady'].includes(key)) {
-      console.log(chalk.yellow(`Option "${key}" is now no longer available in "config.contentServer".\n`));
+      tLog('info', chalk.yellow(`Option "${key}" is now no longer available in "config.contentServer".\n`));
     }
   }
 
@@ -167,12 +167,12 @@ const createFileServer = () => {
   const rootRelative = (filePath: string) => path.relative(getConfig().rootDir, filePath);
 
   watcher.on('change', (filePath) => {
-    console.log(chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
+    tLog('info', chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
     triggerReload(path.extname(filePath) === '.css');
   });
   
   watcher.on('unlink', (filePath) => {
-    console.log(chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
+    tLog('info', chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
     watchedFiles.delete(path.normalize(filePath));
     triggerReload();
   });
