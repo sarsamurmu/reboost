@@ -269,7 +269,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
 
   if (!config.entries) {
-    console.log(chalk.red('[reboost] No entry found. Please add some entries first.'));
+    console.log(chalk.red('No entry found. Please add some entries first.'));
     return;
   }
 
@@ -331,18 +331,18 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
   }
   
   if (shouldClearCache) {
-    tLog('info', chalk.cyan(`[reboost] ${clearCacheReason}, clearing cached files...`));
+    tLog('info', chalk.cyan(`${clearCacheReason}, clearing cached files...`));
     rmDir(config.cacheDir);
-    tLog('info', chalk.cyan('[reboost] Clear cache complete'));
+    tLog('info', chalk.cyan('Clear cache complete'));
   }
 
   if (fs.existsSync(config.cacheDir)) {
-    tLog('info', chalk.cyan('[reboost] Refreshing cache...'));
+    tLog('info', chalk.cyan('Refreshing cache...'));
     verifyFiles();
-    tLog('info', chalk.cyan('[reboost] Refresh cache complete'));
+    tLog('info', chalk.cyan('Refresh cache complete'));
   }
 
-  tLog('info', chalk.green('[reboost] Starting proxy server...'));
+  tLog('info', chalk.green('Starting proxy server...'));
 
   const proxyServer = initProxyServer();
   const contentServer = config.contentServer ? initContentServer() : undefined;
@@ -381,7 +381,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
     fs.writeFileSync(outputPath, fileContent);
-    tLog('info', chalk.cyan(`[reboost] Generated: ${input} -> ${output}`));
+    tLog('info', chalk.cyan(`Generated: ${input} -> ${output}`));
   }
 
   deepFreeze(config);
@@ -416,11 +416,11 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   await startServer('Proxy server', proxyServer, port, host);
 
-  tLog('info', chalk.green('[reboost] Proxy server started'));
+  tLog('info', chalk.green('Proxy server started'));
 
   if (contentServer) {
     const startedAt = (address: string) => {
-      tLog('info', chalk.green(`[reboost] Content server started at: http://${address}`));
+      tLog('info', chalk.green(`Content server started at: http://${address}`));
     }
 
     const localPort = await portFinder.getPortPromise({
