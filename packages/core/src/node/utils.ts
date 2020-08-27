@@ -6,7 +6,7 @@ import path from 'path';
 import http from 'http';
 
 import { ReboostConfig } from './index';
-import { getConfig } from './shared';
+import type { getConfig } from './shared';
 
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
@@ -115,10 +115,15 @@ export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => {
   return (ms ? `${ms}ms ` : '') + `${Math.floor((nanoseconds % 1e6) / 1e3)}μs`;
 }
 
+let aConfig: ReturnType<typeof getConfig>;
 export const logEnabled = (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
-  const config = getConfig();
-  // Sorry for extra negation *_*
-  return !(!config.log || !config.log[type]);
+  // Fix for circular dependency error
+  if (!aConfig) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    aConfig = require('./shared').getConfig();
+  }
+  // Sorry for the extra negation *_*
+  return !(!aConfig.log || !aConfig.log[type]);
 }
 
 export const tLog = (type: Parameters<typeof logEnabled>[0], ...toLog: any[]) => {
