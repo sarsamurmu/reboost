@@ -1,4 +1,4 @@
-import { getPage, createFixture } from './helpers';
+import { createFixture, newPage } from './helpers';
 
 import { start } from 'src-node/index';
 
@@ -33,20 +33,19 @@ describe('does basic things', () => {
   test('content server works', async () => {
     const service = await start({
       rootDir: fixture.p('.'),
-      entries: [[
-        './src/index.js', './public/dist/index.js'
-      ]],
+      entries: [
+        ['./src/index.js', './public/dist/index.js']
+      ],
       contentServer: {
         root: './public'
       }
     });
 
-    const page = await getPage();
+    const page = await newPage();
 
-    await page.goto(service.contentServer.local);
+    await page.goto(service.contentServer.local, { waitUntil: 'load' });
     expect(await page.$eval('#main', (el) => el.innerHTML)).toMatch('Page is working');
 
     await service.stop();
-    fixture.rollback();
   });
 });

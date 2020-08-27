@@ -1,38 +1,36 @@
 import { runTransformation } from 'src-node/core-plugins/node-env';
 import { createTransformer } from './transformer';
 
-const nEnv = 'process.env.NODE_ENV';
-const dev = "'development'";
 const t = createTransformer((ast) => runTransformation(ast, 'development'));
 
 test('transforms into boolean if `===` expression is used', () => {
   expect(t(`
-    const isDev = ${nEnv} === ${dev};
+    const isDev = process.env.NODE_ENV === 'development';
   `)).toMatchSnapshot();
 });
 
 test('does not transforms into boolean if not confident', () => {
   expect(t(`
-    const shouldDo = ${nEnv} === ${dev} && unknownVariable;
+    const shouldDo = process.env.NODE_ENV === 'development' && unknownVariable;
   `)).toMatchSnapshot();
 });
 
 describe('transforms conditional expressions', () => {
   test('consequent', () => {
     expect(t(`
-      const scriptToUse = ${nEnv} === ${dev} ? 'dev.js' : 'prod.js';
+      const scriptToUse = process.env.NODE_ENV === 'development' ? 'dev.js' : 'prod.js';
     `)).toMatchSnapshot();
   });
 
   test('alternate', () => {
     expect(t(`
-      const scriptToUse = ${nEnv} !== ${dev} ? 'prod.js' : 'dev.js';
+      const scriptToUse = process.env.NODE_ENV !== 'development' ? 'prod.js' : 'dev.js';
     `)).toMatchSnapshot();
   });
 
   test('does nothing if not confident', () => {
     expect(t(`
-      const shouldDo = ${nEnv} === ${dev} && unknownVariable ? 'yes' : 'no';
+      const shouldDo = process.env.NODE_ENV === 'development' && unknownVariable ? 'yes' : 'no';
     `)).toMatchSnapshot();
   });
 });
@@ -40,7 +38,7 @@ describe('transforms conditional expressions', () => {
 describe('transforms if expressions', () => {
   test('consequent with alternate', () => {
     expect(t(`
-      if (${nEnv} === ${dev}) {
+      if (process.env.NODE_ENV === 'development') {
         doDev();
       } else {
         doProd();
@@ -50,7 +48,7 @@ describe('transforms if expressions', () => {
 
   test('consequent without alternate', () => {
     expect(t(`
-      if (${nEnv} !== ${dev}) {
+      if (process.env.NODE_ENV !== 'development') {
         doDev();
       }
     `)).toMatchSnapshot();
@@ -58,7 +56,7 @@ describe('transforms if expressions', () => {
 
   test('alternate', () => {
     expect(t(`
-      if (${nEnv} !== ${dev}) {
+      if (process.env.NODE_ENV !== 'development') {
         doProd();
       } else {
         doDev();
@@ -68,7 +66,7 @@ describe('transforms if expressions', () => {
 
   test('alternate if statement', () => {
     expect(t(`
-      if (${nEnv} !== ${dev}) {
+      if (process.env.NODE_ENV !== 'development') {
         doProd();
       } else if (someTest) {
         doSomeTest();
@@ -80,7 +78,7 @@ describe('transforms if expressions', () => {
 
   test('does nothing if not confident', () => {
     expect(t(`
-      if (${nEnv} !== ${dev} || unknownVariable) {
+      if (process.env.NODE_ENV !== 'development' || unknownVariable) {
         doProd();
       }
     `)).toMatchSnapshot();

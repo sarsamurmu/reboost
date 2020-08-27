@@ -6,19 +6,27 @@ import path from 'path';
 import { uniqueID } from 'src-node/utils';
 
 let browser: puppeteer.Browser;
-let page: puppeteer.Page;
+let pages: puppeteer.Page[] = [];
 
-export const newPage = async () => {
+export const newPage = async (autoClose = true) => {
   if (!browser) browser = await puppeteer.launch();
-  if (page) await page.close();
-  return (page = await browser.newPage());
+  const page = await browser.newPage();
+  if (autoClose) pages.push(page);
+  return page;
 }
-export const getPage = async () => page || await newPage();
+
+export const closePages = async () => {
+  await Promise.all((await browser.pages()).map((page, i) => i > 0 && page.close()));
+}
+
+afterEach(async () => {
+  await Promise.all(pages.map((page) => page.close()));
+  pages = [];
+});
 
 afterAll(async () => {
   if (browser) await browser.close();
   browser = null;
-  page = null;
 });
 
 type DirectoryStructure = {
@@ -59,19 +67,26 @@ const rmDirRecursive = (dirPath: string) => {
 }
 
 const fixtureDir = path.join(__dirname, '../../__fixtures__');
+const fixtures = new Set<string>();
+
+const clearEmptyFixtureDir = () => {
+  if (fs.readdirSync(fixtureDir).length === 0) {
+    fs.rmdirSync(fixtureDir);
+  }
+}
+
 export const createFixture = ({
-  $: options,
+  $: {
+    name = uniqueID(6),
+    autoDelete = true
+  } = {},
   ...directoryStructure
 }: {
-  $?: string | {
-    name: string;
+  $?: {
+    name?: string;
+    autoDelete?: boolean;
   }
 } & DirectoryStructure): Fixture => {
-  const name = typeof options === 'string'
-    ? options
-    : typeof options === 'object'
-      ? options.name
-      : uniqueID(4);
   const baseDir = path.join(fixtureDir, name);
 
   return {
@@ -80,17 +95,19 @@ export const createFixture = ({
     },
     apply() {
       makeFilesRecursive(baseDir, directoryStructure);
-
+      if (autoDelete) fixtures.add(baseDir);
       return this;
     },
     rollback() {
       rmDirRecursive(baseDir);
-
-      if (fs.readdirSync(fixtureDir).length === 0) {
-        fs.rmdirSync(fixtureDir);
-      }
-
+      clearEmptyFixtureDir();
+      if (autoDelete) fixtures.delete(baseDir);
       return this;
     }
   }
 }
+
+afterAll(() => {
+  fixtures.forEach((fixture) => rmDirRecursive(fixture));
+  clearEmptyFixtureDir();
+});
