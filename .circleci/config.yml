@@ -1,16 +1,14 @@
 version: 2.1
 orbs:
-  node: circleci/node@2.0.3
+  puppeteer: threetreeslight/puppeteer@0.1.2
 jobs:
-  test:
-    executor:
-      name: node/default
-    steps:
+  build:
+    docker:
+      - image: circleci/node:latest-browsers
+        environment:
+          NODE_ENV: development
+  steps:
       - checkout
-      - node/install-packages
+      - run: npm i lerna
       - run: npx lerna bootstrap
       - run: npm run test
-workflows:
-    run_tests:
-      jobs:
-        - test
