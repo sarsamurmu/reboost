@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   node: circleci/node@2.0.3
-  # puppeteer: threetreeslight/puppeteer@0.1.2
 jobs:
   test:
     executor:
@@ -9,10 +8,11 @@ jobs:
       tag: '14.9.0'
     steps:
       - checkout
-      - run: sudo apt-get update
-      - run: sudo apt-get install -yq chromium-browser
-      # - run: sudo apt-get install -yq libgbm1
-      # - puppeteer/install
+      - run:
+        name: Install Chromium
+        command: |
+          sudo apt-get update
+          sudo apt-get install -yq chromium-browser
       - node/install-packages
       - run: npx lerna bootstrap
       - run: npm run test
