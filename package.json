@@ -8,7 +8,8 @@
     "build:plugins": "lerna run --scope @reboost/plugin-* build",
     "watch": "lerna run --parallel watch",
     "check-updates": "lerna exec --concurrency 1 -- ncu",
-    "lint": "eslint \"packages/**/src/**/*.{js,ts}\""
+    "lint": "eslint \"packages/**/src/**/*.{js,ts}\"",
+    "test": "lerna run test:ci"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.9.1",
