@@ -9,10 +9,11 @@ jobs:
       tag: '14.9.0'
     steps:
       - checkout
+      - puppeteer/install
       - node/install-packages
       - run: npx lerna bootstrap
       - run: npm run test
 workflows:
     run_tests:
       jobs:
-        - test # Run test
+        - test
