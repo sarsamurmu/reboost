@@ -14,4 +14,4 @@ jobs:
 workflows:
     run_tests:
       jobs:
-        - test
+        - test # Run test
