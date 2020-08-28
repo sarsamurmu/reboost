@@ -9,6 +9,7 @@ jobs:
       tag: '14.9.0'
     steps:
       - checkout
+      - run: sudo apt-get update
       - puppeteer/install
       - node/install-packages
       - run: npx lerna bootstrap
