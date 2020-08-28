@@ -10,13 +10,14 @@
     "build": "concurrently \"npm:build:browser\" \"npm:build:node\"",
     "build:browser": "tsc -p ./src/browser",
     "build:node": "tsc -p ./src/node",
-    "watch": "concurrently \"npm:build:browser -- -w\" \"npm:build:node -- -w\"",
+    "build:mapped": "concurrently \"npm:build:browser\" \"npm:build:node -- --sourceMap\"",
+    "build:watch": "concurrently -n browser,node \"npm:build:browser -- -w\" \"npm:build:node -- -w\"",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "test:build": "tsc -p ./tests-src/build.tsconfig.json && node ./tests-src/createRequireAll",
     "test:build:watch": "tsc -p ./tests-src/build.tsconfig.json -w",
-    "test:ci": "npm run build:node -- --sourceMap && npm run test:build && npm run test:coverage"
+    "test:ci": "npm run build:mapped && npm run test:build && npm run test"
   },
   "keywords": [
     "fast",
