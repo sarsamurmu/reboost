@@ -1,6 +1,7 @@
-import { createFixture, newPage } from './helpers';
-
 import { start } from 'src-node/index';
+
+import { createFixture } from '../helpers/fixture';
+import { newPage } from '../helpers/browser';
 
 jest.setTimeout(15000);
 
@@ -22,7 +23,6 @@ describe('does basic things', () => {
       'renderer.js': /* js */`
         export const render = () => {
           const div = document.createElement('div');
-          div.id = 'main';
           div.innerText = 'Page is working';
           document.body.appendChild(div);
         }
@@ -30,7 +30,7 @@ describe('does basic things', () => {
     }
   }).apply();
 
-  test('content server works', async () => {
+  test('basic thing', async () => {
     const service = await start({
       rootDir: fixture.p('.'),
       entries: [
@@ -38,13 +38,17 @@ describe('does basic things', () => {
       ],
       contentServer: {
         root: './public'
-      }
+      },
+      log: false
     });
 
     const page = await newPage();
 
-    await page.goto(service.contentServer.local, { waitUntil: 'load' });
-    expect(await page.$eval('#main', (el) => el.innerHTML)).toMatch('Page is working');
+    await page.goto(
+      new URL('index.html', service.contentServer.local).toString(),
+      { waitUntil: 'load' }
+    );
+    expect(await page.$eval('body', (el: HTMLElement) => el.innerText)).toMatch('Page is working');
 
     await service.stop();
   });

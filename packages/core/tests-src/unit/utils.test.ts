@@ -1,8 +1,8 @@
-import mockFS from 'mock-fs';
+import * as utils from 'src-node/utils';
 
 import fs from 'fs';
 
-import * as utils from 'src-node/utils';
+import { createFixture } from '../helpers/fixture';
 
 test('transforms path to posix', () => {
   expect(utils.toPosix('some\\windows\\style\\path')).toBe('some/windows/style/path');
@@ -60,41 +60,37 @@ test('clones an object', () => {
 });
 
 test('ensures a directory', () => {
-  const dirPath = '/some-dir/with/nested/dirs';
-  const availableDirPath = '/path/to/available/dir';
-  mockFS({
+  const dirPath = 'some-dir/with/nested/dirs';
+  const availableDirPath = 'path/to/available/dir';
+  const fixture = createFixture({
     [availableDirPath]: {
       'file-a': ''
     }
-  });
+  }).apply();
 
-  utils.ensureDir(dirPath);
-  expect(fs.existsSync(dirPath)).toBe(true);
+  utils.ensureDir(fixture.p(dirPath));
+  expect(fs.existsSync(fixture.p(dirPath))).toBe(true);
 
   // Does nothing if the directory already exists
-  expect(() => utils.ensureDir(availableDirPath)).not.toThrow();
-
-  mockFS.restore();
+  expect(() => utils.ensureDir(fixture.p(availableDirPath))).not.toThrow();
 });
 
 test('checks if a file is directory', () => {
-  const dirPath = '/path/to/a/dir';
-  const filePath = '/path/to/a/file';
-  mockFS({
+  const dirPath = 'path/to/a/dir';
+  const filePath = 'path/to/a/file';
+  const fixture = createFixture({
     [dirPath]: {},
     [filePath]: ''
-  });
+  }).apply();
 
-  expect(utils.isDirectory(dirPath)).toBe(true);
-  expect(utils.isDirectory(filePath)).toBe(false);
-
-  mockFS.restore();
+  expect(utils.isDirectory(fixture.p(dirPath))).toBe(true);
+  expect(utils.isDirectory(fixture.p(filePath))).toBe(false);
 });
 
 test('removes a directory', () => {
   const dirPath = '/path/to/a/dir';
   const unavailableDirPath = 'path/to/unavailable/dir';
-  mockFS({
+  const fixture = createFixture({
     [dirPath]: {
       'file-a': '',
       'file-b': '',
@@ -103,15 +99,13 @@ test('removes a directory', () => {
         'file-y': ''
       }
     }
-  });
+  }).apply();
 
-  utils.rmDir(dirPath);
-  expect(fs.existsSync(dirPath)).toBe(false);
+  utils.rmDir(fixture.p(dirPath));
+  expect(fs.existsSync(fixture.p(dirPath))).toBe(false);
 
   // Does nothing if the directory does not exist
-  expect(() => utils.rmDir(unavailableDirPath)).not.toThrow();
-
-  mockFS.restore();
+  expect(() => utils.rmDir(fixture.p(unavailableDirPath))).not.toThrow();
 });
 
 test('deeply freezes an object', () => {

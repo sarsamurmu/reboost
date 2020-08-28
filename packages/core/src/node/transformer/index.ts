@@ -59,6 +59,12 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   resolve
 });
 
+const getErrorObj = (msg: string, dependencies: string[]) => ({
+  code: `console.error('[reboost] ' + ${JSON.stringify(msg)})`,
+  error: true,
+  dependencies
+});
+
 export const transformFile = async (filePath: string): Promise<{
   code: string;
   dependencies: string[];
@@ -71,15 +77,9 @@ export const transformFile = async (filePath: string): Promise<{
   const dependencies: string[] = [];
   const pluginContext = getPluginContext(filePath, dependencies);
 
-  const getErrorObj = (msg: string) => ({
-    code: `console.error('[reboost] ' + ${JSON.stringify(msg)})`,
-    error: true,
-    dependencies
-  });
-
   const processed = await process(filePath, pluginContext);
 
-  if (processed.error) return getErrorObj(processed.error);
+  if (processed.error) return getErrorObj(processed.error, dependencies);
 
   const { ast, sourceMap } = processed;
 

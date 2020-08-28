@@ -1,42 +1,10 @@
-import puppeteer from 'puppeteer';
-
 import fs from 'fs';
 import path from 'path';
 
 import { uniqueID } from 'src-node/utils';
 
-let browser: puppeteer.Browser;
-let pages: puppeteer.Page[] = [];
-
-export const newPage = async (autoClose = true) => {
-  if (!browser) browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  if (autoClose) pages.push(page);
-  return page;
-}
-
-export const closePages = async () => {
-  await Promise.all((await browser.pages()).map((page, i) => i > 0 && page.close()));
-}
-
-afterEach(async () => {
-  await Promise.all(pages.map((page) => page.close()));
-  pages = [];
-});
-
-afterAll(async () => {
-  if (browser) await browser.close();
-  browser = null;
-});
-
 type DirectoryStructure = {
   [filePath: string]: string | DirectoryStructure;
-}
-
-interface Fixture {
-  p(filePath: string): string;
-  apply(): Fixture;
-  rollback(): Fixture;
 }
 
 const makeFilesRecursive = (base: string, structure: DirectoryStructure) => {
@@ -66,8 +34,17 @@ const rmDirRecursive = (dirPath: string) => {
   fs.rmdirSync(dirPath);
 }
 
+interface Fixture {
+  isUsed: boolean;
+  baseDir: string;
+  autoDelete: boolean;
+  p(filePath: string): string;
+  apply(): Fixture;
+  rollback(): Fixture;
+}
+
 const fixtureDir = path.join(__dirname, '../../__fixtures__');
-const fixtures = new Set<string>();
+const fixtures = new Set<Fixture>();
 
 const clearEmptyFixtureDir = () => {
   if (fs.readdirSync(fixtureDir).length === 0) {
@@ -87,27 +64,52 @@ export const createFixture = ({
     autoDelete?: boolean;
   }
 } & DirectoryStructure): Fixture => {
+  let used: boolean;
   const baseDir = path.join(fixtureDir, name);
 
-  return {
+  const fixture: Fixture = {
+    get isUsed() {
+      return used;
+    },
+    get baseDir() {
+      return baseDir;
+    },
+    autoDelete,
     p(filePath: string) {
       return path.join(baseDir, filePath);
     },
     apply() {
+      used = true;
       makeFilesRecursive(baseDir, directoryStructure);
-      if (autoDelete) fixtures.add(baseDir);
       return this;
     },
     rollback() {
       rmDirRecursive(baseDir);
       clearEmptyFixtureDir();
-      if (autoDelete) fixtures.delete(baseDir);
       return this;
     }
   }
+
+  fixtures.add(fixture);
+
+  return fixture;
 }
 
 afterAll(() => {
-  fixtures.forEach((fixture) => rmDirRecursive(fixture));
+  fixtures.forEach((fixture) => {
+    if (!fixture.isUsed) {
+      // Throwing this error because it's easy to create a fixture and
+      // forget to call `.apply()` method. It can cause problems like
+      // file not found etc.
+      throw new Error(
+        `A fixture is left unused in test - ${JSON.stringify(expect.getState().currentTestName)}. ` +
+        'Use `.apply()` to use it.'
+      );
+    }
+
+    if (fixture.autoDelete) rmDirRecursive(fixture.baseDir);
+  });
+
   clearEmptyFixtureDir();
+  fixtures.clear();
 });
