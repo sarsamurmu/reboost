@@ -1,3 +1,7 @@
+## 0.13.0
+- Improved CommonJS interoperability
+- Update logging options
+
 ## 0.12.1
 - Minor fixes
 - Updated dependencies
