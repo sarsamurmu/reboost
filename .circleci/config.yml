@@ -9,16 +9,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Chromium
+          name: Installing Chromium
           command: |
             sudo apt-get update
             sudo apt-get install -yq chromium-browser
       - node/install-packages
       - run:
-          name: Bootstrap packages
+          name: Bootstrapping packages
           command: npx lerna bootstrap
       - run:
-          name: Run test
+          name: Running tests
           command: npm run test
 workflows:
     run_tests:
