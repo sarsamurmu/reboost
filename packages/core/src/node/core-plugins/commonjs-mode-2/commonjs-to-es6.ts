@@ -184,9 +184,9 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
           // Reset previous exports
           exportIdx = 0;
-          exportIdentifierMap = undefined;
-          modExports = undefined;
-          insertAfters = undefined;
+          exportIdentifierMap = null;
+          modExports = null;
+          insertAfters = null;
         } else {
           markUsedModuleExports();
         }
@@ -248,7 +248,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
   if (insertAfters) insertAfters.forEach(([path, toInsert]) => path && path.insertAfter(toInsert));
 
-  if (exportAllParent) {
+  if (exportAll) {
     if (exportIdentifierMap) {
       fixRequireCallExpression(exportAllParent.get('right') as NodePath<t.CallExpression>);
     } else {
@@ -305,10 +305,10 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
   if (modExports) program.node.body.push(t.exportNamedDeclaration(null, modExports));
   if (exportAll) program.node.body.push(exportAll);
 
-  if (
-    !exportIdentifierMap &&
-    exportAll && !modExports && !hasOtherExports
-  ) {
+  const shouldExportDefaultFromExportAll = !exportIdentifierMap && exportAll &&
+    !is__esModule && !modExports && !hasOtherExports;
+
+  if (shouldExportDefaultFromExportAll) {
     const namespaceIdentifier = t.identifier(`for_default_${id}`);
     const defaultExportIdentifier = t.identifier(`default_export_${id}`);
     program.node.body.unshift(
@@ -345,10 +345,9 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
   }
 
   if (
-    exportIdentifierMap &&
-    !('default' in exportIdentifierMap) &&
-    !is__esModule &&
-    (usedModuleExports || usedExports)
+    /* Not exporting default if default is already exported --> */ !shouldExportDefaultFromExportAll &&
+    (exportIdentifierMap ? !('default' in exportIdentifierMap) : true) &&
+    !is__esModule && (usedModuleExports || usedExports)
   ) {
     program.node.body.push(
       t.exportDefaultDeclaration(
@@ -357,7 +356,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
           : t.identifier('exports')
       ),
       export__cjsModuleTrue()
-    )
+    );
   }
 
   if (interopFuncIdentifier) {
