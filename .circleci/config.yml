@@ -1,6 +1,25 @@
 version: 2.1
+
 orbs:
   node: circleci/node@2.0.3
+
+commands:
+  install-deps:
+    parameters:
+      path:
+        type: string
+    steps:
+      - restore_cache:
+          keys:
+            - v1-npm-<< parameters.path >>-{{ checksum "<< parameters.path >>/package-lock.json" }}
+            - v1-npm-<< parameters.path >>
+      - run:
+          command: npm ci
+          working_directory: << parameters.path >>
+      - save-cache:
+          key: v1-npm-<< parameters.path >>-{{ checksum "<< parameters.path >>/package-lock.json" }}
+          paths: << parameters.path >>
+
 jobs:
   test:
     docker:
@@ -12,13 +31,29 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -yq chromium-browser
-      - node/install-packages
+      - install-deps:
+          path: .
+      - install-deps:
+          path: ./core
+      - install-deps:
+          path: ./create-app
+      - install-deps:
+          path: ./plugin-babel
+      - install-deps:
+          path: ./plugin-react-refresh
+      - install-deps:
+          path: ./plugin-sass
+      - install-deps:
+          path: ./plugin-svelte
+      - install-deps:
+          path: ./plugin-vue
       - run:
           name: Bootstrapping packages
           command: npx lerna bootstrap
       - run:
           name: Running tests
           command: npm run test
+
 workflows:
     run_tests:
       jobs:
