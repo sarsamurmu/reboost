@@ -3,7 +3,6 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as babelTypes from '@babel/types';
 
 import { getPluginHooks } from './processor';
-import { getAddress } from '../shared';
 import { tLog } from '../utils';
 
 export const resolveDependency = async (pathToResolve: string, relativeTo: string) => {
@@ -12,12 +11,13 @@ export const resolveDependency = async (pathToResolve: string, relativeTo: strin
     if (resolvedPath) return resolvedPath;
   }
 
-  tLog('info', chalk.red(`[reboost] Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
+  tLog('info', chalk.red(`Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
   return null;
 }
 
-export const resolveImports = async (ast: babelTypes.Node, filePath: string, imports: string[]) => {
+export const resolveImports = async (ast: babelTypes.Node, filePath: string) => {
   let error = false;
+  const imports: string[] = [];
 
   const resolveDeclaration = async (
     astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>
@@ -26,7 +26,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
     if (node.source) {
       const source: string = node.source.value;
 
-      if (source.startsWith(getAddress())) return;
+      if (source.startsWith('/')) return;
 
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
@@ -38,29 +38,24 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
       } else {
         let finalPath = null;
         let routed = false;
-        if (source.startsWith('#/')) {
-          finalPath = source.replace(/^#/, '');
-          routed = true;
-        } else {
-          const resolvedPath = await resolveDependency(source, filePath);
-          if (resolvedPath) {
-            if (resolvedPath.startsWith('#/')) {
-              finalPath = resolvedPath.replace(/^#/, '');
-              routed = true;
-            } else {
-              finalPath = resolvedPath;
-              imports.push(finalPath);
-            }
+        const resolvedPath = await resolveDependency(source, filePath);
+        if (resolvedPath) {
+          if (resolvedPath.startsWith('/')) {
+            finalPath = resolvedPath.replace(/^#/, '');
+            routed = true;
           } else {
-            error = true;
+            finalPath = resolvedPath;
+            imports.push(finalPath);
           }
+        } else {
+          error = true;
         }
 
-        node.source.value = getAddress() + (routed
-          ? encodeURI(finalPath)
+        node.source.value = routed
+          ? finalPath
           : finalPath
             ? `/transformed?q=${encodeURI(finalPath)}`
-            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`);
+            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
       }
     }
   }
@@ -94,13 +89,13 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string, imp
         // Rewrite dynamic imports
         const importDeclarations = astProgram.get('body').filter((p) => p.isImportDeclaration());
         let importerDeclaration = (importDeclarations.find(
-          (dec) => (dec as NodePath<babelTypes.ImportDeclaration>).node.source.value.includes('#/importer')
+          (dec) => (dec as NodePath<babelTypes.ImportDeclaration>).node.source.value.includes('/importer')
         ) || {}).node as babelTypes.ImportDeclaration;
         if (!importerDeclaration) {
           const identifier = astPath.scope.generateUidIdentifier('$importer');
           importerDeclaration = t.importDeclaration([
             t.importDefaultSpecifier(identifier)
-          ], t.stringLiteral(`${getAddress()}/importer`));
+          ], t.stringLiteral('/importer'));
           astProgram.node.body.unshift(importerDeclaration);
         }
         const importerIdentifierName = importerDeclaration.specifiers[0].local.name;

@@ -36,7 +36,7 @@ export const ResolverPlugin = (): ReboostPlugin => {
   return {
     name: 'core-resolver-plugin',
     resolve(importedPath, importer) {
-      if (importedPath.startsWith('#/')) return importedPath;
+      if (importedPath.startsWith('/')) return importedPath;
 
       const key = `${importer} -> ${importedPath}`;
       if (cacheMap.has(key)) {

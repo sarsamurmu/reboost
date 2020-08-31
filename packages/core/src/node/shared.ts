@@ -16,10 +16,6 @@ let filesData: {
     hash: string;
     /** Last modified time of the file */
     mtime: number;
-    /** Only if file has no imports */
-    pure: boolean;
-    /** Address used in the file */
-    address: string;
     /** Dependencies of the file */
     dependencies?: Record<string, {
       hash: string;

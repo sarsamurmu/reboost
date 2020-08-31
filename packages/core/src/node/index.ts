@@ -51,7 +51,6 @@ export interface JSContent {
 }
 
 export interface PluginContext {
-  address: string;
   config: ReboostConfig;
   addDependency: (dependency: string) => void;
   chalk: typeof chalk;
@@ -178,7 +177,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = '0.12.0';
+const INCOMPATIBLE_BELOW = '0.13.0';
 const DEFAULT_PORT = 7456;
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {

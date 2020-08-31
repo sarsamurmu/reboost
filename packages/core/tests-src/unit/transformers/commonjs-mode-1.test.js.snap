@@ -31,7 +31,7 @@ const path = require('path');"
 `;
 
 exports[`transforms CommonJS modules - "require" calls 1`] = `
-"import importer_ from \\"#/importer\\";
+"import importer_ from \\"/importer\\";
 import * as imported_0_ from \\"module_1\\";
 const module_1 = importer_.All(imported_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
 `;
@@ -71,19 +71,19 @@ export const __cjsExports = module.exports;"
 exports[`transforms ES modules which has import just for side effect 1`] = `"import 'module_1';"`;
 
 exports[`transforms ES modules which has imports with name: all 1`] = `
-"import importer_ from \\"#/importer\\";
+"import importer_ from \\"/importer\\";
 import * as import_0_ from \\"module_1\\";
 const all = importer_.All(import_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
 `;
 
 exports[`transforms ES modules which has imports with name: default 1`] = `
-"import importer_ from \\"#/importer\\";
+"import importer_ from \\"/importer\\";
 import * as import_0_ from \\"module_1\\";
 const Def = importer_.Default(import_0_, __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"
 `;
 
 exports[`transforms ES modules which has imports with name: named 1`] = `
-"import importer_ from \\"#/importer\\";
+"import importer_ from \\"/importer\\";
 import * as import_0_ from \\"module_1\\";
 const part1 = importer_.Member(import_0_, \\"part1\\", __reboost_resolve(\\"module_1\\"), \\"my-file.js\\"),
       part2 = importer_.Member(import_0_, \\"part2\\", __reboost_resolve(\\"module_1\\"), \\"my-file.js\\");"

@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { PluginContext } from '../index';
-import { getConfig, getAddress } from '../shared';
+import { getConfig } from '../shared';
 import { mergeSourceMaps, toPosix, tLog } from '../utils';
 import { resolve } from '../core-plugins/resolver';
 import { process } from './processor';
@@ -41,7 +41,6 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
 }
 
 const getPluginContext = (filePath: string, mergedDependencies: string[]): PluginContext => ({
-  address: getAddress(),
   config: getConfig(),
   addDependency(dependency) {
     mergedDependencies.push(path.normalize(dependency));
@@ -69,11 +68,9 @@ export const transformFile = async (filePath: string): Promise<{
   code: string;
   dependencies: string[];
   map?: string;
-  imports?: string[];
   error?: boolean;
 }> => {
   let errorOccurred = false;
-  const imports: string[] = [];
   const dependencies: string[] = [];
   const pluginContext = getPluginContext(filePath, dependencies);
 
@@ -83,7 +80,7 @@ export const transformFile = async (filePath: string): Promise<{
 
   const { ast, sourceMap } = processed;
 
-  errorOccurred = await resolveImports(ast, filePath, imports);
+  errorOccurred = await resolveImports(ast, filePath);
 
   const sourceMapsConfig = getConfig().sourceMaps;
   const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);
@@ -106,7 +103,6 @@ export const transformFile = async (filePath: string): Promise<{
   return {
     code: generatedCode,
     map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
-    imports,
     dependencies,
     error: errorOccurred
   }

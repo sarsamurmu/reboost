@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
-import { getConfig, getFilesData, getAddress, saveFilesData, getFilesDir } from './shared';
+import { getConfig, getFilesData, saveFilesData, getFilesDir } from './shared';
 import { ensureDir, uniqueID, diff, toPosix, getReadableHRTime, logEnabled, tLog } from './utils';
 import { transformFile } from './transformer';
 import { createWatcher } from './watcher';
@@ -122,12 +122,17 @@ const updateDependencies = async (
   fileData.dependencies = depsData;
 }
 
+const fixSourceMap = (code: string, cacheFilePath: string) => {
+  // Remove other source maps
+  return `${code.replace(/\/\/#\s*sourceMappingURL=.*/g, '')}\n//# sourceMappingURL=/raw?q=${encodeURI(cacheFilePath)}.map`;
+}
+
 export const createFileHandler = () => {
   let initialized = false;
   let config: ReboostConfig;
   let filesDir: string;
   let watcher: ReturnType<typeof createWatcher>;
-  const memoizedFiles = new Map();
+  const memoizedFiles = new Map<string, string>();
   const noop = () => {/* No Operation */};
 
   return async (ctx: ParameterizedContext) => {
@@ -154,35 +159,27 @@ export const createFileHandler = () => {
       const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
 
       const makeNewCache = async () => {
-        let pure = true;
         const uid = uniqueID();
         const outputFilePath = path.join(filesDir, uid);
         const {
           code,
           map,
-          imports,
           dependencies,
           error
         } = await transformFile(filePath);
         transformedCode = code;
 
         if (map) {
-          // Remove other source maps
-          transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
-          transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
+          transformedCode = fixSourceMap(transformedCode, outputFilePath);
           fs.writeFile(`${outputFilePath}.map`, map, noop);
         }
 
         if (!error) {
-          if (map || imports.length) pure = undefined;
           fs.writeFile(outputFilePath, transformedCode, noop);
-          type fileData = ReturnType<typeof getFilesData>['files'][string];
-          (getFilesData().files[filePath] as Omit<fileData, 'mergedDependencies' | 'dependencies'>) = {
+          getFilesData().files[filePath] = {
             uid,
             hash: await getHash(filePath),
-            mtime,
-            address: getAddress(),
-            pure
+            mtime
           };
           await updateDependencies(filePath, dependencies, true);
           saveFilesData();
@@ -205,30 +202,23 @@ export const createFileHandler = () => {
               (fileData.hash !== (hash = await getHash(filePath)))
             )
           ) {
-            let pure = true;
             const {
               code,
               map,
-              imports,
               dependencies,
               error
             } = await transformFile(filePath);
             transformedCode = code;
 
             if (map) {
-              // Remove other source maps
-              transformedCode = transformedCode.replace(/\/\/#\s*sourceMappingURL=.*/g, '');
-              transformedCode += `\n//# sourceMappingURL=${getAddress()}/raw?q=${encodeURI(outputFilePath)}.map`;
+              transformedCode = fixSourceMap(transformedCode, outputFilePath);
               fs.writeFile(`${outputFilePath}.map`, map, noop);
             }
 
             if (!error) {
-              if (map || imports.length) pure = undefined;
               fs.writeFile(outputFilePath, transformedCode, noop);
               fileData.hash = hash;
               fileData.mtime = mtime;
-              fileData.address = getAddress();
-              fileData.pure = pure;
               await updateDependencies(filePath, dependencies);
               saveFilesData();
             }
@@ -236,24 +226,7 @@ export const createFileHandler = () => {
             if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
             watcher.setDependencies(filePath, dependencies);
           } else {
-            const pure = fileData.pure;
-            const currentAddress = getAddress();
             transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
-
-            if (!pure && (fileData.address !== currentAddress)) {
-              const addressRegex = new RegExp(fileData.address, 'g');
-              transformedCode = transformedCode.replace(addressRegex, currentAddress);
-
-              fs.writeFile(outputFilePath, transformedCode, noop);
-
-              if (fs.existsSync(`${outputFilePath}.map`)) {
-                const fileMap = fs.readFileSync(`${outputFilePath}.map`).toString();
-                fs.writeFile(`${outputFilePath}.map`, fileMap.replace(addressRegex, currentAddress), noop);
-              }
-
-              fileData.address = currentAddress;
-              saveFilesData();
-            }
 
             if (fileData.mtime !== mtime) {
               fileData.mtime = mtime;
