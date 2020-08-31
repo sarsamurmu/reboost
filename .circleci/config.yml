@@ -18,10 +18,13 @@ commands:
             - restore_cache:
                 keys:
                   - v1-npm-root-{{ checksum "package-lock.json" }}
-                  - v1-npm-root-
             - run:
                 name: Installing dependencies for "root"
-                command: npm ci
+                command: |
+                  if ! [ -d node_modules ]; then
+                    # Cache is not available, install dependencies
+                    npm ci
+                  fi
             - save_cache:
                 key: v1-npm-root-{{ checksum "package-lock.json" }}
                 paths: node_modules
@@ -34,11 +37,14 @@ commands:
             - restore_cache:
                 keys:
                   - v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
-                  - v1-npm-<< parameters.package >>-
             - run:
                 name: Installing dependencies for "<< parameters.package >>"
-                command: npm ci
                 working_directory: ./packages/<< parameters.package >>
+                command: |
+                  if ! [ -d node_modules ]; then
+                    # Cache is not available, install dependencies
+                    npm ci
+                  fi
             - save_cache:
                 key: v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
                 paths: ./packages/<< parameters.package >>/node_modules
