@@ -11,7 +11,8 @@ console.log('JSON is', json);
 // console.log('Replaced strings are', ADJECTIVE);
 console.log('Import meta', import.meta);
 
-import('./subtract').then(({ subtract }) => {
+const subtractModulePath = './subtract';
+import(subtractModulePath).then(({ subtract }) => {
   console.log('Subtract', subtract(5, 5));
 });
 

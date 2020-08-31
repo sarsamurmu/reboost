@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import traverse, { NodePath } from '@babel/traverse';
-import * as babelTypes from '@babel/types';
+import * as t from '@babel/types';
 
 import { getPluginHooks } from './processor';
 import { tLog } from '../utils';
@@ -15,14 +15,14 @@ export const resolveDependency = async (pathToResolve: string, relativeTo: strin
   return null;
 }
 
-export const resolveImports = async (ast: babelTypes.Node, filePath: string) => {
+export const resolveImports = async (ast: t.Node, filePath: string) => {
   let error = false;
   const imports: string[] = [];
 
   const resolveDeclaration = async (
-    astPath: NodePath<babelTypes.ImportDeclaration> | NodePath<babelTypes.ExportDeclaration>
+    astPath: NodePath<t.ImportDeclaration> | NodePath<t.ExportDeclaration>
   ): Promise<void> => {
-    const node = astPath.node as babelTypes.ImportDeclaration;
+    const node = astPath.node as t.ImportDeclaration;
     if (node.source) {
       const source: string = node.source.value;
 
@@ -61,7 +61,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string) => 
   }
 
   const promiseExecutors: (() => Promise<void>)[] = [];
-  let astProgram: NodePath<babelTypes.Program>;
+  let astProgram: NodePath<t.Program>;
 
   traverse(ast, {
     Program(astPath) {
@@ -76,21 +76,21 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string) => 
       return false;
     },
     CallExpression(astPath) {
-      const t = babelTypes;
       if (t.isIdentifier(astPath.node.callee, { name: '__reboost_resolve' })) {
         promiseExecutors.push(async () => {
           astPath.replaceWith(
             t.stringLiteral(
-              await resolveDependency((astPath.node.arguments[0] as babelTypes.StringLiteral).value, filePath)
+              await resolveDependency((astPath.node.arguments[0] as t.StringLiteral).value, filePath)
             )
           );
         });
       } else if (t.isImport(astPath.node.callee)) {
         // Rewrite dynamic imports
-        const importDeclarations = astProgram.get('body').filter((p) => p.isImportDeclaration());
+        const importDeclarations = astProgram.get('body').filter((p) => p.isImportDeclaration()) as NodePath<t.ImportDeclaration>[];
         let importerDeclaration = (importDeclarations.find(
-          (dec) => (dec as NodePath<babelTypes.ImportDeclaration>).node.source.value.includes('/importer')
-        ) || {}).node as babelTypes.ImportDeclaration;
+          ({ node }) => node.source.value.includes('/importer')
+        ) || {}).node as t.ImportDeclaration;
+
         if (!importerDeclaration) {
           const identifier = astPath.scope.generateUidIdentifier('$importer');
           importerDeclaration = t.importDeclaration([
@@ -98,6 +98,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string) => 
           ], t.stringLiteral('/importer'));
           astProgram.node.body.unshift(importerDeclaration);
         }
+        
         const importerIdentifierName = importerDeclaration.specifiers[0].local.name;
         astPath.replaceWith(
           t.callExpression(
@@ -106,7 +107,7 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string) => 
               t.identifier('Dynamic')
             ),
             [
-              t.stringLiteral((astPath.node.arguments[0] as babelTypes.StringLiteral).value),
+              astPath.node.arguments[0],
               t.stringLiteral(filePath)
             ]
           )
@@ -115,7 +116,6 @@ export const resolveImports = async (ast: babelTypes.Node, filePath: string) => 
     }
   });
 
-  const t = babelTypes;
   const importMeta = t.metaProperty(
     t.identifier('import'),
     t.identifier('meta')
