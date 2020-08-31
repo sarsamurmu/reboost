@@ -6,20 +6,42 @@ orbs:
 commands:
   install-deps:
     parameters:
-      path:
+      package:
         type: string
     steps:
-      - restore_cache:
-          keys:
-            - v1-npm-<< parameters.path >>-{{ checksum "<< parameters.path >>/package-lock.json" }}
-            - v1-npm-<< parameters.path >>
-      - run:
-          name: Installing dependencies in << parameters.path >>
-          command: npm ci
-          working_directory: << parameters.path >>
-      - save_cache:
-          key: v1-npm-<< parameters.path >>-{{ checksum "<< parameters.path >>/package-lock.json" }}
-          paths: << parameters.path >>
+      when:
+        condition:
+          equal:
+            - << parameters.package >>
+            - root
+        steps:
+          - restore_cache:
+              keys:
+                - v1-npm-root-{{ checksum "package-lock.json" }}
+                - v1-npm-root-
+          - run:
+              name: Installing dependencies for "root"
+              command: npm ci
+          - save_cache:
+              key: v1-npm-root-{{ checksum "package-lock.json" }}
+              paths: node_modules
+      unless:
+        condition:
+          equal:
+            - << parameters.package >>
+            - root
+        steps:
+          - restore_cache:
+              keys:
+                - v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+                - v1-npm-<< parameters.package >>-
+          - run:
+              name: Installing dependencies for "<< parameters.package >>"
+              command: npm ci
+              working_directory: ./packages/<< parameters.package >>
+          - save_cache:
+              key: v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+              paths: ./packages/<< parameters.package >>/node_modules
 
 jobs:
   test:
@@ -33,21 +55,21 @@ jobs:
             sudo apt-get update
             sudo apt-get install -yq chromium-browser
       - install-deps:
-          path: .
+          package: root
       - install-deps:
-          path: ./core
+          package: core
       - install-deps:
-          path: ./create-app
+          package: create-app
       - install-deps:
-          path: ./plugin-babel
+          package: plugin-babel
       - install-deps:
-          path: ./plugin-react-refresh
+          package: plugin-react-refresh
       - install-deps:
-          path: ./plugin-sass
+          package: plugin-sass
       - install-deps:
-          path: ./plugin-svelte
+          package: plugin-svelte
       - install-deps:
-          path: ./plugin-vue
+          package: plugin-vue
       - run:
           name: Bootstrapping packages
           command: npx lerna bootstrap
