@@ -46,7 +46,6 @@ describe('does basic things', () => {
 
     await page.goto(
       new URL('index.html', service.contentServer.local).toString(),
-      { waitUntil: 'load' }
     );
     expect(await page.$eval('body', (el: HTMLElement) => el.innerText)).toMatch('Page is working');
 
