@@ -47,7 +47,7 @@ describe('does basic things', () => {
     await page.goto(
       new URL('index.html', service.contentServer.local).toString(),
     );
-    expect(await page.$eval('body', (el: HTMLElement) => el.innerText)).toMatch('Page is working');
+    expect(await page.evaluate(() => document.body.innerText)).toMatch('Page is working');
 
     await service.stop();
   });
