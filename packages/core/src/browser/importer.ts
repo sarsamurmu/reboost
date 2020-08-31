@@ -27,7 +27,7 @@ const importer: Importer = {
     return mod.default;
   },
   async Dynamic(toImport, importerPath) {
-    const response = await fetch(`${address}/resolve?from=${importerPath}&to=${toImport}`);
+    const response = await fetch(`${address}/resolve?from=${encodeURI(importerPath)}&to=${encodeURI(toImport)}`);
     if (!response.ok) {
       throw new TypeError(`[reboost] Failed to resolve dynamically imported module "${toImport}"`);
     }
