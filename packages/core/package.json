@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:build": "tsc -p ./tests-src/build.tsconfig.json && node ./tests-src/createRequireAll",
     "test:build:watch": "tsc -p ./tests-src/build.tsconfig.json -w",
-    "test:ci": "npm run build:mapped && npm run test:build && && jest --clearCache && jest --runInBand"
+    "test:ci": "npm run build:mapped && npm run test:build && jest --clearCache && jest --runInBand"
   },
   "keywords": [
     "fast",
