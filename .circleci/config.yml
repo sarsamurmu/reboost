@@ -14,9 +14,10 @@ commands:
             - v1-npm-<< parameters.path >>-{{ checksum "<< parameters.path >>/package-lock.json" }}
             - v1-npm-<< parameters.path >>
       - run:
+          name: Installing dependencies in << parameters.path >>
           command: npm ci
           working_directory: << parameters.path >>
-      - save-cache:
+      - save_cache:
           key: v1-npm-<< parameters.path >>-{{ checksum "<< parameters.path >>/package-lock.json" }}
           paths: << parameters.path >>
 
