@@ -9,39 +9,39 @@ commands:
       package:
         type: string
     steps:
-      when:
-        condition:
-          equal:
-            - << parameters.package >>
-            - root
-        steps:
-          - restore_cache:
-              keys:
-                - v1-npm-root-{{ checksum "package-lock.json" }}
-                - v1-npm-root-
-          - run:
-              name: Installing dependencies for "root"
-              command: npm ci
-          - save_cache:
-              key: v1-npm-root-{{ checksum "package-lock.json" }}
-              paths: node_modules
-      unless:
-        condition:
-          equal:
-            - << parameters.package >>
-            - root
-        steps:
-          - restore_cache:
-              keys:
-                - v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
-                - v1-npm-<< parameters.package >>-
-          - run:
-              name: Installing dependencies for "<< parameters.package >>"
-              command: npm ci
-              working_directory: ./packages/<< parameters.package >>
-          - save_cache:
-              key: v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
-              paths: ./packages/<< parameters.package >>/node_modules
+      - when:
+          condition:
+            equal:
+              - << parameters.package >>
+              - root
+          steps:
+            - restore_cache:
+                keys:
+                  - v1-npm-root-{{ checksum "package-lock.json" }}
+                  - v1-npm-root-
+            - run:
+                name: Installing dependencies for "root"
+                command: npm ci
+            - save_cache:
+                key: v1-npm-root-{{ checksum "package-lock.json" }}
+                paths: node_modules
+      - unless:
+          condition:
+            equal:
+              - << parameters.package >>
+              - root
+          steps:
+            - restore_cache:
+                keys:
+                  - v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+                  - v1-npm-<< parameters.package >>-
+            - run:
+                name: Installing dependencies for "<< parameters.package >>"
+                command: npm ci
+                working_directory: ./packages/<< parameters.package >>
+            - save_cache:
+                key: v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+                paths: ./packages/<< parameters.package >>/node_modules
 
 jobs:
   test:
