@@ -3,7 +3,7 @@ import { start } from 'src-node/index';
 import { createFixture } from '../helpers/fixture';
 import { newPage, waitForConsole } from '../helpers/browser';
 
-jest.setTimeout(15000);
+jest.setTimeout(30000);
 
 describe('does basic things', () => {
   const fixture = createFixture({
@@ -40,7 +40,7 @@ describe('does basic things', () => {
     const page = await newPage();
 
     await Promise.all([
-      waitForConsole(page, 'works'),
+      waitForConsole(page, 'works', 30000),
       page.goto(new URL('index.html', service.contentServer.local).toString())
     ]);
 
