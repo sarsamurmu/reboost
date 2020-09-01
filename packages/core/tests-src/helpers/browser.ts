@@ -8,7 +8,7 @@ export const newPage = async (autoClose = true) => {
   const page = await browser.newPage();
   page
     .on('console', (msg: any) => console.log('CONSOLE', msg.text()))
-    .on('pageerror' ({ message }: any) => console.log('PAGE ERR', message))
+    .on('pageerror', ({ message }: any) => console.log('PAGE ERR', message))
     .on('requestfailed', (request: any) => console.log('REQUEST FAIL', request.failure().errorText, request.url()));
   if (autoClose) pages.push(page);
   return page;
