@@ -4,11 +4,12 @@ orbs:
   node: circleci/node@2.0.3
 
 commands:
-  install-deps:
+  run_package:
     parameters:
       package:
         type: string
     steps:
+      # For root, only install dependencies
       - when:
           condition:
             equal:
@@ -42,12 +43,18 @@ commands:
                 working_directory: ./packages/<< parameters.package >>
                 command: |
                   if ! [ -d node_modules ]; then
-                    # Cache is not available, install dependencies
+                    echo "Cache is not available, installing dependencies"
                     npm ci
+                  else
+                    echo "Cache is available, skipping installation"
                   fi
             - save_cache:
                 key: v1-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
                 paths: ./packages/<< parameters.package >>/node_modules
+            - run:
+                name: Running tests for "<< parameters.package >>"
+                command: |
+                  npm run test:ci --if-present
 
 jobs:
   test:
@@ -60,28 +67,24 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -yq chromium-browser
-      - install-deps:
+      - run_package:
           package: root
-      - install-deps:
+      - run_package:
           package: core
-      - install-deps:
-          package: create-app
-      - install-deps:
-          package: plugin-babel
-      - install-deps:
-          package: plugin-react-refresh
-      - install-deps:
-          package: plugin-sass
-      - install-deps:
-          package: plugin-svelte
-      - install-deps:
-          package: plugin-vue
-      - run:
-          name: Bootstrapping packages
-          command: npx lerna bootstrap
-      - run:
-          name: Running tests
-          command: npm run test
+      
+      # We don't have test for these packages
+      # - run_package:
+      #     package: create-app
+      # - run_package:
+      #     package: plugin-babel
+      # - run_package:
+      #     package: plugin-react-refresh
+      # - run_package:
+      #     package: plugin-sass
+      # - run_package:
+      #     package: plugin-svelte
+      # - run_package:
+      #     package: plugin-vue
 
 workflows:
     run_tests:
