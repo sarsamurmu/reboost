@@ -53,6 +53,7 @@ commands:
                 paths: ./packages/<< parameters.package >>/node_modules
             - run:
                 name: Running tests for "<< parameters.package >>"
+                working_directory: ./packages/<< parameters.package >>
                 command: |
                   npm run test:ci --if-present
 
