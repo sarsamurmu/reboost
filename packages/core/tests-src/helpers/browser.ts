@@ -6,6 +6,10 @@ let pages: puppeteer.Page[] = [];
 export const newPage = async (autoClose = true) => {
   if (!browser) browser = await puppeteer.launch({ dumpio: true });
   const page = await browser.newPage();
+  page
+    .on('console', (msg: any) => console.log('CONSOLE', msg.text()))
+    .on('pageerror' ({ message }: any) => console.log('PAGE ERR', message))
+    .on('requestfailed', (request: any) => console.log('REQUEST FAIL', request.failure().errorText, request.url()));
   if (autoClose) pages.push(page);
   return page;
 }
