@@ -22,16 +22,32 @@ const makeFilesRecursive = (base: string, structure: DirectoryStructure) => {
   });
 }
 
-const rmDirRecursive = (dirPath: string) => {
+const rmDirRecursive = (dirPath: string, retry = true) => {
+  // Handle errors silently
   fs.readdirSync(dirPath).forEach((file) => {
     const fullPath = path.join(dirPath, file);
-    if (fs.lstatSync(fullPath).isDirectory()) {
+    let stats;
+
+    try {
+      stats = fs.lstatSync(fullPath);
+    } catch (e) {
+      return;
+    }
+
+    if (stats.isDirectory()) {
       rmDirRecursive(fullPath);
     } else {
       fs.unlinkSync(fullPath);
     }
   });
-  fs.rmdirSync(dirPath);
+
+  try {
+    fs.rmdirSync(dirPath);
+  } catch (e) {
+    if (retry) {
+      setTimeout(() => rmDirRecursive(dirPath, false), 500);
+    }
+  }
 }
 
 interface Fixture {

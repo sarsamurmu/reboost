@@ -23,3 +23,28 @@ afterAll(async () => {
   if (browser) await browser.close();
   browser = null;
 });
+
+export const waitForConsole = (
+  page: puppeteer.Page,
+  test: string | ((msg: puppeteer.ConsoleMessage) => boolean),
+  timeout = 8000
+) => {
+  let reject: (reason: any) => void;
+  let resolve: () => void;
+  const listener = (msg: puppeteer.ConsoleMessage) => {
+    if (
+      typeof test === 'function' ? test(msg) : msg.text() === test
+    ) {
+      resolve();
+      page.off('console', listener);
+    }
+  }
+
+  setTimeout(() => reject('Waiter exceeded timeout limit'), timeout);
+
+  return new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+    page.on('console', listener);
+  });
+}

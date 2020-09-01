@@ -1,7 +1,7 @@
 import { start } from 'src-node/index';
 
 import { createFixture } from '../helpers/fixture';
-import { newPage } from '../helpers/browser';
+import { newPage, waitForConsole } from '../helpers/browser';
 
 jest.setTimeout(15000);
 
@@ -16,16 +16,11 @@ describe('does basic things', () => {
     },
     'src': {
       'index.js': /* js */`
-        import { render } from './renderer.js';
-
-        render();
+        import { fun } from './imported.js';
+        fun();
       `,
-      'renderer.js': /* js */`
-        export const render = () => {
-          const div = document.createElement('div');
-          div.innerText = 'Page is working';
-          document.body.appendChild(div);
-        }
+      'imported.js': /* js */`
+        export const fun = () => console.log('works');
       `
     }
   }).apply();
@@ -44,10 +39,10 @@ describe('does basic things', () => {
 
     const page = await newPage();
 
-    await page.goto(
-      new URL('index.html', service.contentServer.local).toString(),
-    );
-    expect(await page.evaluate(() => document.body.innerText)).toMatch('Page is working');
+    await Promise.all([
+      waitForConsole(page, 'works'),
+      page.goto(new URL('index.html', service.contentServer.local).toString())
+    ]);
 
     await service.stop();
   });
