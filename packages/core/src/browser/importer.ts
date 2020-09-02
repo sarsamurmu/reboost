@@ -27,12 +27,12 @@ const importer: Importer = {
     return mod.default;
   },
   async Dynamic(toImport, importerPath) {
-    const response = await fetch(`${address}/resolve?from=${encodeURI(importerPath)}&to=${encodeURI(toImport)}`);
+    const response = await fetch(`${address}/resolve?from=${encodeURIComponent(importerPath)}&to=${encodeURIComponent(toImport)}`);
     if (!response.ok) {
       throw new TypeError(`[reboost] Failed to resolve dynamically imported module "${toImport}"`);
     }
     const resolvedPath = await response.text();
-    return importer.All(await import(`${address}/transformed?q=${encodeURI(resolvedPath)}`));
+    return importer.All(await import(`${address}/transformed?q=${encodeURIComponent(resolvedPath)}`));
   },
   Member(mod, member, sourcePath, importerPath) {
     const message = `The requested module "${sourcePath}" does not provide an export named "${member}". Module is imported by "${importerPath}"`;

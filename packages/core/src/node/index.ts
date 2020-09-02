@@ -376,7 +376,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     let fileContent = `import '${fullAddress}/setup';\n`;
     fileContent += 'import';
     if (libName) fileContent += ' * as _$lib$_ from';
-    fileContent += ` '${fullAddress}/transformed?q=${encodeURI(path.join(config.rootDir, input))}';\n`;
+    fileContent += ` '${fullAddress}/transformed?q=${encodeURIComponent(path.join(config.rootDir, input))}';\n`;
     if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
     fs.writeFileSync(outputPath, fileContent);

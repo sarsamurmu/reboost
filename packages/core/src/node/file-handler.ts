@@ -124,7 +124,7 @@ const updateDependencies = async (
 
 const fixSourceMap = (code: string, cacheFilePath: string) => {
   // Remove other source maps
-  return `${code.replace(/\/\/#\s*sourceMappingURL=.*/g, '')}\n//# sourceMappingURL=/raw?q=${encodeURI(cacheFilePath)}.map`;
+  return `${code.replace(/\/\/#\s*sourceMappingURL=.*/g, '')}\n//# sourceMappingURL=/raw?q=${encodeURIComponent(cacheFilePath)}.map`;
 }
 
 export const createFileHandler = () => {

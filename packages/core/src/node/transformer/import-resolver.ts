@@ -32,7 +32,7 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
           tLog('info', chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
         }
 
-        sourcePath.replaceWith(t.stringLiteral(`/hot?q=${encodeURI(filePath)}`));
+        sourcePath.replaceWith(t.stringLiteral(`/hot?q=${encodeURIComponent(filePath)}`));
       } else {
         let finalPath = null;
         let routed = false;

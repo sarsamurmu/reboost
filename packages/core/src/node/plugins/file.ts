@@ -6,7 +6,7 @@ export const FilePlugin = (): ReboostPlugin => ({
     return {
       code: `
         const serverAddress = new URL(import.meta.absoluteUrl).origin;
-        const fileUrl = new URL('/raw?q=${encodeURI(filePath)}', serverAddress);
+        const fileUrl = new URL('/raw?q=${encodeURIComponent(filePath)}', serverAddress);
         export default fileUrl;
       `
     }

@@ -169,7 +169,7 @@ const connectWebsocket = () => {
               emitterFileData.listeners.forEach(({ dispose }) => dispose && dispose(hotData));
               Hot_Data_Map.set(file, hotData);
 
-              updatedModuleInstance = await import(`${address}/transformed?q=${encodeURI(file)}&t=${now}`);
+              updatedModuleInstance = await import(`${address}/transformed?q=${encodeURIComponent(file)}&t=${now}`);
               updatedModuleInstance = importer.All(updatedModuleInstance);
 
               // If the module is self accepted, just call the self accept handler
