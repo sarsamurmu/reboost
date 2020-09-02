@@ -1,7 +1,6 @@
 import Koa from 'koa';
 import proxy, { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import sendFile, { SendOptions } from 'koa-send';
-import { parse as parseHTML } from 'node-html-parser';
 import chalk from 'chalk';
 import { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
@@ -11,6 +10,10 @@ import path from 'path';
 
 import { getConfig, addServiceStopper } from './shared';
 import { isDirectory, uniqueID, getTimestamp, onServerCreated, tLog } from './utils';
+
+// TODO: Change this when TypeScript 4.0 issue is fixed in `node-html-parser`
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { parse: parseHTML } = require('node-html-parser');
 
 const createDirectoryServer = () => {
   const styles = /* css */`
