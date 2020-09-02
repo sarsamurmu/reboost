@@ -4,7 +4,7 @@ let browser: puppeteer.Browser;
 let pages: puppeteer.Page[] = [];
 
 export const newPage = async (autoClose = true) => {
-  if (!browser) browser = await puppeteer.launch({ dumpio: true });
+  if (!browser) browser = await puppeteer.launch();
   const page = await browser.newPage();
 
   page
