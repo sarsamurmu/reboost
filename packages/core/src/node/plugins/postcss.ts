@@ -137,7 +137,11 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
             });
           }
 
-          if (cacheMap.has(loadStartPath) && fs.existsSync(loadStartPath)) {
+          if (
+            cacheMap.has(loadStartPath) &&
+            fs.existsSync(loadStartPath) &&
+            fs.existsSync(cacheMap.get(loadStartPath).file)
+          ) {
             runProcess(cacheMap.get(loadStartPath));
           } else {
             loadConfigAndRunProcess();
