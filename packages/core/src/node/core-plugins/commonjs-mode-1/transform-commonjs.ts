@@ -201,7 +201,7 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
     program.node.body.unshift(
       t.importDeclaration([
         t.importDefaultSpecifier(importerIdentifier)
-      ], t.stringLiteral('/importer'))
+      ], t.stringLiteral('#/importer'))
     );
   }
 }

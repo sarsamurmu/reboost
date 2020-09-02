@@ -314,7 +314,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
     program.node.body.unshift(
       t.importDeclaration(
         [t.importNamespaceSpecifier(namespaceIdentifier)],
-        exportAll.source
+        t.stringLiteral(exportAll.source.value)
       ),
       t.variableDeclaration(
         'let',

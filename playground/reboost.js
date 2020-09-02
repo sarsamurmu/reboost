@@ -57,10 +57,11 @@ start({
       use: ReactFastRefreshPlugin()
     })
   ],
-  watchOptions: {
-    exclude: /\.reboost_cache/,
+  log: {
+    info: true,
+    responseTime: true,
+    // watchList: true
   },
-  showResponseTime: true,
 
   // Don't use these options, these are only for debugging
   dumpCache: true,

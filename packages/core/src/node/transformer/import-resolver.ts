@@ -3,7 +3,7 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 
 import { getPluginHooks } from './processor';
-import { tLog } from '../utils';
+import { tLog, uniqueID } from '../utils';
 
 export const resolveDependency = async (pathToResolve: string, relativeTo: string) => {
   for (const hook of getPluginHooks().resolveHooks) {
@@ -20,13 +20,11 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
   const imports: string[] = [];
 
   const resolveDeclaration = async (
-    astPath: NodePath<t.ImportDeclaration> | NodePath<t.ExportDeclaration>
+    nodePath: NodePath<t.ImportDeclaration> | NodePath<t.ExportDeclaration>
   ): Promise<void> => {
-    const node = astPath.node as t.ImportDeclaration;
-    if (node.source) {
-      const source: string = node.source.value;
-
-      if (source.startsWith('/')) return;
+    if (nodePath.has('source')) {
+      const sourcePath = nodePath.get('source') as NodePath<t.StringLiteral>;
+      const source: string = sourcePath.node.value;
 
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
@@ -34,28 +32,35 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
           tLog('info', chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
         }
 
-        node.source.value = `/hot?q=${encodeURI(filePath)}`;
+        sourcePath.replaceWith(t.stringLiteral(`/hot?q=${encodeURI(filePath)}`));
       } else {
         let finalPath = null;
         let routed = false;
-        const resolvedPath = await resolveDependency(source, filePath);
-        if (resolvedPath) {
-          if (resolvedPath.startsWith('/')) {
-            finalPath = resolvedPath.replace(/^#/, '');
-            routed = true;
-          } else {
-            finalPath = resolvedPath;
-            imports.push(finalPath);
-          }
+        if (source.startsWith('#/')) {
+          finalPath = source.replace(/^#/, '');
+          routed = true;
         } else {
-          error = true;
+          const resolvedPath = await resolveDependency(source, filePath);
+          if (resolvedPath) {
+            if (resolvedPath.startsWith('#/')) {
+              finalPath = resolvedPath.replace(/^#/, '');
+              routed = true;
+            } else {
+              finalPath = resolvedPath;
+              imports.push(finalPath);
+            }
+          } else {
+            error = true;
+          }
         }
 
-        node.source.value = routed
-          ? finalPath
-          : finalPath
-            ? `/transformed?q=${encodeURI(finalPath)}`
-            : `/unresolved?import=${encodeURI(source)}&importer=${encodeURI(filePath)}`;
+        sourcePath.replaceWith(t.stringLiteral(
+          routed
+            ? finalPath
+            : finalPath
+              ? `/transformed?q=${encodeURIComponent(finalPath)}`
+              : `/unresolved?import=${encodeURIComponent(source)}&importer=${encodeURIComponent(filePath)}`
+        ));
       }
     }
   }
@@ -64,50 +69,42 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
   let astProgram: NodePath<t.Program>;
 
   traverse(ast, {
-    Program(astPath) {
-      astProgram = astPath;
+    Program(nodePath) {
+      astProgram = nodePath;
     },
-    ImportDeclaration(astPath) {
-      promiseExecutors.push(() => resolveDeclaration(astPath));
+    ImportDeclaration(nodePath) {
+      promiseExecutors.push(() => resolveDeclaration(nodePath));
       return false;
     },
-    ExportDeclaration(astPath) {
-      promiseExecutors.push(() => resolveDeclaration(astPath));
+    ExportDeclaration(nodePath) {
+      promiseExecutors.push(() => resolveDeclaration(nodePath));
       return false;
     },
-    CallExpression(astPath) {
-      if (t.isIdentifier(astPath.node.callee, { name: '__reboost_resolve' })) {
+    CallExpression(nodePath) {
+      if (t.isIdentifier(nodePath.node.callee, { name: '__reboost_resolve' })) {
         promiseExecutors.push(async () => {
-          astPath.replaceWith(
+          nodePath.replaceWith(
             t.stringLiteral(
-              await resolveDependency((astPath.node.arguments[0] as t.StringLiteral).value, filePath)
+              await resolveDependency((nodePath.node.arguments[0] as t.StringLiteral).value, filePath)
             )
           );
         });
-      } else if (t.isImport(astPath.node.callee)) {
+      } else if (t.isImport(nodePath.node.callee)) {
         // Rewrite dynamic imports
-        const importDeclarations = astProgram.get('body').filter((p) => p.isImportDeclaration()) as NodePath<t.ImportDeclaration>[];
-        let importerDeclaration = (importDeclarations.find(
-          ({ node }) => node.source.value.includes('/importer')
-        ) || {}).node as t.ImportDeclaration;
-
-        if (!importerDeclaration) {
-          const identifier = astPath.scope.generateUidIdentifier('$importer');
-          importerDeclaration = t.importDeclaration([
-            t.importDefaultSpecifier(identifier)
-          ], t.stringLiteral('/importer'));
-          astProgram.node.body.unshift(importerDeclaration);
-        }
+        const importerIdentifier = nodePath.scope.generateUidIdentifier(`importer_${uniqueID(6)}`);
+        const importerDeclaration = t.importDeclaration([
+          t.importDefaultSpecifier(importerIdentifier)
+        ], t.stringLiteral('/importer'));
+        astProgram.node.body.unshift(importerDeclaration);
         
-        const importerIdentifierName = importerDeclaration.specifiers[0].local.name;
-        astPath.replaceWith(
+        nodePath.replaceWith(
           t.callExpression(
             t.memberExpression(
-              t.identifier(importerIdentifierName),
+              t.identifier(importerIdentifier.name),
               t.identifier('Dynamic')
             ),
             [
-              astPath.node.arguments[0],
+              nodePath.node.arguments[0],
               t.stringLiteral(filePath)
             ]
           )

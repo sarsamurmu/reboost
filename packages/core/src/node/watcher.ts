@@ -50,13 +50,15 @@ export const createWatcher = () => {
     })
   });
 
+  const shouldWatch = (filePath: string) => (
+    anymatch(watchOptions.include, filePath) &&
+    !anymatch(watchOptions.exclude, filePath)
+  );
+
   const setDependencies = (file: string, dependencies: string[]) => {
     file = path.normalize(file);
 
-    if (
-      anymatch(watchOptions.include, file) &&
-      !anymatch(watchOptions.exclude, file)
-    ) {
+    if (shouldWatch(file)) {
       const prevDependencies = dependenciesMap.get(file) || [];
       const dependenciesCopy = dependencies.map((p) => path.normalize(p));
       // The file itself is also the file's dependency
@@ -65,7 +67,7 @@ export const createWatcher = () => {
       const { added, removed } = diff(prevDependencies, dependenciesCopy);
 
       added.forEach((dependency) => {
-        if (!dependentsMap.has(dependency)) {
+        if (!dependentsMap.has(dependency) && shouldWatch(dependency)) {
           watcher.add(dependency);
           tLog('watchList', chalk.blue(`Watching ${rootRelative(dependency)}`));
         }
@@ -78,7 +80,7 @@ export const createWatcher = () => {
         const dependents = dependentsMap.get(dependency) || [];
         // Remove file from dependents
         const filtered = dependents.filter((dependent) => dependent !== file);
-        if (filtered.length === 0) {
+        if (filtered.length === 0 && shouldWatch(dependency)) {
           dependentsMap.delete(dependency);
           watcher.unwatch(dependency);
           tLog('watchList', chalk.blue(`Unwatched ${rootRelative(dependency)}`));
