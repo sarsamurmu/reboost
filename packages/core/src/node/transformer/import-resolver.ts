@@ -24,7 +24,7 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
   ): Promise<void> => {
     if (nodePath.has('source')) {
       const sourcePath = nodePath.get('source') as NodePath<t.StringLiteral>;
-      const source: string = sourcePath.node.value;
+      const source = sourcePath.node.value;
 
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
