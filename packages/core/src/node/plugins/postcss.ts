@@ -111,20 +111,27 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
           }
 
           const loadStartPath = options.path || path.dirname(filePath);
-          const loadConfigOptions = {
-            path: loadStartPath,
-            ctx: {
-              file: {
-                extname: path.extname(filePath),
-                dirname: path.dirname(filePath),
-                basename: path.basename(filePath)
-              },
-              options: options.ctx || {},
-              env: 'development'
-            }
-          };
 
-          const loadConfigAndRunProcess = () => {
+          if (
+            cacheMap.has(loadStartPath) &&
+            fs.existsSync(loadStartPath) &&
+            fs.existsSync(cacheMap.get(loadStartPath).file)
+          ) {
+            runProcess(cacheMap.get(loadStartPath));
+          } else {
+            const loadConfigOptions = {
+              path: loadStartPath,
+              ctx: {
+                file: {
+                  extname: path.extname(filePath),
+                  dirname: path.dirname(filePath),
+                  basename: path.basename(filePath)
+                },
+                options: options.ctx || {},
+                env: 'development'
+              }
+            };
+            
             loadConfig(
               loadConfigOptions.ctx,
               loadConfigOptions.path,
@@ -135,16 +142,6 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
             }).catch((err) => {
               resolve(new Error(`PostCSSPlugin: Error when loading config file - ${err.message}`))
             });
-          }
-
-          if (
-            cacheMap.has(loadStartPath) &&
-            fs.existsSync(loadStartPath) &&
-            fs.existsSync(cacheMap.get(loadStartPath).file)
-          ) {
-            runProcess(cacheMap.get(loadStartPath));
-          } else {
-            loadConfigAndRunProcess();
           }
         });
       }
