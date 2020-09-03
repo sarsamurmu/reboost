@@ -122,9 +122,10 @@ const updateDependencies = async (
   fileData.dependencies = depsData;
 }
 
+const sourceMapCommentRE = /^[ \t]*\/\/#\s*sourceMappingURL=.+(?![\s\S]*\/\/#\s*sourceMappingURL=.+)/m;
 const fixSourceMap = (code: string, cacheFilePath: string) => {
   // Remove other source maps
-  return `${code.replace(/\/\/#\s*sourceMappingURL=.*/g, '')}\n//# sourceMappingURL=/raw?q=${encodeURIComponent(cacheFilePath)}.map`;
+  return `${code.replace(sourceMapCommentRE, '')}\n//# sourceMappingURL=/raw?q=${encodeURIComponent(cacheFilePath)}.map`;
 }
 
 export const createFileHandler = () => {
