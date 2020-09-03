@@ -11,13 +11,13 @@
     "build:browser": "tsc -p ./src/browser",
     "build:node": "tsc -p ./src/node",
     "build:mapped": "concurrently -r \"npm:build:browser\" \"npm:build:node -- --sourceMap\"",
-    "build:watch": "concurrently -r \"npm:build:browser -- -w\" \"npm:build:node -- -w\"",
+    "build:watch": "concurrently -r \"npm:build:browser -- --incremental -w\" \"npm:build:node -- --incremental -w\"",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "test:build": "tsc -p ./tests-src/build.tsconfig.json && node ./tests-src/createRequireAll",
     "test:build:watch": "tsc -p ./tests-src/build.tsconfig.json -w",
-    "test:ci": "npm run build:mapped && npm run test:build && jest"
+    "test:ci": "npm run build:mapped && npm run test:build && npm run test"
   },
   "keywords": [
     "fast",
