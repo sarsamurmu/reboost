@@ -1,6 +1,11 @@
 ## 0.13.0
 - Improved CommonJS interoperability
 - Update logging options
+- Performance improvements
+- Fixed bug with dynamic imports
+- Updated dependencies
+- Improved PostCSS plugin. Added config caching for faster builds
+- Improved Hot Reload API
 
 ## 0.12.1
 - Minor fixes
