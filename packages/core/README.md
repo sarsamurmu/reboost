@@ -7,9 +7,9 @@
 <p align="center">Reboost is a <i>super fast</i> dev server for rapid web development.</p>
 
 <p align="center">
-  <!-- <a href="">
+  <a href="">
     <img alt="CircleCI" src="https://circleci.com/gh/sarsamurmu/reboost.svg?style=svg">
-  </a> -->
+  </a>
   <a href="https://www.npmjs.com/package/reboost">
     <img alt="npm" src="https://img.shields.io/npm/v/reboost?style=flat-square">
   </a>
