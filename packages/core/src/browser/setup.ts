@@ -131,7 +131,7 @@ const connectWebsocket = () => {
       console.log(`[reboost] Changed ${emitterFile}`);
 
       const fileLastUpdated = fileLastChangedRecord[emitterFile];
-      const now = Date.now();
+      const now = fileLastChangedRecord[emitterFile] = Date.now();
 
       // Apply Hot Reload only if file's last updated time is greater that 0.8s
       if ((typeof fileLastUpdated === 'undefined') || (((now - fileLastUpdated) / 1000) > 0.8)) {
@@ -143,15 +143,12 @@ const connectWebsocket = () => {
         let nextBubbleUpDependents = [Private.dependentTreeFor(emitterFile)];
         let emitterFileData: MapValue<HotMapType>;
         let handler;
-        let dependentsAccepted: number;
-        let dependentsAcceptedLevel2: number;
         let updatedModuleInstance: any;
         let hotData: Record<string, any>;
 
         while (nextBubbleUpDependents.length > 0) {
           guard.call();
 
-          dependentsAccepted = 0;
           bubbleUpDependents = nextBubbleUpDependents;
           nextBubbleUpDependents = [];
 
@@ -177,24 +174,15 @@ const connectWebsocket = () => {
               if ((handler = emitterFileData.listeners.get(file)) && handler.accept) {
                 debug('[Hot Reload] Self accepted by', file);
                 handler.accept(updatedModuleInstance);
-                dependentsAccepted++;
               } else {
-                dependentsAcceptedLevel2 = 0;
-
                 dependents.forEach((tree) => {
                   if ((handler = emitterFileData.listeners.get(tree.file)) && handler.accept) {
                     debug('[Hot Reload] Accepted by', tree.file);
                     handler.accept(updatedModuleInstance);
-                    dependentsAcceptedLevel2++;
-                  } else if (tree.dependents.length > 0) {
-                    nextBubbleUpDependents.push(...tree.dependents);
                   } else {
-                    debug('[Hot Reload] Triggering full page reload. The file has no parent -', tree.file);
-                    Reboost.reload();
+                    nextBubbleUpDependents.push(tree);
                   }
                 });
-
-                if (dependentsAcceptedLevel2 === dependents.length) dependentsAccepted++;
               }
 
               Hot_Data_Map.delete(file);
@@ -206,15 +194,13 @@ const connectWebsocket = () => {
             }
           }
 
-          if (dependentsAccepted === bubbleUpDependents.length) {
-            // All dependents handled the update
+          console.log(nextBubbleUpDependents);
+
+          if (nextBubbleUpDependents.length === 0) {
             debug('[Hot Reload] Completed update');
-            break;
           }
         }
       }
-
-      fileLastChangedRecord[emitterFile] = now;
     } else if (type === 'unlink') {
       Reboost.reload();
     }

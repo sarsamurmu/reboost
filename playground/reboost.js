@@ -17,6 +17,7 @@ start({
   entries: [
     ['./src/babel/index.js', './public/dist/babel.js'],
     ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
+    ['./src/hot-reload-test/index.js', './public/dist/hot-reload-test.js'],
     ['./src/lit-element/index.js', './public/dist/lit-element.js'],
     ['./src/react/index.js', './public/dist/react.js'],
     ['./src/react-fast-refresh/index.js', './public/dist/react-fast-refresh.js'],
