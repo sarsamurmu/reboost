@@ -105,7 +105,7 @@ console.log(count); // 1
 increase();
 console.log(count); // 2
 ```
-So as you can see, In module, exported variables reflect their value everywhere they
+So as you can see, In the module, exported variables reflect their value everywhere they
 are imported. In Reboost if you use CommonJS interop mode `1`, every import will turn constant
 and they won't reflect their original value if changed.
 
@@ -147,12 +147,12 @@ This mode is default and recommended.
   - Use mode `1` if you don't mind live binding.
   - Use mode `2` if you want to use CommonJS and also want live binding.
 - If you know that every module you are using in your project are ES modules
-  (including your dependencies), use mode `0`. It will increase the performance.
+  (including your dependencies), use mode `0`. It will increase performance.
 
 ##### `commonJSInterop.include`
 Type: `Matcher`
 
-Files to transform to support the interoperability. This option only makes sense in mode `2`,
+Files to transform to support interoperability. This option only makes sense in mode `2`,
 it has no effects on mode `1`. When set to mode `2`, this option defaults to `/node_modules|\.cjs/`,
 meaning that every file in `node_modules` directory and files which has `.cjs` extension
 will be transformed to support interoperability.
@@ -320,6 +320,33 @@ window.coolLib // Module { add: (...), subtract: (...) }
 ```
 As you expected, exports are available through the `window` object
 
+#### `log`
+Type: `false | object`
+
+Options for message logging in Reboost.
+
+If set to `false`, it disables the message logging completely.
+
+The following properties can be passed if you use an `object`.
+
+##### `log.info`
+Type: `boolean`\
+Default: `true`
+
+Enables/disables logging about general information.
+
+##### `log.responseTime`
+Type: `boolean`\
+Default: `false`
+
+Enables/disables logging about how much time it took to transform a file and give a response.
+
+##### `log.watchList`
+Type: `boolean`\
+Default: `true`
+
+Enables/disables logging about which files are being added or removed from the watch list.
+
 #### `mode`
 Type: `string`\
 Default: `'development'`
@@ -461,12 +488,6 @@ Default: `true`
 
 If `true`, resolves symbolic links to their original path.
 
-#### `showResponseTime`
-Type: `boolean`\
-Default: `false`
-
-If want to know how fast Reboost is, enable this ^_^
-
 #### `sourceMaps`
 Type: `object`
 
@@ -513,3 +534,9 @@ Type: `chokidar.WatchOptions`\
 Default: `{}`
 
 Options to use when initializing [`chokidar`](https://www.npmjs.com/package/chokidar).
+
+---
+**Referenced Types**\
+`AnymatchPattern`: `string | RegExp | (testString: string) => boolean`\
+`Matcher`: `AnymatchPattern | AnymatchPattern[]`\
+`chokidar.WatchOptions`: See - https://www.npmjs.com/package/chokidar#persistence
