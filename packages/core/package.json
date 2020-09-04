@@ -16,7 +16,7 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "test:build": "tsc -p ./tests-src/build.tsconfig.json && node ./tests-src/createRequireAll",
-    "test:build:watch": "tsc -p ./tests-src/build.tsconfig.json -w",
+    "test:build:watch": "tsc -p ./tests-src/build.tsconfig.json --incremental -w",
     "test:ci": "npm run build:mapped && npm run test:build && npm run test"
   },
   "keywords": [

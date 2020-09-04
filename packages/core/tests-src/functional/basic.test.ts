@@ -5,7 +5,7 @@ import { newPage, waitForConsole } from '../helpers/browser';
 
 jest.setTimeout(15000);
 
-describe('does basic things', () => {
+test('basic thing', async () => {
   const fixture = createFixture({
     'public': {
       'index.html': /* html */`
@@ -24,26 +24,22 @@ describe('does basic things', () => {
       `
     }
   }).apply();
-
-  test('basic thing', async () => {
-    const service = await start({
-      rootDir: fixture.p('.'),
-      entries: [
-        ['./src/index.js', './public/dist/index.js']
-      ],
-      contentServer: {
-        root: './public'
-      },
-      log: false
-    });
-
-    const page = await newPage();
-
-    await Promise.all([
-      waitForConsole(page, 'works'),
-      page.goto(new URL('index.html', service.contentServer.local).toString())
-    ]);
-
-    await service.stop();
+  const service = await start({
+    rootDir: fixture.p('.'),
+    entries: [
+      ['./src/index.js', './public/dist/index.js']
+    ],
+    contentServer: {
+      root: './public'
+    },
+    log: false
   });
+  const page = await newPage();
+
+  await Promise.all([
+    waitForConsole(page, 'works'),
+    page.goto(`${service.contentServer.local}/index.html`)
+  ]);
+
+  await service.stop();
 });

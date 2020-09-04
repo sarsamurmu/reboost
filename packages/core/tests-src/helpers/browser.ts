@@ -3,14 +3,17 @@ import puppeteer from 'puppeteer';
 let browser: puppeteer.Browser;
 let pages: puppeteer.Page[] = [];
 
+const debug = false;
 export const newPage = async (autoClose = true) => {
-  if (!browser) browser = await puppeteer.launch();
+  if (!browser) browser = await puppeteer.launch(debug ? {
+    headless: false,
+    devtools: true,
+    slowMo: 1000,
+  } : {});
   const page = await browser.newPage();
-
   page
     .on('pageerror', ({ message }) => console.log('PAGE ERR', message))
     .on('requestfailed', (request) => console.log('REQUEST FAIL', request.failure().errorText, request.url()));
-  
   if (autoClose) pages.push(page);
   return page;
 }
@@ -45,7 +48,7 @@ export const waitForConsole = (
     }
   }
 
-  setTimeout(() => reject('Waiter exceeded timeout limit'), timeout);
+  setTimeout(() => reject(`Waiter exceeded timeout limit of ${timeout}`), timeout);
 
   return new Promise((res, rej) => {
     resolve = res;
