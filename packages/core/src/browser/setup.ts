@@ -194,8 +194,6 @@ const connectWebsocket = () => {
             }
           }
 
-          console.log(nextBubbleUpDependents);
-
           if (nextBubbleUpDependents.length === 0) {
             debug('[Hot Reload] Completed update');
           }
