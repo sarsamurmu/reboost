@@ -17,7 +17,7 @@ support CommonJS modules.
 
 ### How can I use <insert_tool_name> with Reboost?
 You can use any tool with Reboost as long as you can implement it as a plugin. You can
-read more about [how create plugin](/docs/plugin-api.md). Also, you can create an issue
+read more about [how to create a plugin](/docs/plugin-api.md). Also, you can create an issue
 about supporting a certain tool, then we will see if we can implement it or not.
 
 ### Will Reboost ever support bundling for production
