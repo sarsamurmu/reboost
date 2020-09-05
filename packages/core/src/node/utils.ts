@@ -6,7 +6,6 @@ import path from 'path';
 import http from 'http';
 
 import { ReboostConfig } from './index';
-import type { getConfig } from './shared';
 
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
@@ -107,6 +106,7 @@ export const onServerCreated = (app: Koa, cb: (server: http.Server) => void) => 
   }
 }
 
+/* istanbul ignore next */
 export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => {
   if (seconds) {
     return `${seconds}s ${Math.floor(nanoseconds / 1e6)}ms`;
@@ -115,7 +115,8 @@ export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => {
   return (ms ? `${ms}ms ` : '') + `${Math.floor((nanoseconds % 1e6) / 1e3)}μs`;
 }
 
-let aConfig: ReturnType<typeof getConfig>;
+let aConfig: ReboostConfig;
+/* istanbul ignore next */
 export const logEnabled = (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
   // Fix for circular dependency error
   if (!aConfig) {
@@ -126,6 +127,7 @@ export const logEnabled = (type: keyof Exclude<ReboostConfig['log'], boolean>) =
   return !(!aConfig.log || !aConfig.log[type]);
 }
 
+/* istanbul ignore next */
 export const tLog = (type: Parameters<typeof logEnabled>[0], ...toLog: any[]) => {
   if (logEnabled(type)) console.log(...toLog);
 }
