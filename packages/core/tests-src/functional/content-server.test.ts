@@ -80,9 +80,10 @@ test('resolves extensions', async () => {
   const page = await newPage();
 
   await page.goto(`${service.contentServer.local}/html-file`);
-  expect(await page.evaluate(() => document.body.innerText)).toMatch('HTML file');
+  const getBodyText = () => document.body.innerText;
+  expect(await page.evaluate(getBodyText)).toMatch('HTML file');
   await page.goto(`${service.contentServer.local}/htm-file`);
-  expect(await page.evaluate(() => document.body.innerText)).toMatch('HTM file');
+  expect(await page.evaluate(getBodyText)).toMatch('HTM file');
 
   await service.stop();
 });
@@ -193,17 +194,18 @@ describe('file watcher', () => {
     });
     const page = await newPage();
 
-    // `networkidle2` - So that WebSocket can connect
-    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle2' });
-    expect(await page.evaluate(() => document.body.innerText)).toMatch('A HTML file');
+    // `networkidle0` - So that WebSocket can connect
+    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle0' });
+    const getBodyText = () => document.body.innerText;
+    expect(await page.evaluate(getBodyText)).toMatch('A HTML file');
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle2' }),
+      page.waitForNavigation({ waitUntil: 'networkidle0' }),
       fs.promises.writeFile(
         fixture.p('./public/main.html'),
         '<html><body>A new HTML file</body></html>'
       )
     ]);
-    expect(await page.evaluate(() => document.body.innerText)).toMatch('A new HTML file');
+    expect(await page.evaluate(getBodyText)).toMatch('A new HTML file');
 
     const [response] = await Promise.all([
       page.waitForNavigation(),
@@ -240,8 +242,9 @@ describe('file watcher', () => {
     });
     const page = await newPage();
 
-    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle2' });
-    expect(await page.evaluate(() => getComputedStyle(document.querySelector('.main')).color)).toBe('rgb(0, 0, 255)');
+    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle0' });
+    const getElementColor = () => getComputedStyle(document.querySelector('.main')).color;
+    expect(await page.evaluate(getElementColor)).toBe('rgb(0, 0, 255)');
     await Promise.all([
       page.waitForResponse((req) => req.url().includes('styles.css')),
       fs.promises.writeFile(
@@ -249,7 +252,7 @@ describe('file watcher', () => {
         '.main { color: rgb(255, 0, 0) }'
       )
     ]);
-    expect(await page.evaluate(() => getComputedStyle(document.querySelector('.main')).color)).toBe('rgb(255, 0, 0)');
+    expect(await page.evaluate(getElementColor)).toBe('rgb(255, 0, 0)');
 
     await service.stop();
   });
