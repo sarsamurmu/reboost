@@ -22,15 +22,14 @@
 
 <p align="center">Reboost is a <i>super fast</i> dev server for rapid web development.
 <br>It makes use of native ES modules to enable fast, bundle-less development experience, so you can develop your app faster.
-<a href="#what-it-does">Learn more.</a></p>
+<a href="#what-it-does">Learn more about what it does.</a></p>
 
 ## Quickstart
-### Using `npm init`
 Run this command in your terminal
 ```shell
 npm init @reboost/app
 ```
-Then it will ask you to choose a template from
+Then it will ask you to choose a template from the
 [available templates](/packages/create-app/README.md#available-templates).
 
 After that, open the directory where your app is extracted, install dependencies,
@@ -41,14 +40,10 @@ node reboost
 
 If you don't want to use the CLI, you can [manually create an app](/docs/manually-creating-an-app.md).
 
-<blockquote>
-  <h4><i><b>NOTE</b></i></h4>
-  <b>Experimental</b>
-  <p>Reboost is in early development, and some things may change/break before we hit version 1.0</p>
-  <b>Only for development build</b>
-  <p>Reboost is intended to use only on development, for production you've to 
-  bundle up your files by yourself using bundlers like Webpack, Rollup, etc.</p>
-</blockquote>
+***Note***\
+**Experimental**: Reboost is in early development, and some things may change/break before we hit version 1.0.\
+**Only for development build**: Reboost is intended to use only on development, for production you've to
+bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 
 ## Docs
 [Changelog](CHANGELOG.md)\
