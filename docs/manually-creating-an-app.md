@@ -1,5 +1,5 @@
 ## Manually creating an app
-First, install it
+First, install Reboost
 ```shell
 # Using npm
 npm i -D reboost
