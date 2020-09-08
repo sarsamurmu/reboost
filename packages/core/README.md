@@ -4,7 +4,6 @@
     alt="Reboost"
     width="300">
 </p>
-<p align="center">Reboost is a <i>super fast</i> dev server for rapid web development.</p>
 
 <p align="center">
   <a href="">
@@ -21,24 +20,45 @@
   </a>
 </p>
 
-<blockquote align="center">
-  <h4><i><b>Experimental</b></i></h4>
-  Reboost is in early development, and some things may change/break before we hit version 1.0
-</blockquote>
+<p align="center">Reboost is a <i>super fast</i> dev server for rapid web development.
+<br>It makes use of native ES modules to enable fast, bundle-less development experience, so you can develop your app faster.
+<a href="#what-it-does">Learn more.</a></p>
 
-<blockquote align="center">
+## Quickstart
+### Using `npm init`
+Run this command in your terminal
+```shell
+npm init @reboost/app
+```
+Then it will ask you to choose a template from
+[available templates](/packages/create-app/README.md#available-templates).
+
+After that, open the directory where your app is extracted, install dependencies,
+then run
+```shell
+node reboost
+```
+
+If you don't want to use the CLI, you can [manually create an app](/docs/manually-creating-an-app.md).
+
+<blockquote>
   <h4><i><b>NOTE</b></i></h4>
-  Reboost is intended to use only on development, for production you've to 
-  bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
+  <b>Experimental</b>
+  <p>Reboost is in early development, and some things may change/break before we hit version 1.0</p>
+  <b>Only for development build</b>
+  <p>Reboost is intended to use only on development, for production you've to 
+  bundle up your files by yourself using bundlers like Webpack, Rollup, etc.</p>
 </blockquote>
 
-## What it does
-When developing a web app, as your number of modules increases,
-your compile-time slows down, it's a big problem, it takes a lot of precious
-time which you could have used to develop your app. Since ES2015 (aka ES6) modules
-are supported natively by browsers. If you can connect (or you can say serve) them
-up correctly, it will work on browsers without the need for bundling. Here, Reboost
-does that for you - the serving part. So you can develop your app faster.
+## Docs
+[Changelog](CHANGELOG.md)\
+[Configurations](/docs/configurations.md)\
+[Plugins](/docs/plugins.md)\
+[Plugin API](/docs/plugin-api.md)\
+[Hot Reload API](/docs/hot-reload-api.md)\
+[Recipes](/docs/recipes.md)\
+[FAQs/Troubleshooting](/docs/faqs-and-troubleshooting.md)\
+[Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
 
 ## Features
 - **No bundling**. So the server start time is *fast*.
@@ -73,36 +93,13 @@ does that for you - the serving part. So you can develop your app faster.
 
 See the [Recipes](/docs/recipes.md) for many template configurations.
 
-## Compatibility
-Reboost works with both CommonJS and ES modules, so you can try it even
-if you are not using ES modules, though using ES modules is recommended.
-
-## Docs
-[Changelog](CHANGELOG.md)\
-[Configurations](/docs/configurations.md)\
-[Plugins](/docs/plugins.md)\
-[Plugin API](/docs/plugin-api.md)\
-[Hot Reload API](/docs/hot-reload-api.md)\
-[Recipes](/docs/recipes.md)\
-[FAQs/Troubleshooting](/docs/faqs-and-troubleshooting.md)\
-[Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
-
-## Quickstart
-### Using `npm init`
-Run this command in your terminal
-```shell
-npm init @reboost/app
-```
-Then it will ask you to choose a template from
-[available templates](/packages/create-app/README.md#available-templates).
-
-After that, open the directory where your app is extracted, install dependencies,
-then run
-```shell
-node reboost
-```
-
-If you don't want to use the CLI, you can [manually create an app](/docs/manually-creating-an-app.md).
+## What it does
+When developing a web app, as your number of modules increases,
+your compile-time slows down, it's a big problem, it takes a lot of precious
+time which you could have used to develop your app. Since ES2015 (aka ES6) modules
+are supported natively by browsers. If you can connect (or you can say serve) them
+up correctly, it will work on browsers without the need for bundling. Here, Reboost
+does that for you - the serving part. So you can develop your app faster.
 
 <!-- Reboost is highly inspired by these awesome projects - [Vite](https://github.com/vitejs/vite),
 [Snowpack](https://github.com/pikapkg/snowpack), [esbuild](https://github.com/evanw/esbuild). -->
