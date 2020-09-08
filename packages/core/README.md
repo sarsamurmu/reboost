@@ -40,7 +40,7 @@ node reboost
 
 If you don't want to use the CLI, you can [manually create an app](/docs/manually-creating-an-app.md).
 
-***Note***\
+#### *NOTE*
 **Experimental**: Reboost is in early development, and some things may change/break before we hit version 1.0.\
 **Only for development build**: Reboost is intended to use only on development, for production you've to
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
