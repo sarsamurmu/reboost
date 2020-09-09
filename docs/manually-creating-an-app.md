@@ -38,7 +38,10 @@ and the HTML content (`public/index.html`)
 <html>
   <body>
     <!-- Note that the type is "module" -->
-    <script type="module" src="./dist/proxy-file.js"></script>
+    <script type="module" src="./dist/bundle.js"></script>
+    <!-- NOTE: Reboost doesn't support bundling.
+         We are naming the file "bundle.js" so that it can replace
+         the bundler generated file to use Reboost's proxy. -->
   </body>
 </html>
 ```
@@ -50,7 +53,7 @@ const { start } = require('reboost');
 start({
   entries: [
     // Format - [inputPath, outputPath]
-    ['./src/index.js', './public/dist/proxy-file.js']
+    ['./src/index.js', './public/dist/bundle.js']
   ],
   contentServer: {
     root: './public',
