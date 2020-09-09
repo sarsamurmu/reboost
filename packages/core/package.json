@@ -13,7 +13,7 @@
     "build:mapped": "concurrently -r \"npm:build:browser\" \"npm:build:node -- --sourceMap\"",
     "build:watch": "concurrently -r \"npm:build:browser -- --incremental -w\" \"npm:build:node -- --sourceMap --incremental -w\"",
     "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --runInBand",
     "test:watch": "jest --watch",
     "test:build": "tsc -p ./tests-src/build.tsconfig.json && node ./tests-src/createRequireAll",
     "test:build:watch": "tsc -p ./tests-src/build.tsconfig.json --incremental -w",
