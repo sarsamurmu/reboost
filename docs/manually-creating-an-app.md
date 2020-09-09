@@ -38,7 +38,7 @@ and the HTML content (`public/index.html`)
 <html>
   <body>
     <!-- Note that the type is "module" -->
-    <script type="module" src="./dist/bundle.js"></script>
+    <script type="module" src="./dist/proxy-file.js"></script>
   </body>
 </html>
 ```
@@ -50,7 +50,7 @@ const { start } = require('reboost');
 start({
   entries: [
     // Format - [inputPath, outputPath]
-    ['./src/index.js', './public/dist/bundle.js']
+    ['./src/index.js', './public/dist/proxy-file.js']
   ],
   contentServer: {
     root: './public',
