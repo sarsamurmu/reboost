@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="">
+  <a href="https://circleci.com/gh/sarsamurmu/reboost">
     <img alt="CircleCI" src="https://circleci.com/gh/sarsamurmu/reboost.svg?style=svg">
   </a>
   <a href="https://www.npmjs.com/package/reboost">
