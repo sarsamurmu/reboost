@@ -23,3 +23,7 @@ about supporting a certain tool, then we will see if we can implement it or not.
 ### Will Reboost ever support bundling for production
 For now, we are only focusing on the development build. We may think about it on
 future.
+
+### Does Reboost support bundling?
+Same as the previous question. Reboost doesn't support bundling. You have to use
+a bundler (Webpack, Rollup, etc.) to bundle up your files.
