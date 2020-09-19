@@ -1,3 +1,6 @@
+## 0.13.1
+- Improved PostCSSPlugin
+
 ## 0.13.0
 - Improved CommonJS interoperability
 - Update logging options
