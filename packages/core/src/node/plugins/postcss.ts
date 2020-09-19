@@ -35,29 +35,39 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
   type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
 
+  let optionsCheckPassed = false;
+  const checkOptions = (config: ReboostConfig, onError: (error: Error) => void) => {
+    if (!optionsCheckPassed && options.path) {
+      if (!path.isAbsolute(options.path)) {
+        options.path = path.resolve(config.rootDir, options.path);
+      }
+
+      if (fs.existsSync(options.path)) {
+        if (!fs.lstatSync(options.path).isDirectory()) {
+          return onError(new Error(
+            'PostCSSPlugin: options.path should be a path to a directory. ' +
+            `The given path is - ${options.path}`
+          ));
+        }
+      } else {
+        return onError(new Error(
+          `PostCSSPlugin: The given path for options.path does not exist - ${options.path}`
+        ));
+      }
+
+      optionsCheckPassed = true;
+    }
+  }
+
   return {
     name: PluginName,
+    setup({ config, chalk }) {
+      checkOptions(config, (err) => config.log && chalk.red(err.message));
+    },
     transformContent(data, filePath) {
       if (data.type === 'css') {
         return new Promise((resolve) => {
-          if (options.path) {
-            if (!path.isAbsolute(options.path)) {
-              options.path = path.resolve(this.config.rootDir, options.path);
-            }
-
-            if (fs.existsSync(options.path)) {
-              if (!fs.lstatSync(options.path).isDirectory()) {
-                resolve(new Error(
-                  'PostCSSPlugin: options.path should be a path to a directory. ' +
-                  `The given path is - ${options.path}`
-                ));
-              }
-            } else {
-              resolve(new Error(
-                `PostCSSPlugin: The given path for options.path does not exist - ${options.path}`
-              ));
-            }
-          }
+          checkOptions(this.config, (err) => resolve(err));
 
           const runProcess = ({ plugins, options }: LoadConfigResult) => {
             const onError = (err: any) => resolve(postcssError('PostCSSPlugin', err, this.config));
@@ -117,32 +127,32 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
             fs.existsSync(loadStartPath) &&
             fs.existsSync(cacheMap.get(loadStartPath).file)
           ) {
-            runProcess(cacheMap.get(loadStartPath));
-          } else {
-            const loadConfigOptions = {
-              path: loadStartPath,
-              ctx: {
-                file: {
-                  extname: path.extname(filePath),
-                  dirname: path.dirname(filePath),
-                  basename: path.basename(filePath)
-                },
-                options: options.ctx || {},
-                env: 'development'
-              }
-            };
-            
-            loadConfig(
-              loadConfigOptions.ctx,
-              loadConfigOptions.path,
-              { stopDir: this.config.rootDir }
-            ).then((result) => {
-              cacheMap.set(loadStartPath, result);
-              runProcess(result);
-            }).catch((err) => {
-              resolve(new Error(`PostCSSPlugin: Error when loading config file - ${err.message}`))
-            });
+            return runProcess(cacheMap.get(loadStartPath));
           }
+
+          const loadConfigOptions = {
+            path: loadStartPath,
+            ctx: {
+              file: {
+                extname: path.extname(filePath),
+                dirname: path.dirname(filePath),
+                basename: path.basename(filePath)
+              },
+              options: options.ctx || {},
+              env: 'development'
+            }
+          };
+
+          loadConfig(
+            loadConfigOptions.ctx,
+            loadConfigOptions.path,
+            { stopDir: this.config.rootDir }
+          ).then((result) => {
+            cacheMap.set(loadStartPath, result);
+            runProcess(result);
+          }).catch((err) => {
+            resolve(new Error(`PostCSSPlugin: Error when loading config file - ${err.message}`))
+          });
         });
       }
 
