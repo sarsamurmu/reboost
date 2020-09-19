@@ -1,5 +1,5 @@
 import loadConfig from 'postcss-load-config';
-import postcss, { ProcessOptions } from 'postcss';
+import DefaultPostCSS, { ProcessOptions } from 'postcss';
 import { codeFrameColumns } from '@babel/code-frame';
 
 import fs from 'fs';
@@ -28,12 +28,15 @@ export interface PostCSSPluginOptions {
   ctx?: Record<string, any>;
   /** PostCSS config directory */
   path?: string;
+  /** Custom PostCSS module to use for processing */
+  postcss?: any;
 }
 
 export const PluginName = 'core-postcss-plugin';
 export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin => {
   type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
+  let postcss: typeof DefaultPostCSS;
 
   let optionsCheckPassed = false;
   const checkOptions = (config: ReboostConfig, onError: (error: Error) => void) => {
@@ -68,6 +71,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
       if (data.type === 'css') {
         return new Promise((resolve) => {
           checkOptions(this.config, (err) => resolve(err));
+          if (!postcss) postcss = options.postcss || DefaultPostCSS;
 
           const runProcess = ({ plugins, options }: LoadConfigResult) => {
             const onError = (err: any) => resolve(postcssError('PostCSSPlugin', err, this.config));
