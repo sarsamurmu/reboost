@@ -86,3 +86,31 @@ The path to search for `postcss.config.js` file. Using this option you can speci
 another directory that should be searched for the config file, like when you store
 your config files in different directories. Works same as [`postcss-loader`](https://www.npmjs.com/package/postcss-loader#path)'s
 `path` option. The value should be a path to a directory, not a path to a file.
+
+#### `postcss`
+
+Use this option to pass a custom version of PostCSS to the plugin. See the example below to learn more.
+
+## Examples
+### Using a custom version of PostCSS
+By default, PostCSS plugin uses the latest version of PostCSS which comes with Reboost.
+But you can also use any versions of PostCSS with this plugin.
+
+To use a custom version of PostCSS, first install the version of `postcss` that you want
+to use. Then pass the `postcss` module to the plugin using option `options.postcss`. Like so
+```js
+const {
+  start,
+  builtInPlugins: {
+    PostCSSPlugin
+  }
+} = require('reboost');
+
+start({
+  plugins: [
+    PostCSSPlugin({
+      postcss: require('postcss')
+    })
+  ]
+})
+```
