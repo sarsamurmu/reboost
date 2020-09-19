@@ -1,5 +1,8 @@
-## 0.13.1
+## 0.14.0
 - Improved PostCSSPlugin
+- Added new option to use custom versions of PostCSS in PostCSSPlugin
+- Updated create-app templates
+- Updated dependencies
 
 ## 0.13.0
 - Improved CommonJS interoperability
