@@ -19,6 +19,6 @@ const scanDir = (dir) => {
 
 scanDir(path.join(__dirname, '../dist/node'));
 
-fileContent += '\ntest(`Requires all`, () => {});\n';
+fileContent += '\ntest("Requires all", () => {});\n';
 
 fs.writeFileSync(destFile, fileContent);
