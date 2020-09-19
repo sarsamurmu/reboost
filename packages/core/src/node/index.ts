@@ -206,6 +206,8 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
     enforceExtension: false,
     exportsFields: ['exports'],
     extensions: ['.tsx', '.ts', '.jsx', '.mjs', '.js', '.es6', '.es', '.json'],
+    fallback: undefined,
+    importsFields: undefined,
     mainFiles: ['index'],
     mainFields: ['browser', 'module', 'main'],
     modules: ['node_modules'],
