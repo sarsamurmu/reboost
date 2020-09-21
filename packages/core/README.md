@@ -74,7 +74,8 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - [CSS](/docs/recipes.md#css-and-css-modules)
 - JSON
 - [CSS Modules](/docs/recipes.md#css-and-css-modules)
-- JSX
+- [JSX](/docs/recipes.md#jsx)
+- [TSX](/docs/recipes.md#tsx)
 - JS/TS Decorators
 - [Babel](/docs/recipes.md#babel)
 - PostCSS

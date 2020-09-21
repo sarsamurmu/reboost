@@ -56,6 +56,31 @@ start({
 ```
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
 
+## JSX
+JSX are enabled for files with `.jsx` extension. If you want to enable JSX for every JS file
+then adjust your configuration to match this
+```js
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
+
+start({
+  // ... Other options
+
+  plugins: [
+    esbuildPlugin({
+      loaders: {
+        js: 'jsx' // or 'tsx' if you want decorators support
+      }
+    })
+    // ... Other plugins
+  ]
+})
+```
+
 ## Vue 3
 Reboost supports Vue 3 using [VuePlugin](https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-vue).
 
@@ -80,6 +105,31 @@ your TypeScript code and does not do type checking. Type checking should be hand
 by your IDE/Code editor or by yourself. If you were using `tsc` to compile your
 TypeScript code, you can use it to do type checking by using the command
 `tsc --noEmit` (if you want `tsc` to watch for changes, use the command `tsc --noEmit -w`).
+
+## TSX
+TSX is enabled for files with `.tsx` extension. If you want to enable TSX for every TS file
+then adjust your configuration to match this
+```js
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
+
+start({
+  // ... Other options
+
+  plugins: [
+    esbuildPlugin({
+      loaders: {
+        ts: 'tsx'
+      }
+    })
+    // ... Other plugins
+  ]
+})
+```
 
 ## CSS and CSS Modules
 Works out of the box. By default, all CSS files are loaded as a regular CSS file,

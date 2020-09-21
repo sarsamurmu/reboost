@@ -41,13 +41,13 @@ Type: `object`\
 Default:
 ```js
 {
-  js: 'tsx',
+  js: 'ts',
   jsx: 'tsx',
-  mjs: 'tsx',
-  cjs: 'tsx',
-  es6: 'tsx',
-  es: 'tsx',
-  ts: 'tsx',
+  mjs: 'ts',
+  cjs: 'ts',
+  es6: 'ts',
+  es: 'ts',
+  ts: 'ts',
   tsx: 'tsx'
 }
 ```
