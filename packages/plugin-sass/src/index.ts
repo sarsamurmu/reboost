@@ -5,7 +5,7 @@ import path from 'path';
 import { ReboostPlugin } from 'reboost';
 
 interface Options {
-  sassOptions?: Sass.Options;
+  sassOptions?: Sass.SyncOptions;
 }
 
 export = (options: Options = {}): ReboostPlugin => {
@@ -47,7 +47,8 @@ export = (options: Options = {}): ReboostPlugin => {
         }
 
         return new Promise((resolve) => {
-          const renderOptions = Object.assign(
+          type OptT = Sass.SyncOptions;
+          const renderOptions = Object.assign<OptT, OptT, OptT>(
             {
               // Default options
               outputStyle: 'expanded',
@@ -70,7 +71,7 @@ export = (options: Options = {}): ReboostPlugin => {
           const renderAndResolve = (retry: boolean): any => {
             try {
               // In `sass` renderSync is fast
-              const result = sass.renderSync(renderOptions as any);
+              const result = sass.renderSync(renderOptions);
 
               result.stats.includedFiles.forEach((includedFile) => {
                 this.addDependency(includedFile);

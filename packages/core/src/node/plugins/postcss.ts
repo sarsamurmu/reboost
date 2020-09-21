@@ -75,8 +75,9 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
 
           const runProcess = ({ plugins, options }: LoadConfigResult) => {
             const onError = (err: any) => resolve(postcssError('PostCSSPlugin', err, this.config));
+            type OptT = ProcessOptions;
             postcss(plugins)
-              .process(data.code, Object.assign<ProcessOptions, ProcessOptions, ProcessOptions>(
+              .process(data.code, Object.assign<OptT, OptT, OptT>(
                 {},
                 options,
                 {

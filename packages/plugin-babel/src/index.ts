@@ -18,11 +18,11 @@ export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
       if (babelPath) {
         babel = require(babelPath);
 
-        options = Object.assign({}, options, {
+        options = Object.assign<any, any, Babel.TransformOptions>({}, options, {
           ast: false,
           sourceMaps: true,
           sourceType: 'module',
-        } as Babel.TransformOptions);
+        });
 
         // Warm up babel
         babel.transformAsync('', options);
