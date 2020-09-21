@@ -1,3 +1,6 @@
+## 0.14.1
+- Fix plugin error handling
+
 ## 0.14.0
 - Improved PostCSSPlugin
 - Added new option to use custom versions of PostCSS in PostCSSPlugin
