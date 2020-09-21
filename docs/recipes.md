@@ -57,8 +57,8 @@ start({
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
 
 ## JSX
-JSX are enabled for files with `.jsx` extension. If you want to enable JSX for every JS file
-then adjust your configuration to match this
+JSX transformation is enabled for files with `.jsx` extension. If you want to enable
+JSX for every JS file then adjust your configuration to match this
 ```js
 const {
   start,
@@ -107,8 +107,8 @@ TypeScript code, you can use it to do type checking by using the command
 `tsc --noEmit` (if you want `tsc` to watch for changes, use the command `tsc --noEmit -w`).
 
 ## TSX
-TSX is enabled for files with `.tsx` extension. If you want to enable TSX for every TS file
-then adjust your configuration to match this
+TSX transformation is enabled for files with `.tsx` extension. If you want to enable
+TSX for every TS file then adjust your configuration to match this
 ```js
 const {
   start,

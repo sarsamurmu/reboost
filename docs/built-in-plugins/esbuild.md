@@ -116,3 +116,55 @@ into
 ```js
 const mode = 'development';
 ```
+
+## Examples
+### Treating all JS/TS files as JSX/TSX files
+By default, JSX and TSX transformations are enabled only for files with `.jsx` and `.tsx`
+extensions. If you want to treat JS files as JSX files and TS files as TSX files then
+adjust your configuration to match this
+
+If you want to treat JS files as JSX files
+```js
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
+
+start({
+  // ... Other options
+
+  plugins: [
+    esbuildPlugin({
+      loaders: {
+        js: 'jsx' // or 'tsx' if you want decorators support
+      }
+    })
+    // ... Other plugins
+  ]
+})
+```
+
+If you want to treat TS files as TSX files
+```js
+const {
+  start,
+  builtInPlugins: {
+    esbuildPlugin
+  }
+} = require('reboost');
+
+start({
+  // ... Other options
+
+  plugins: [
+    esbuildPlugin({
+      loaders: {
+        ts: 'tsx'
+      }
+    })
+    // ... Other plugins
+  ]
+})
+```
