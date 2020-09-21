@@ -17,6 +17,28 @@ If something is not working, you can try deleting your cache directory
 You have to [configure Reboost](/docs/configurations.md#commonjsinterop) to properly
 support CommonJS modules.
 
+### `esbuild` is showing error when transforming TypeScript files
+By default, Reboost's `esbuildPlugin` treats `ts` files as `tsx` files. This can
+cause problems in TypeScript files when generics are used. You can fix it by adjusting
+your `reboost.js` file to match this
+```js
+const { start, builtInPlugins: { esbuildPlugin } } = require('reboost');
+
+start({
+  // ... Other options
+
+  plugins: [
+    esbuildPlugin({
+      loaders: {
+        ts: 'ts'
+      }
+    }),
+    
+    // ... Other plugins
+  ]
+});
+```
+
 ### How can I use <insert_tool_name> with Reboost?
 You can use any tool with Reboost as long as you can implement it as a plugin. You can
 read more about [how to create a plugin](/docs/plugin-api.md). Also, you can create an issue
