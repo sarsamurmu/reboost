@@ -98,7 +98,9 @@ export const process = async (
     }
   }
 
-  await runTransformContentHooks(transformContentHooks);
+  let transformContentError: { error: string };
+  transformContentError = await runTransformContentHooks(transformContentHooks);
+  if (transformContentError) return transformContentError;
 
   for (const hook of transformIntoJSHooks) {
     const result = await bind(hook, pluginContext)({
@@ -123,7 +125,8 @@ export const process = async (
     return handleError({ message });
   }
 
-  await runTransformContentHooks(transformJSContentHooks);
+  transformContentError = await runTransformContentHooks(transformJSContentHooks);
+  if (transformContentError) return transformContentError;
 
   try {
     ast = parse(code, {
