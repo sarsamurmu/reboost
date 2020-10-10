@@ -213,6 +213,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
     modules: ['node_modules'],
     plugins: undefined,
     pnpApi: undefined,
+    preferRelative: undefined,
     restrictions: undefined,
     roots: undefined,
     symlinks: true

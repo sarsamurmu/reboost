@@ -4,6 +4,7 @@ import sendFile, { SendOptions } from 'koa-send';
 import chalk from 'chalk';
 import { FSWatcher } from 'chokidar';
 import WebSocket from 'ws';
+import { parse as parseHTML } from 'node-html-parser';
 
 import fs from 'fs';
 import path from 'path';
@@ -13,7 +14,7 @@ import { isDirectory, uniqueID, getTimestamp, onServerCreated, tLog } from './ut
 
 // TODO: Change this when TypeScript 4.0 issue is fixed in `node-html-parser`
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { parse: parseHTML } = require('node-html-parser');
+// const { parse: parseHTML } = require('node-html-parser');
 
 const createDirectoryServer = () => {
   const styles = /* css */`
@@ -212,19 +213,14 @@ const createFileServer = () => {
 
       if (/^\.html?$/.test(path.extname(sentFilePath))) {
         const htmlSource = await new Promise<string>((res) => {
-          const stream = ctx.body as fs.ReadStream;
+          const stream: fs.ReadStream = ctx.body;
           const chunks: Buffer[] = [];
 
           stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
           stream.on('end', () => res(Buffer.concat(chunks).toString()));
         });
 
-        const htmlRoot = parseHTML(htmlSource, {
-          comment: true,
-          script: true,
-          style: true,
-          pre: true
-        });
+        const htmlRoot = parseHTML(htmlSource, { comment: true });
         const body = htmlRoot.querySelector('body');
 
         if (body) {
@@ -241,7 +237,7 @@ const createFileServer = () => {
 
     sendDirectory(ctx, root);
 
-    await next();
+    return next();
   }
 
   return [koaMiddleware, onServerCreatedCallback] as const;

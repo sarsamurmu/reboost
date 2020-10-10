@@ -27,11 +27,11 @@
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "svelte": "^3.25.1"
+    "svelte": "^3.29.0"
   },
   "devDependencies": {
     "magic-string": "^0.25.7",
-    "svelte": "^3.25.1",
+    "svelte": "^3.29.0",
     "typescript": "^4.0.3"
   }
 }
