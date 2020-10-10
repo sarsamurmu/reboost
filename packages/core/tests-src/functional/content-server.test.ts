@@ -10,7 +10,7 @@ import { newPage } from '../helpers/browser';
 
 jest.setTimeout(15000);
 
-test('shows directory structure', async () => {
+test('serves directory listing', async () => {
   const fixture = createFixture({
     'public': {
       'dir-1': {},
@@ -23,7 +23,8 @@ test('shows directory structure', async () => {
     entries: [],
     contentServer: {
       root: './public',
-      index: false
+      index: false,
+      serveIndex: true
     },
     log: false
   });
@@ -36,6 +37,21 @@ test('shows directory structure', async () => {
   expect(bodyText).toMatch('file-2.html');
 
   await service.stop();
+
+  const service2 = await start({
+    rootDir: fixture.p('.'),
+    entries: [],
+    contentServer: {
+      root: './public',
+      serveIndex: false
+    },
+    log: false
+  });
+
+  const response = await page.goto(service2.contentServer.local);
+  expect(response.status()).toBe(404);
+
+  await service2.stop();
 });
 
 test('loads index file', async () => {

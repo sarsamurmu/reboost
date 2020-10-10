@@ -135,6 +135,8 @@ export interface ReboostConfig {
     proxy?: Record<string, string | ProxyOptions>;
     /** Directory which the content server should serve */
     root: string;
+    /** Serves directory listing for directories that don't have an index file */
+    serveIndex?: boolean;
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
@@ -240,7 +242,8 @@ export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['
   open: false,
   port: undefined,
   proxy: undefined,
-  root: undefined
+  root: undefined,
+  serveIndex: true
 }
 
 deepFreeze(DefaultConfig);

@@ -232,7 +232,7 @@ const createFileServer = () => {
       return next();
     }
 
-    sendDirectory(ctx, root);
+    if (contentServer.serveIndex) sendDirectory(ctx, root);
 
     return next();
   }
