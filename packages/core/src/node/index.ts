@@ -119,6 +119,8 @@ export interface ReboostConfig {
   };
   /** Options for content server */
   contentServer?: {
+    /** All content files will be available under this path */
+    basePath?: string;
     /** Extensions to resolve when no extension is present in the URL */
     extensions?: false | string[];
     /** When enabled, also serves hidden files */
@@ -235,6 +237,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
 };
 
 export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['contentServer']>> = {
+  basePath: '/',
   extensions: ['.html'],
   hidden: false,
   index: 'index.html',

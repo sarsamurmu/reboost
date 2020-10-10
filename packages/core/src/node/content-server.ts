@@ -147,7 +147,6 @@ const createFileServer = () => {
   const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js')).toString();
   const initCode = loadInitCode();
   const initScriptPath = `/reboost-${uniqueID(10)}`;
-  const initScriptHTML = `<script src="${initScriptPath}"></script>`;
   const webSockets = new Set<WebSocket>();
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
@@ -180,8 +179,13 @@ const createFileServer = () => {
     addServiceStopper('Content server websocket', () => wss.close());
   }
 
+  const initScriptHTML = `<script src="${initScriptPath}"></script>`;
   const koaMiddleware = async (ctx: Koa.Context, next: Koa.Next) => {
-    let sentFilePath;
+    if (!ctx.path.startsWith(contentServer.basePath)) return;
+
+    let newPath = ctx.path.substring(contentServer.basePath.length);
+    if (!newPath.startsWith('/')) newPath = '/' + newPath;
+    ctx.path = newPath;
 
     if (ctx.path === initScriptPath) {
       ctx.type = 'text/javascript';
@@ -190,6 +194,7 @@ const createFileServer = () => {
       return next();
     }
 
+    let sentFilePath;
     try {
       sentFilePath = await sendFile(ctx, ctx.path, sendOptions);
       sentFilePath = path.normalize(sentFilePath);

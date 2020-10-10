@@ -48,8 +48,7 @@ test('serves directory listing', async () => {
     log: false
   });
 
-  const response = await page.goto(service2.contentServer.local);
-  expect(response.status()).toBe(404);
+  expect((await page.goto(service2.contentServer.local)).status()).toBe(404);
 
   await service2.stop();
 });
@@ -193,12 +192,32 @@ test('redirects using proxy', async () => {
   await service.stop();
 });
 
+test('serves content on basePath', async () => {
+  const fixture = createFixture({
+    'public/main.html': '<html><body>Content</body></html>'
+  }).apply();
+  const service = await start({
+    rootDir: fixture.p('.'),
+    entries: [],
+    contentServer: {
+      root: './public',
+      basePath: '/custom-base'
+    },
+    log: false
+  });
+  const page = await newPage();
+
+  expect((await page.goto(`${service.contentServer.local}/main.html`)).status()).toBe(404);
+  await page.goto(`${service.contentServer.local}/custom-base/main.html`);
+  expect(await page.evaluate(() => document.body.innerText)).toMatch('Content');
+
+  await service.stop();
+});
+
 describe('file watcher', () => {
   test('reloads page when file changes', async () => {
     const fixture = createFixture({
-      'public': {
-        'main.html': '<html><body>A HTML file</body></html>',
-      }
+      'public/main.html': '<html><body>A HTML file</body></html>'
     }).apply();
     const service = await start({
       rootDir: fixture.p('.'),
