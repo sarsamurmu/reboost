@@ -216,6 +216,35 @@ describe('file watcher', () => {
     await service.stop();
   });
 
+  test('reloads blank HTML document', async () => {
+    const fixture = createFixture({
+      'public/main.html': ''
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [],
+      contentServer: {
+        root: './public'
+      },
+      log: false
+    });
+    const page = await newPage();
+
+    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle0' });
+    const getBodyText = () => document.body.innerText;
+    expect((await page.evaluate(getBodyText)).trim()).toBe('');
+    await Promise.all([
+      page.waitForNavigation(),
+      fs.promises.writeFile(
+        fixture.p('./public/main.html'),
+        '<html><body>Content</body></html>'
+      )
+    ]);
+    expect(await page.evaluate(getBodyText)).toMatch('Content');
+
+    await service.stop();
+  });
+
   test('hot reloads CSS when CSS files change', async () => {
     const fixture = createFixture({
       'public': {

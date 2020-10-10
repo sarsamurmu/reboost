@@ -12,10 +12,6 @@ import path from 'path';
 import { getConfig, addServiceStopper } from './shared';
 import { isDirectory, uniqueID, getTimestamp, onServerCreated, tLog } from './utils';
 
-// TODO: Change this when TypeScript 4.0 issue is fixed in `node-html-parser`
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// const { parse: parseHTML } = require('node-html-parser');
-
 const createDirectoryServer = () => {
   const styles = /* css */`
     * {
@@ -148,16 +144,10 @@ const createFileServer = () => {
     index: contentServer.index
   }
 
-  // TODO: Remove it in v1.0
-  for (const key in contentServer) {
-    if (['maxage', 'maxAge', 'immutable', 'gzip', 'brotli', 'format', 'setHeaders', 'onReady'].includes(key)) {
-      tLog('info', chalk.yellow(`Option "${key}" is now no longer available in "config.contentServer".\n`));
-    }
-  }
-
   const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js')).toString();
   const initCode = loadInitCode();
   const initScriptPath = `/reboost-${uniqueID(10)}`;
+  const initScriptHTML = `<script src="${initScriptPath}"></script>`;
   const webSockets = new Set<WebSocket>();
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
@@ -219,16 +209,23 @@ const createFileServer = () => {
           stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
           stream.on('end', () => res(Buffer.concat(chunks).toString()));
         });
+        let responseHTML;
 
-        const htmlRoot = parseHTML(htmlSource, { comment: true });
-        const body = htmlRoot.querySelector('body');
+        if (htmlSource.trim() === '') {
+          responseHTML = `<html><body>${initScriptHTML}</body></html>`;
+        } else {
+          const htmlRoot = parseHTML(htmlSource, { comment: true });
+          const body = htmlRoot.querySelector('body');
 
-        if (body) {
-          body.appendChild(parseHTML(`<script src="${initScriptPath}"></script>`));
+          if (body) {
+            body.appendChild(parseHTML(initScriptHTML));
+          }
+
+          responseHTML = htmlRoot.toString();
         }
 
+        ctx.body = responseHTML;
         ctx.type = 'text/html';
-        ctx.body = htmlRoot.toString();
         ctx.remove('Content-Length');
       }
 
