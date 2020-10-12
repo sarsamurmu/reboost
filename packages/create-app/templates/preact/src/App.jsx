@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import './App.css';
 
-export default () => {
+export function App() {
   return (
     <div className="main">
       <p>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './App.css';
 
-export default () => {
+export function App() {
   return (
     <div className="main">
       <p>
