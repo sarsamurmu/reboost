@@ -180,8 +180,8 @@ const createFileServer = () => {
   }
 
   const initScriptHTML = `<script src="${initScriptPath}"></script>`;
-  const koaMiddleware = async (ctx: Koa.Context, next: Koa.Next) => {
-    if (!ctx.path.startsWith(contentServer.basePath)) return;
+  const koaMiddleware: Koa.Middleware = async (ctx, next) => {
+    if (!ctx.path.startsWith(contentServer.basePath)) return next();
 
     let newPath = ctx.path.substring(contentServer.basePath.length);
     if (!newPath.startsWith('/')) newPath = '/' + newPath;
