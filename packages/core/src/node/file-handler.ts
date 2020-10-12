@@ -1,4 +1,4 @@
-import { ParameterizedContext } from 'koa';
+import Koa from 'koa';
 import getHash from 'md5-file';
 import chalk from 'chalk';
 
@@ -136,7 +136,7 @@ export const createFileHandler = () => {
   const memoizedFiles = new Map<string, string>();
   const noop = () => {/* No Operation */};
 
-  return async (ctx: ParameterizedContext) => {
+  return async (ctx: Koa.Context) => {
     if (!initialized) {
       config = getConfig();
       filesDir = getFilesDir();
@@ -188,6 +188,8 @@ export const createFileHandler = () => {
 
         if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, dependencies);
+        
+        ctx.set('ETag', mtime + '');
       }
 
       if (getFilesData().files[filePath]) {
@@ -226,15 +228,22 @@ export const createFileHandler = () => {
 
             if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
             watcher.setDependencies(filePath, dependencies);
+
+            ctx.set('ETag', mtime + '');
           } else {
-            transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
+            if (ctx.get('If-None-Match') === mtime + '') {
+              ctx.status = 304;
+            } else {
+              transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
 
-            if (fileData.mtime !== mtime) {
-              fileData.mtime = mtime;
-              saveFilesData();
+              if (fileData.mtime !== mtime) {
+                fileData.mtime = mtime;
+                saveFilesData();
+              }
+
+              if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
             }
-
-            if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+            
             watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
           }
         } catch (e) {
@@ -252,8 +261,10 @@ export const createFileHandler = () => {
       transformedCode = `console.error(${JSON.stringify(message)})`;
     }
 
-    ctx.type = 'text/javascript';
-    ctx.body = transformedCode;
+    if (transformedCode) {
+      ctx.type = 'text/javascript';
+      ctx.body = transformedCode;
+    }
 
     if (logEnabled('responseTime')) {
       const endTime = process.hrtime(startTime);

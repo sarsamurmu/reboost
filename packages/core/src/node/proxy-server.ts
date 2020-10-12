@@ -32,7 +32,15 @@ export const createRouter = (): Koa.Middleware => {
 
   routedPaths['/raw'] = async (ctx) => {
     const filePath = ctx.query.q;
-    if (fs.existsSync(filePath)) ctx.body = await fs.promises.readFile(filePath);
+    try {
+      const mtime = Math.floor((await fs.promises.stat(filePath)).mtimeMs) + '';
+      if (ctx.get('If-None-Match') === mtime) {
+        ctx.status = 304;
+      } else {
+        ctx.body = await fs.promises.readFile(filePath);
+        ctx.set('ETag', mtime);
+      }
+    } catch (e) {/* The file probably doesn't exist */}
   }
 
   const hotCode = fs.readFileSync(path.resolve(__dirname, '../browser/hot.js')).toString();
