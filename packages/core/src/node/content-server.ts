@@ -80,13 +80,12 @@ const createDirectoryServer = () => {
     }
   `;
 
-  return (ctx: Koa.Context, root: string) => {
-    const dirPath = path.join(root, ctx.path);
+  const basePathLength = getConfig().contentServer.basePath.length;
+  return (ctx: Koa.Context, root: string): boolean => {
+    const requestedPath = ctx.path.substring(basePathLength);
+    const dirPath = path.join(root, requestedPath);
 
-    if (
-      !fs.existsSync(dirPath) ||
-      !isDirectory(dirPath)
-    ) return;
+    if (!fs.existsSync(dirPath) || !isDirectory(dirPath)) return;
 
     const all = fs.readdirSync(dirPath);
     const directories = all.filter((file) => isDirectory(path.join(dirPath, file))).sort();
@@ -104,13 +103,13 @@ const createDirectoryServer = () => {
         <body>
           <h2>Index of ${ctx.path}</h2>
           <ul>
-            ${ctx.path !== '/' ? /* html */`
+            ${requestedPath && requestedPath !== '/' ? /* html */`
               <li>
-                <a href="${path.join(ctx.path, '..')}">
+                <a href="../">
                   <i icon="go-up"></i>
                   Go up
                 </a>
-              <li>
+              </li>
             ` : ''}
             ${directories.concat(files).map((file) => {
                 const isDir = directories.includes(file);
@@ -181,12 +180,6 @@ const createFileServer = () => {
 
   const initScriptHTML = `<script src="${initScriptPath}"></script>`;
   const koaMiddleware: Koa.Middleware = async (ctx, next) => {
-    if (!ctx.path.startsWith(contentServer.basePath)) return next();
-
-    let newPath = ctx.path.substring(contentServer.basePath.length);
-    if (!newPath.startsWith('/')) newPath = '/' + newPath;
-    ctx.path = newPath;
-
     if (ctx.path === initScriptPath) {
       ctx.type = 'text/javascript';
       ctx.body = `const debugMode = ${getConfig().debugMode};\n\n`;
@@ -194,9 +187,17 @@ const createFileServer = () => {
       return next();
     }
 
-    let sentFilePath;
+    if (!ctx.path.startsWith(contentServer.basePath)) return next();
+
+    const requestedPath = ctx.path.substring(contentServer.basePath.length);
+    if (!requestedPath && !ctx.path.endsWith('/')) {
+      ctx.redirect(ctx.path + '/');
+      return;
+    }
+
+    let sentFilePath: string;
     try {
-      sentFilePath = await sendFile(ctx, ctx.path, sendOptions);
+      sentFilePath = await sendFile(ctx, requestedPath || '/', sendOptions);
       sentFilePath = path.normalize(sentFilePath);
     } catch (err) {/* Ignored */}
 

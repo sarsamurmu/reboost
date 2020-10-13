@@ -207,8 +207,9 @@ test('serves content on basePath', async () => {
   });
   const page = await newPage();
 
-  expect((await page.goto(`${service.contentServer.local}/main.html`)).status()).toBe(404);
-  await page.goto(`${service.contentServer.local}/custom-base/main.html`);
+  expect(service.contentServer.local).toMatch('/custom-base');
+  expect((await page.goto(`${service.contentServer.local.replace('/custom-base', '')}`)).status()).toBe(404);
+  await page.goto(`${service.contentServer.local}/main.html`);
   expect(await page.evaluate(() => document.body.innerText)).toMatch('Content');
 
   await service.stop();
