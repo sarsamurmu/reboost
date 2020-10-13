@@ -39,7 +39,7 @@ export interface esbuildPluginOptions {
    */
   define?: Record<string, string>;
   /** Pre-started service to use with esbuild */
-  service?: Promise<esbuild.Service>;
+  service?: esbuild.Service;
 }
 
 export const PluginName = 'core-esbuild-plugin';
@@ -66,13 +66,22 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     service: undefined,
   };
   let compatibleTypes: string[];
-  let esbuildServicePromise: Promise<esbuild.Service>;
+  let esbuildService: esbuild.Service;
+  const loadService = async () => {
+    if (!esbuildService) {
+      if (options.service) {
+        esbuildService = options.service;
+      } else {
+        esbuildService = await esbuild.startService();
+      }
+    }
+    return esbuildService;
+  }
 
   return {
     name: PluginName,
     setup({ config, chalk }) {
-      if (options.service) esbuildServicePromise = options.service;
-      if (!esbuildServicePromise) esbuildServicePromise = esbuild.startService();
+      loadService();
 
       defaultOptions.minify = !config.debugMode;
       defaultOptions.minifySyntax = !config.debugMode;
@@ -96,13 +105,15 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
         aOpts.jsx.fragment = aOpts.jsxFragment;
       }
     },
-    async stop() {
-      if (!options.service) (await esbuildServicePromise).stop();
+    stop() {
+      if (options.service) return;
+      esbuildService.stop();
+      esbuildService = undefined;
     },
     async transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
         try {
-          const { js, jsSourceMap, warnings } = await (await esbuildServicePromise).transform(data.code, {
+          const { js, jsSourceMap, warnings } = await (await loadService()).transform(data.code, {
             sourcemap: 'external',
             sourcefile: path.relative(this.config.rootDir, filePath),
             loader: options.loaders[data.type],
