@@ -4,6 +4,7 @@ import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
+import os from 'os';
 
 import { ReboostConfig } from './index';
 
@@ -103,6 +104,17 @@ export const onServerCreated = (app: Koa, cb: (server: http.Server) => void) => 
     const server: ReturnType<typeof defaultListenFunc> = defaultListenFunc.apply(app, args);
     cb(server);
     return server;
+  }
+}
+
+export const getExternalHost = () => {
+  const interfaces = os.networkInterfaces();
+  for (const dev in interfaces) {
+    for (const details of interfaces[dev]) {
+      if (details.family === 'IPv4' && !details.internal) {
+        return details.address;
+      }
+    }
   }
 }
 

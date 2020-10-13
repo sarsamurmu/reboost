@@ -13,11 +13,10 @@ import { ResolveOptions } from 'enhanced-resolve';
 
 import fs from 'fs';
 import path from 'path';
-import { networkInterfaces } from 'os';
 import net from 'net';
 
 import { initContentServer } from './content-server';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog } from './utils';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog, getExternalHost } from './utils';
 import { setAddress, setConfig, getFilesData, getUsedPlugins, getServiceStoppers, getPlugins, addServiceStopper } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
@@ -264,6 +263,22 @@ export interface ReboostService {
   }
 }
 
+const startServer = (name: string, server: Koa, port: number, host = 'localhost') => new Promise((doneStart) => {
+  const httpServer = server.listen(port, host, () => doneStart());
+  const connections = new Map<string, net.Socket>();
+
+  httpServer.on('connection', (connection) => {
+    const key = `${connection.remoteAddress}:${connection.remotePort}`;
+    connections.set(key, connection);
+    connection.on('close', () => connections.delete(key));
+  });
+
+  addServiceStopper(name, () => new Promise((doneClose) => {
+    connections.forEach((connection) => connection.destroy());
+    httpServer.close(() => doneClose());
+  }));
+});
+
 export const start = async (config: ReboostConfig = {} as any): Promise<ReboostService> => {
   const stop = async () => {
     for (const [stopService] of getServiceStoppers()) {
@@ -320,6 +335,8 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     plugins.unshift(PostCSSPlugin());
   }
 
+  deepFreeze(config);
+
   if (config.dumpCache) rmDir(config.cacheDir);
 
   // TODO: Remove in v1.0
@@ -354,29 +371,27 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   const proxyServer = initProxyServer();
   const contentServer = config.contentServer ? initContentServer() : undefined;
-  const interfaces = networkInterfaces();
-  let host: string;
-  let port: number;
+  const externalHost = getExternalHost();
 
-  loop: for (const dev in interfaces) {
-    for (const details of interfaces[dev]) {
-      if (details.family === 'IPv4' && !details.internal) {
-        host = details.address;
-        port = await portFinder.getPortPromise({
-          host,
-          port: DEFAULT_PORT
-        });
-        break loop;
-      }
+  for (const { setup } of plugins) {
+    if (setup) {
+      await setup({
+        config,
+        proxyServer,
+        contentServer,
+        resolve,
+        chalk
+      });
     }
   }
 
-  if (!host && !port) {
-    host = 'localhost';
-    port = await portFinder.getPortPromise({ port: DEFAULT_PORT });
-  }
+  const proxyServerHost = externalHost || 'localhost';
+  const proxyServerPort = await portFinder.getPortPromise({
+    host: proxyServerHost,
+    port: DEFAULT_PORT
+  });
 
-  const fullAddress = setAddress(`http://${host}:${port}`);
+  const fullAddress = setAddress(`http://${proxyServerHost}:${proxyServerPort}`);
 
   for (const [input, output, libName] of config.entries) {
     const outputPath = path.join(config.rootDir, output);
@@ -392,74 +407,46 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     tLog('info', chalk.cyan(`Generated: ${input} -> ${output}`));
   }
 
-  deepFreeze(config);
-
-  for (const { setup } of plugins) {
-    if (setup) {
-      await setup({
-        config,
-        proxyServer,
-        contentServer,
-        resolve,
-        chalk
-      });
-    }
-  }
-
-  const startServer = (name: string, server: Koa, aPort: number, aHost = 'localhost') => new Promise((doneStart) => {
-    const httpServer = server.listen(aPort, aHost, () => doneStart());
-    const connections = new Map<string, net.Socket>();
-
-    httpServer.on('connection', (connection) => {
-      const key = `${connection.remoteAddress}:${connection.remotePort}`;
-      connections.set(key, connection);
-      connection.on('close', () => connections.delete(key));
-    });
-
-    addServiceStopper(name, () => new Promise((doneClose) => {
-      connections.forEach((connection) => connection.destroy());
-      httpServer.close(() => doneClose());
-    }));
-  });
-
-  await startServer('Proxy server', proxyServer, port, host);
-
+  await startServer('Proxy server', proxyServer, proxyServerPort, proxyServerHost);
   tLog('info', chalk.green('Proxy server started'));
 
   if (contentServer) {
+    const contentServerPath = (host: string, port: string | number) => {
+      return `http://${host}:${port}${config.contentServer.basePath}`.replace(/\/$/, '');
+    }
     const startedAt = (address: string) => {
-      tLog('info', chalk.green(`Content server started at: http://${address}`));
+      tLog('info', chalk.green(`Content server started at: ${address}`));
     }
 
     const localPort = await portFinder.getPortPromise({
       port: config.contentServer.port
     });
+    const contentServerLocal = contentServerPath('localhost', localPort);
 
     await startServer('Local content server', contentServer, localPort);
-
-    startedAt(`localhost:${localPort}`);
+    startedAt(contentServerLocal);
 
     const openOptions = config.contentServer.open;
     if (openOptions) {
-      open(`http://localhost:${localPort}`, typeof openOptions === 'object' ? openOptions : undefined);
+      open(contentServerLocal, typeof openOptions === 'object' ? openOptions : undefined);
     }
 
-    if (host !== 'localhost') {
+    if (externalHost) {
       const externalPort = await portFinder.getPortPromise({
-        host,
+        host: externalHost,
         port: config.contentServer.port
       });
+      const contentServerExternal = contentServerPath(externalHost, externalPort);
       
-      await startServer('External content server', contentServer, externalPort, host);
-
-      startedAt(`${host}:${externalPort}`);
+      await startServer('External content server', contentServer, externalPort, externalHost);
+      startedAt(contentServerExternal);
 
       return {
         stop,
         proxyServer: fullAddress,
         contentServer: {
-          local: `http://localhost:${localPort}`,
-          external: `http://${host}:${externalPort}`
+          local: contentServerLocal,
+          external: contentServerExternal
         }
       }
     }
@@ -468,7 +455,7 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
       stop,
       proxyServer: fullAddress,
       contentServer: {
-        local: `http://localhost:${localPort}`
+        local: contentServerLocal
       }
     }
   }
