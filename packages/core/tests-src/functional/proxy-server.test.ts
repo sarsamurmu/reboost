@@ -282,6 +282,71 @@ describe('plugins', () => {
 
     await service.stop();
   });
+
+  test('transformJSContent hook', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': 'import "./log.js"',
+        'log.js': '',
+      }
+    }).apply();
+    type transformFnT = ReboostPlugin['transformJSContent'];
+    const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+      if (filePath === fixture.p('./src/log.js')) {
+        return {
+          code: 'From transformer 1',
+          map: undefined
+        }
+      }
+    });
+    const transformFn2 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+      if (filePath === fixture.p('./src/log.js')) {
+        return {
+          code: 'console.log("By transformer 2")',
+          map: undefined
+        }
+      }
+    });
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      log: false,
+      plugins: [
+        { name: '1', transformJSContent: transformFn1 },
+        { name: '2', transformJSContent: transformFn2 }
+      ]
+    });
+    const page = await newPage();
+
+    await Promise.all([
+      waitForConsole(page, 'By transformer 2'),
+      page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+    expect(transformFn1).toBeCalledTimes(2);
+    expect(transformFn1.mock.results[0].value).toBeUndefined();
+    expect(transformFn1.mock.results[1].value).toEqual({
+      code: 'From transformer 1',
+      map: undefined
+    });
+    expect(transformFn2).toBeCalledTimes(2);
+    expect(transformFn2.mock.results[0].value).toBeUndefined();
+    expect(transformFn2.mock.calls[1]).toEqual([
+      {
+        code: 'From transformer 1',
+        type: 'js',
+        map: expect.anything()
+      },
+      fixture.p('./src/log.js')
+    ]);
+    expect(transformFn2.mock.results[1].value).toEqual({
+      code: 'console.log("By transformer 2")',
+      map: undefined
+    });
+
+    await service.stop();
+  });
 });
 
 describe('updates cache', () => {
