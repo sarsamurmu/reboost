@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './App.css';
 
-export function App() {
+export const App = () => {
   return (
     <div className="main">
       <p>
