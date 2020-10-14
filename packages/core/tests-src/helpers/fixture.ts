@@ -24,6 +24,7 @@ const makeFilesRecursive = (base: string, structure: DirectoryStructure) => {
 
 const rmDirRecursive = (dirPath: string, retry = true) => {
   // Handle errors silently
+  if (!fs.existsSync(dirPath)) return;
   fs.readdirSync(dirPath).forEach((file) => {
     const fullPath = path.join(dirPath, file);
     let stats;
