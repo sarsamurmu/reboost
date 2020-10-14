@@ -94,20 +94,22 @@ export const createProcessor = (instance: ReboostInstance) => {
     transformContentError = await runTransformContentHooks(pluginHooks.transformContentHooks);
     if (transformContentError) return transformContentError;
 
-    for (const hook of pluginHooks.transformIntoJSHooks) {
-      const result = await bind(hook, pluginContext)({
-        code,
-        type,
-        map: sourceMap
-      }, filePath);
+    if (type !== 'js') {
+      for (const hook of pluginHooks.transformIntoJSHooks) {
+        const result = await bind(hook, pluginContext)({
+          code,
+          type,
+          map: sourceMap
+        }, filePath);
 
-      if (result) {
-        if (result instanceof Error) return handleError(result);
+        if (result) {
+          if (result instanceof Error) return handleError(result);
 
-        ({ code } = result);
-        sourceMap = result.inputMap;
-        type = 'js';
-        break;
+          ({ code } = result);
+          sourceMap = result.inputMap;
+          type = 'js';
+          break;
+        }
       }
     }
 
