@@ -1,16 +1,15 @@
 import anymatch from 'anymatch';
 
-import { ReboostPlugin } from '../../index';
+import { ReboostInstance, ReboostPlugin } from '../../index';
 import { transformCommonJSToES6 } from './commonjs-to-es6';
-import { getConfig } from '../../shared';
 import { uniqueID } from '../../utils';
 
 export { transformCommonJSToES6 as runTransformation }
 
-export const CommonJSMode2Plugin = (): ReboostPlugin => {
+export const CommonJSMode2Plugin = (instance: ReboostInstance): ReboostPlugin => {
   const test = (file: string) => (
-    !anymatch(getConfig().commonJSInterop.exclude, file) &&
-    anymatch(getConfig().commonJSInterop.include, file)
+    !anymatch(instance.config.commonJSInterop.exclude, file) &&
+    anymatch(instance.config.commonJSInterop.include, file)
   );
 
   return {

@@ -16,6 +16,8 @@ export type DeepFrozen<T> = T extends Record<string, any> ? {
   readonly [P in keyof T]: DeepFrozen<T[P]>;
 } : T extends any[] ? readonly T[] : T;
 
+export type PromiseType<T extends Promise<any>> = Parameters<Parameters<T['then']>[0]>[0];
+
 export const toPosix = (pathString: string) => pathString.replace(/\\/g, '/');
 
 export const uniqueID = (length = 32) => Array(length).fill(0).map(() => (Math.random() * 16 | 0).toString(16)).join('');
@@ -127,16 +129,16 @@ export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => {
   return (ms ? `${ms}ms ` : '') + `${Math.floor((nanoseconds % 1e6) / 1e3)}μs`;
 }
 
-let aConfig: ReboostConfig;
+let aLogMode: ReboostConfig['log'];
+/* istanbul ignore next */
+export const setLoggerMode = (logMode: ReboostConfig['log']) => {
+  aLogMode = logMode;
+}
+
 /* istanbul ignore next */
 export const logEnabled = (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
-  // Fix for circular dependency error
-  if (!aConfig) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    aConfig = require('./shared').getConfig();
-  }
   // Sorry for the extra negation *_*
-  return !(!aConfig.log || !aConfig.log[type]);
+  return !(!aLogMode || !aLogMode[type]);
 }
 
 /* istanbul ignore next */

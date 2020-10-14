@@ -9,8 +9,7 @@ import { RawSourceMap } from 'source-map';
 import path from 'path';
 
 import { postcssError } from './postcss';
-import { ReboostPlugin } from '../index';
-import { getConfig } from '../shared';
+import { ReboostConfig, ReboostPlugin } from '../index';
 
 type Modes = 'local' | 'global' | 'pure';
 
@@ -37,8 +36,8 @@ const getID = (key: string) => {
   return idMap.get(key);
 }
 
-const getCSS = (css: string, sourceMap: RawSourceMap, filePath: string) => {
-  let str = `\n/* ${path.relative(getConfig().rootDir, filePath)} */\n\n`;
+const getCSS = (config: ReboostConfig, css: string, sourceMap: RawSourceMap, filePath: string) => {
+  let str = `\n/* ${path.relative(config.rootDir, filePath)} */\n\n`;
   str += css;
   if (sourceMap) {
     str += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
@@ -150,7 +149,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 const sourceMap = map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap;
                 cssSourceMap = this.getCompatibleSourceMap(sourceMap);
               }
-              const cssString = getCSS(result.css, cssSourceMap, filePath);
+              const cssString = getCSS(this.config, result.css, cssSourceMap, filePath);
 
               script += getScript(cssString);
 
@@ -184,7 +183,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
         }
 
         return {
-          code: getScript(getCSS(css, this.getCompatibleSourceMap(sourceMap), filePath))
+          code: getScript(getCSS(this.config, css, this.getCompatibleSourceMap(sourceMap), filePath))
         }
       }
 

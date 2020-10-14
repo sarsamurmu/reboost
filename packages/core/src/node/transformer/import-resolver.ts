@@ -2,11 +2,16 @@ import chalk from 'chalk';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 
+import { ReboostInstance } from '../index';
 import { getPluginHooks } from './processor';
 import { tLog, uniqueID } from '../utils';
 
-export const resolveDependency = async (pathToResolve: string, relativeTo: string) => {
-  for (const hook of getPluginHooks().resolveHooks) {
+export const resolveDependency = async (
+  instance: ReboostInstance,
+  pathToResolve: string,
+  relativeTo: string
+) => {
+  for (const hook of getPluginHooks(instance).resolveHooks) {
     const resolvedPath = await hook(pathToResolve, relativeTo);
     if (resolvedPath) return resolvedPath;
   }
@@ -15,7 +20,11 @@ export const resolveDependency = async (pathToResolve: string, relativeTo: strin
   return null;
 }
 
-export const resolveImports = async (ast: t.Node, filePath: string) => {
+export const resolveImports = async (
+  instance: ReboostInstance,
+  ast: t.Node,
+  filePath: string
+) => {
   let error = false;
   const imports: string[] = [];
 
@@ -40,7 +49,7 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
           finalPath = source.replace(/^#/, '');
           routed = true;
         } else {
-          const resolvedPath = await resolveDependency(source, filePath);
+          const resolvedPath = await resolveDependency(instance, source, filePath);
           if (resolvedPath) {
             if (resolvedPath.startsWith('#/')) {
               finalPath = resolvedPath.replace(/^#/, '');
@@ -85,7 +94,7 @@ export const resolveImports = async (ast: t.Node, filePath: string) => {
         promiseExecutors.push(async () => {
           nodePath.replaceWith(
             t.stringLiteral(
-              await resolveDependency((nodePath.node.arguments[0] as t.StringLiteral).value, filePath)
+              await resolveDependency(instance, (nodePath.node.arguments[0] as t.StringLiteral).value, filePath)
             )
           );
         });

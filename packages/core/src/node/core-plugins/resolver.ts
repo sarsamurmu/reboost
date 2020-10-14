@@ -3,8 +3,7 @@ import { ResolverFactory, Resolver, ResolveOptions, CachedInputFileSystem } from
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostPlugin } from '../index';
-import { getConfig } from '../shared';
+import { ReboostInstance, ReboostPlugin } from '../index';
 
 let defaultResolver: Resolver;
 const defaultOpts: ResolveOptions = {
@@ -12,25 +11,28 @@ const defaultOpts: ResolveOptions = {
   useSyncFileSystemCalls: true
 }
 
+export type PublicResolveFn = (basePath: string, request: string, overrides?: Partial<ResolveOptions>) => string;
+
 export const resolve = (
+  instance: ReboostInstance,
   basePath: string,
   request: string,
   overrides?: Partial<ResolveOptions>
 ) => {
   if (!defaultResolver) {
     defaultResolver = ResolverFactory.createResolver(
-      Object.assign({}, getConfig().resolve, defaultOpts)
+      Object.assign({}, instance.config.resolve, defaultOpts)
     );
   }
 
   const resolver = overrides ? ResolverFactory.createResolver(
-    Object.assign({}, getConfig().resolve, defaultOpts, overrides)
+    Object.assign({}, instance.config.resolve, defaultOpts, overrides)
   ) : defaultResolver;
 
   return resolver.resolveSync({}, path.dirname(basePath), request) as string | null;
 }
 
-export const ResolverPlugin = (): ReboostPlugin => {
+export const ResolverPlugin = (instance: ReboostInstance): ReboostPlugin => {
   const cacheMap = new Map<string, string>();
 
   return {
@@ -45,7 +47,7 @@ export const ResolverPlugin = (): ReboostPlugin => {
       }
 
       try {
-        const resolvedPath = resolve(importer, importedPath);
+        const resolvedPath = resolve(instance, importer, importedPath);
         if (resolvedPath) cacheMap.set(key, resolvedPath);
         return resolvedPath;
       } catch (e) {

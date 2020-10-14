@@ -5,17 +5,17 @@ import WebSocket from 'ws';
 import fs from 'fs';
 import path from 'path';
 
+import { ReboostInstance } from './index';
 import { resolveDependency } from './transformer/import-resolver';
 import { createFileHandler } from './file-handler';
-import { getAddress, getConfig, addServiceStopper } from './shared';
 import { onServerCreated } from './utils';
 
 const webSockets = new Set<WebSocket>();
 
-export const createRouter = (): Koa.Middleware => {
+export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
   const routedPaths: Record<string, (ctx: Koa.Context) => void | Promise<void>> = {};
 
-  routedPaths['/transformed'] = createFileHandler();
+  routedPaths['/transformed'] = createFileHandler(instance);
 
   const loadSetupCode = () => (
     fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString()
@@ -24,10 +24,10 @@ export const createRouter = (): Koa.Middleware => {
 
   routedPaths['/setup'] = (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `const address = "${getAddress()}";\n`;
-    ctx.body += `const debugMode = ${getConfig().debugMode};\n`;
-    ctx.body += `const mode = "${getConfig().mode}";\n\n`;
-    ctx.body += getConfig().debugMode ? loadSetupCode() : setupCode;
+    ctx.body = `const address = "${instance.proxyAddress}";\n`;
+    ctx.body += `const debugMode = ${instance.config.debugMode};\n`;
+    ctx.body += `const mode = "${instance.config.mode}";\n\n`;
+    ctx.body += instance.config.debugMode ? loadSetupCode() : setupCode;
   }
 
   routedPaths['/raw'] = async (ctx) => {
@@ -47,7 +47,7 @@ export const createRouter = (): Koa.Middleware => {
 
   routedPaths['/hot'] = (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `const address = "${getAddress()}";\n`;
+    ctx.body = `const address = "${instance.proxyAddress}";\n`;
     ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
     ctx.body += hotCode;
   }
@@ -56,8 +56,8 @@ export const createRouter = (): Koa.Middleware => {
 
   routedPaths['/importer'] = (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `const address = "${getAddress()}";\n`;
-    ctx.body += `const commonJSInteropMode = ${getConfig().commonJSInterop.mode};\n\n`;
+    ctx.body = `const address = "${instance.proxyAddress}";\n`;
+    ctx.body += `const commonJSInteropMode = ${instance.config.commonJSInterop.mode};\n\n`;
     ctx.body += importerCode;
   }
 
@@ -72,7 +72,7 @@ export const createRouter = (): Koa.Middleware => {
   routedPaths['/resolve'] = async (ctx) => {
     const relativeTo: string = ctx.query.from;
     const pathToResolve: string = ctx.query.to;
-    const finalPath = await resolveDependency(pathToResolve, relativeTo);
+    const finalPath = await resolveDependency(instance, pathToResolve, relativeTo);
 
     if (finalPath) {
       ctx.type = 'text/plain';
@@ -88,9 +88,9 @@ export const createRouter = (): Koa.Middleware => {
   }
 }
 
-export const initProxyServer = () => {
+export const createProxyServer = (instance: ReboostInstance) => {
   const proxyServer = new Koa();
-  const router = createRouter();
+  const router = createRouter(instance);
 
   proxyServer
     .use(cors({ origin: '*' }))
@@ -102,7 +102,7 @@ export const initProxyServer = () => {
       webSockets.add(socket);
       socket.on('close', () => webSockets.delete(socket));
     });
-    addServiceStopper('Proxy server websocket', () => wss.close());
+    instance.onStop("Closes proxy server's websocket", () => wss.close());
   });
 
   return proxyServer;

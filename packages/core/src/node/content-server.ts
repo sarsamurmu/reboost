@@ -9,10 +9,10 @@ import { parse as parseHTML } from 'node-html-parser';
 import fs from 'fs';
 import path from 'path';
 
-import { getConfig, addServiceStopper } from './shared';
+import { ReboostInstance } from './index';
 import { isDirectory, uniqueID, getTimestamp, onServerCreated, tLog } from './utils';
 
-const createDirectoryServer = () => {
+const createDirectoryServer = ({ config }: ReboostInstance) => {
   const styles = /* css */`
     * {
       font-family: monospace;
@@ -80,7 +80,7 @@ const createDirectoryServer = () => {
     }
   `;
 
-  const basePathLength = getConfig().contentServer.basePath.length;
+  const basePathLength = config.contentServer.basePath.length;
   return (ctx: Koa.Context, root: string): boolean => {
     const requestedPath = ctx.path.substring(basePathLength);
     const dirPath = path.join(root, requestedPath);
@@ -132,9 +132,9 @@ const createDirectoryServer = () => {
   }
 }
 
-const createFileServer = () => {
-  const sendDirectory = createDirectoryServer();
-  const { contentServer, debugMode } = getConfig();
+const createFileServer = (instance: ReboostInstance) => {
+  const sendDirectory = createDirectoryServer(instance);
+  const { contentServer, debugMode } = instance.config;
   const { root } = contentServer;
   const sendOptions: SendOptions & { root: string } = {
     root,
@@ -150,13 +150,13 @@ const createFileServer = () => {
   const watcher = new FSWatcher();
   const watchedFiles = new Set<string>();
 
-  addServiceStopper('Content server file watcher', () => watcher.close());
+  instance.onStop("Closes content server's file watcher", () => watcher.close());
 
   const triggerReload = (isCSS = false) => {
     webSockets.forEach((ws) => ws.send(JSON.stringify(isCSS)));
   }
 
-  const rootRelative = (filePath: string) => path.relative(getConfig().rootDir, filePath);
+  const rootRelative = (filePath: string) => path.relative(instance.config.rootDir, filePath);
 
   watcher.on('change', (filePath) => {
     tLog('info', chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
@@ -175,14 +175,14 @@ const createFileServer = () => {
       webSockets.add(socket);
       socket.on('close', () => webSockets.delete(socket));
     });
-    addServiceStopper('Content server websocket', () => wss.close());
+    instance.onStop("Closes content server's websocket", () => wss.close());
   }
 
   const initScriptHTML = `<script src="${initScriptPath}"></script>`;
   const koaMiddleware: Koa.Middleware = async (ctx, next) => {
     if (ctx.path === initScriptPath) {
       ctx.type = 'text/javascript';
-      ctx.body = `const debugMode = ${getConfig().debugMode};\n\n`;
+      ctx.body = `const debugMode = ${instance.config.debugMode};\n\n`;
       ctx.body += debugMode ? loadInitCode() : initCode;
       return next();
     }
@@ -246,10 +246,10 @@ const createFileServer = () => {
   return [koaMiddleware, onServerCreatedCallback] as const;
 }
 
-export const initContentServer = () => {
+export const createContentServer = (instance: ReboostInstance) => {
   const contentServer = new Koa();
-  const config = getConfig();
-  const [koaMiddleware, onServerCreatedCallback] = createFileServer();
+  const config = instance.config;
+  const [koaMiddleware, onServerCreatedCallback] = createFileServer(instance);
 
   const { middleware } = config.contentServer;
   if (middleware) {

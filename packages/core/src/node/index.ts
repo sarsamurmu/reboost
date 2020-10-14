@@ -15,16 +15,16 @@ import fs from 'fs';
 import path from 'path';
 import net from 'net';
 
-import { initContentServer } from './content-server';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog, getExternalHost } from './utils';
-import { setAddress, setConfig, getFilesData, getUsedPlugins, getServiceStoppers, getPlugins, addServiceStopper } from './shared';
+import { createContentServer } from './content-server';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog, getExternalHost, PromiseType, setLoggerMode } from './utils';
+import { createShared } from './shared';
 import { verifyFiles } from './file-handler';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
 import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
-import { resolve } from './core-plugins/resolver';
-import { initProxyServer } from './proxy-server';
+import { PublicResolveFn, resolve } from './core-plugins/resolver';
+import { createProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
 export { PluginOptions } from './plugins';
@@ -57,7 +57,7 @@ export interface PluginContext {
   getSourceMapComment: (map: any) => string;
   MagicString: typeof MagicString;
   mergeSourceMaps: typeof mergeSourceMaps;
-  resolve: typeof resolve;
+  resolve: PublicResolveFn;
 }
 
 export interface ReboostPlugin {
@@ -68,7 +68,7 @@ export interface ReboostPlugin {
       config: ReboostConfig;
       proxyServer: Koa;
       contentServer?: Koa;
-      resolve: typeof resolve;
+      resolve: PublicResolveFn;
       chalk: typeof chalk;
     }
   ) => void | Promise<void>;
@@ -263,123 +263,148 @@ export interface ReboostService {
   }
 }
 
-const startServer = (name: string, server: Koa, port: number, host = 'localhost') => new Promise((doneStart) => {
-  const httpServer = server.listen(port, host, () => doneStart());
-  const connections = new Map<string, net.Socket>();
+const createInstance = async (initialConfig: ReboostConfig) => {
+  const onStopCallbacks: [() => Promise<void> | void, string][] = [];
+  const it = {
+    exports: {} as ReboostService,
+    proxyAddress: '',
+    config: {} as ReboostConfig,
+    plugins: [] as ReboostPlugin[],
+    shared: {} as ReturnType<typeof createShared>,
 
-  httpServer.on('connection', (connection) => {
-    const key = `${connection.remoteAddress}:${connection.remotePort}`;
-    connections.set(key, connection);
-    connection.on('close', () => connections.delete(key));
+    Init() {
+      // Config initialization
+      it.config = merge(clone(DefaultConfig as ReboostConfig), initialConfig);
+
+      setLoggerMode(it.config.log);
+      
+      if (!it.config.entries) {
+        console.log(chalk.red('No entry found. Please add some entries first.'));
+        return true;
+      }
+      if (!path.isAbsolute(it.config.rootDir)) tLog('info', chalk.red('rootDir should be an absolute path'));
+      if (!path.isAbsolute(it.config.cacheDir)) it.config.cacheDir = path.join(it.config.rootDir, it.config.cacheDir);
+      if (!it.config.watchOptions.include) it.config.watchOptions.include = /.*/;
+      if (it.config.contentServer) {
+        it.config.contentServer = merge(
+          clone(DefaultContentServerOptions as ReboostConfig['contentServer']),
+          it.config.contentServer
+        );
+
+        if (!path.isAbsolute(it.config.contentServer.root)) {
+          it.config.contentServer.root = path.join(it.config.rootDir, it.config.contentServer.root);
+        }
+      }
+
+      it.config.resolve.modules = [].concat(it.config.resolve.modules);
+      it.config.resolve.modules.slice().forEach((modDirName) => {
+        if (path.isAbsolute(modDirName)) return;
+        (it.config.resolve.modules as string[]).push(path.join(it.config.rootDir, modDirName));
+      });
+
+      deepFreeze(it.config);
+
+      // Plugins initialization
+      const flatPlugins: ReboostPlugin[] = [];
+      it.config.plugins.forEach((plugin) => {
+        flatPlugins.push(...(Array.isArray(plugin) ? plugin : [plugin]));
+      });
+      it.plugins = flatPlugins;
+
+      it.plugins.push(...CorePlugins(it));
+      const pluginNames = it.plugins.map(({ name }) => name);
+
+      if (!pluginNames.includes(esbuildPluginName)) {
+        it.plugins.push(esbuildPlugin());
+      }
+      if (!pluginNames.includes(CSSPluginName)) {
+        it.plugins.unshift(CSSPlugin());
+      }
+      if (!pluginNames.includes(PostCSSPluginName)) {
+        it.plugins.unshift(PostCSSPlugin());
+      }
+
+      // Shared initialization
+      it.shared = createShared(it.config, it.plugins);
+    },
+
+    onStop(label: string, cb: () => Promise<any> | any) {
+      onStopCallbacks.push([cb, label]);
+    },
+  }
+
+  const startServer = (name: string, server: Koa, port: number, host = 'localhost') => new Promise((doneStart) => {
+    const httpServer = server.listen(port, host, () => doneStart());
+    const connections = new Map<string, net.Socket>();
+
+    httpServer.on('connection', (connection) => {
+      const key = `${connection.remoteAddress}:${connection.remotePort}`;
+      connections.set(key, connection);
+      connection.on('close', () => connections.delete(key));
+    });
+
+    it.onStop(`Closes ${name}`, () => new Promise((doneClose) => {
+      connections.forEach((connection) => connection.destroy());
+      httpServer.close(() => doneClose());
+    }));
   });
 
-  addServiceStopper(name, () => new Promise((doneClose) => {
-    connections.forEach((connection) => connection.destroy());
-    httpServer.close(() => doneClose());
-  }));
-});
-
-export const start = async (config: ReboostConfig = {} as any): Promise<ReboostService> => {
   const stop = async () => {
-    for (const [stopService] of getServiceStoppers()) {
-      await stopService();
+    for (const [onStop] of onStopCallbacks) {
+      await onStop();
     }
-    for (const { stop: stopPlugin } of getPlugins()) {
+    for (const { stop: stopPlugin } of it.plugins) {
       if (stopPlugin) await stopPlugin();
     }
   }
 
-  config = setConfig(merge(clone(DefaultConfig as ReboostConfig), config));
+  // Initialize all properties
+  const shouldClose = it.Init();
+  if (shouldClose) return;
 
-  if (!config.entries) {
-    console.log(chalk.red('No entry found. Please add some entries first.'));
-    return;
-  }
-
-  if (!path.isAbsolute(config.rootDir)) tLog('info', chalk.red('rootDir should be an absolute path'));
-  if (!path.isAbsolute(config.cacheDir)) config.cacheDir = path.join(config.rootDir, config.cacheDir);
-  if (!config.watchOptions.include) config.watchOptions.include = /.*/;
-  if (config.contentServer) {
-    config.contentServer = merge(
-      clone(DefaultContentServerOptions as ReboostConfig['contentServer']),
-      config.contentServer
-    );
-
-    if (!path.isAbsolute(config.contentServer.root)) {
-      config.contentServer.root = path.join(config.rootDir, config.contentServer.root);
-    }
-  }
-
-  config.resolve.modules = [].concat(config.resolve.modules);
-  config.resolve.modules.slice().forEach((modDirName) => {
-    if (path.isAbsolute(modDirName)) return;
-    (config.resolve.modules as string[]).push(path.join(config.rootDir, modDirName));
-  });
-
-  let plugins: ReboostPlugin[] = [];
-  config.plugins.forEach((plugin) => {
-    plugins.push(...(Array.isArray(plugin) ? plugin : [plugin]));
-  });
-  config.plugins = plugins = plugins.filter((p) => !!p);
-
-  plugins.push(...CorePlugins());
-  const pluginNames = plugins.map(({ name }) => name);
-
-  if (!pluginNames.includes(esbuildPluginName)) {
-    plugins.push(esbuildPlugin());
-  }
-  if (!pluginNames.includes(CSSPluginName)) {
-    plugins.unshift(CSSPlugin());
-  }
-  if (!pluginNames.includes(PostCSSPluginName)) {
-    plugins.unshift(PostCSSPlugin());
-  }
-
-  deepFreeze(config);
-
-  if (config.dumpCache) rmDir(config.cacheDir);
+  if (it.config.dumpCache) rmDir(it.config.cacheDir);
 
   // TODO: Remove in v1.0
-  const oldCacheFilesDir = path.join(config.cacheDir, 'files_data.json');
+  const oldCacheFilesDir = path.join(it.config.cacheDir, 'files_data.json');
   if (fs.existsSync(oldCacheFilesDir)) rmDir(oldCacheFilesDir);
 
   let shouldClearCache = true;
   let clearCacheReason = '';
-  if (isVersionLessThan(getFilesData().version, INCOMPATIBLE_BELOW)) {
+  if (isVersionLessThan(it.shared.getFilesData().version, INCOMPATIBLE_BELOW)) {
     clearCacheReason = 'Cache version is incompatible';
-  } else if (getFilesData().usedPlugins !== getUsedPlugins()) {
+  } else if (it.shared.hasPluginsChanged()) {
     clearCacheReason = 'Plugin change detected';
-  } else if (getFilesData().mode !== config.mode) {
+  } else if (it.shared.getFilesData().mode !== it.config.mode) {
     clearCacheReason = 'Mode change detected';
   } else {
     shouldClearCache = false;
   }
-  
+
   if (shouldClearCache) {
     tLog('info', chalk.cyan(`${clearCacheReason}, clearing cached files...`));
-    rmDir(config.cacheDir);
+    rmDir(it.config.cacheDir);
     tLog('info', chalk.cyan('Clear cache complete'));
   }
 
-  if (fs.existsSync(config.cacheDir)) {
+  if (fs.existsSync(it.config.cacheDir)) {
     tLog('info', chalk.cyan('Refreshing cache...'));
-    verifyFiles();
+    verifyFiles(it);
     tLog('info', chalk.cyan('Refresh cache complete'));
   }
 
   tLog('info', chalk.green('Starting proxy server...'));
 
-  const proxyServer = initProxyServer();
-  const contentServer = config.contentServer ? initContentServer() : undefined;
+  const proxyServer = createProxyServer(it);
+  const contentServer = it.config.contentServer ? createContentServer(it) : undefined;
   const externalHost = getExternalHost();
 
-  for (const { setup } of plugins) {
+  for (const { setup } of it.plugins) {
     if (setup) {
       await setup({
-        config,
+        config: it.config,
         proxyServer,
         contentServer,
-        resolve,
+        resolve: (...args) => resolve(it, ...args),
         chalk
       });
     }
@@ -391,16 +416,16 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     port: DEFAULT_PORT
   });
 
-  const fullAddress = setAddress(`http://${proxyServerHost}:${proxyServerPort}`);
+  const fullAddress = it.proxyAddress = `http://${proxyServerHost}:${proxyServerPort}`;
 
-  for (const [input, output, libName] of config.entries) {
-    const outputPath = path.join(config.rootDir, output);
+  for (const [input, output, libName] of it.config.entries) {
+    const outputPath = path.join(it.config.rootDir, output);
     ensureDir(path.dirname(outputPath));
 
     let fileContent = `import '${fullAddress}/setup';\n`;
     fileContent += 'import';
     if (libName) fileContent += ' * as _$lib$_ from';
-    fileContent += ` '${fullAddress}/transformed?q=${encodeURIComponent(path.join(config.rootDir, input))}';\n`;
+    fileContent += ` '${fullAddress}/transformed?q=${encodeURIComponent(path.join(it.config.rootDir, input))}';\n`;
     if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
     fs.writeFileSync(outputPath, fileContent);
@@ -412,21 +437,21 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
 
   if (contentServer) {
     const contentServerPath = (host: string, port: string | number) => {
-      return `http://${host}:${port}${config.contentServer.basePath}`.replace(/\/$/, '');
+      return `http://${host}:${port}${it.config.contentServer.basePath}`.replace(/\/$/, '');
     }
     const startedAt = (address: string) => {
       tLog('info', chalk.green(`Content server started at: ${address}`));
     }
 
     const localPort = await portFinder.getPortPromise({
-      port: config.contentServer.port
+      port: it.config.contentServer.port
     });
     const contentServerLocal = contentServerPath('localhost', localPort);
 
     await startServer('Local content server', contentServer, localPort);
     startedAt(contentServerLocal);
 
-    const openOptions = config.contentServer.open;
+    const openOptions = it.config.contentServer.open;
     if (openOptions) {
       open(contentServerLocal, typeof openOptions === 'object' ? openOptions : undefined);
     }
@@ -434,14 +459,14 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
     if (externalHost) {
       const externalPort = await portFinder.getPortPromise({
         host: externalHost,
-        port: config.contentServer.port
+        port: it.config.contentServer.port
       });
       const contentServerExternal = contentServerPath(externalHost, externalPort);
-      
+
       await startServer('External content server', contentServer, externalPort, externalHost);
       startedAt(contentServerExternal);
 
-      return {
+      it.exports = {
         stop,
         proxyServer: fullAddress,
         contentServer: {
@@ -449,19 +474,30 @@ export const start = async (config: ReboostConfig = {} as any): Promise<ReboostS
           external: contentServerExternal
         }
       }
-    }
-
-    return {
-      stop,
-      proxyServer: fullAddress,
-      contentServer: {
-        local: contentServerLocal
+    } else {
+      it.exports = {
+        stop,
+        proxyServer: fullAddress,
+        contentServer: {
+          local: contentServerLocal
+        }
       }
     }
+  } else {
+    it.exports = {
+      stop,
+      proxyServer: fullAddress
+    }
   }
 
-  return {
-    stop,
-    proxyServer: fullAddress
-  }
+  return it;
+}
+
+// It shows full structure in VSCode's popup if `type` is used instead of `interface`
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ReboostInstance extends PromiseType<ReturnType<typeof createInstance>> { }
+
+export const start = async (config: ReboostConfig = {} as any): Promise<ReboostService> => {
+  const instance = await createInstance(config);
+  return instance && instance.exports;
 }

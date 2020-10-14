@@ -7,16 +7,13 @@ import MagicString from 'magic-string';
 import fs from 'fs';
 import path from 'path';
 
-import { PluginContext } from '../index';
-import { getConfig } from '../shared';
+import { PluginContext, ReboostInstance } from '../index';
 import { mergeSourceMaps, toPosix, tLog } from '../utils';
 import { resolve } from '../core-plugins/resolver';
-import { process } from './processor';
+import { createProcessor } from './processor';
 import { resolveImports } from './import-resolver';
 
-const getCompatibleSourceMap = (map: RawSourceMap) => {
-  const config = getConfig();
-
+const getCompatibleSourceMap = ({ config }: ReboostInstance, map: RawSourceMap) => {
   map.sourceRoot = 'reboost:///';
 
   map.sources = map.sources.map((sourcePath: string) => {
@@ -40,13 +37,17 @@ const getCompatibleSourceMap = (map: RawSourceMap) => {
   return map;
 }
 
-const getPluginContext = (filePath: string, mergedDependencies: string[]): PluginContext => ({
-  config: getConfig(),
+const getPluginContext = (
+  instance: ReboostInstance,
+  filePath: string,
+  mergedDependencies: string[]
+): PluginContext => ({
+  config: instance.config,
   addDependency(dependency) {
     mergedDependencies.push(path.normalize(dependency));
   },
   chalk,
-  getCompatibleSourceMap,
+  getCompatibleSourceMap: (map) => getCompatibleSourceMap(instance, map),
   getSourceMapComment(map) {
     let comment = '/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
     comment += Buffer.from(JSON.stringify(map)).toString('base64');
@@ -55,7 +56,7 @@ const getPluginContext = (filePath: string, mergedDependencies: string[]): Plugi
   },
   MagicString,
   mergeSourceMaps,
-  resolve
+  resolve: (...args) => resolve(instance, ...args)
 });
 
 const getErrorObj = (msg: string, dependencies: string[]) => ({
@@ -64,46 +65,51 @@ const getErrorObj = (msg: string, dependencies: string[]) => ({
   dependencies
 });
 
-export const transformFile = async (filePath: string): Promise<{
-  code: string;
-  dependencies: string[];
-  map?: string;
-  error?: boolean;
-}> => {
-  let errorOccurred = false;
-  const dependencies: string[] = [];
-  const pluginContext = getPluginContext(filePath, dependencies);
+export const createTransformer = (instance: ReboostInstance) => {
+  const processor = createProcessor(instance);
+  const transformFile = async (filePath: string): Promise<{
+    code: string;
+    dependencies: string[];
+    map?: string;
+    error?: boolean;
+  }> => {
+    let errorOccurred = false;
+    const dependencies: string[] = [];
+    const pluginContext = getPluginContext(instance, filePath, dependencies);
 
-  const processed = await process(filePath, pluginContext);
+    const processed = await processor.process(filePath, pluginContext);
 
-  if (processed.error) return getErrorObj(processed.error, dependencies);
+    if (processed.error) return getErrorObj(processed.error, dependencies);
 
-  const { ast, sourceMap } = processed;
+    const { ast, sourceMap } = processed;
 
-  errorOccurred = await resolveImports(ast, filePath);
+    errorOccurred = await resolveImports(instance, ast, filePath);
 
-  const sourceMapsConfig = getConfig().sourceMaps;
-  const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);
-  const { debugMode } = getConfig();
-  const generatorOptions: GeneratorOptions = {
-    sourceMaps: true,
-    sourceFileName: toPosix(path.relative(getConfig().rootDir, filePath)),
-    sourceRoot: 'reboost:///',
-    minified: !debugMode
+    const sourceMapsConfig = instance.config.sourceMaps;
+    const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);
+    const { debugMode } = instance.config;
+    const generatorOptions: GeneratorOptions = {
+      sourceMaps: true,
+      sourceFileName: toPosix(path.relative(instance.config.rootDir, filePath)),
+      sourceRoot: 'reboost:///',
+      minified: !debugMode
+    }
+
+    const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
+    let map;
+
+    if (sourceMap && sourceMapsEnabled) {
+      const merged = await mergeSourceMaps(sourceMap, generatedMap);
+      map = getCompatibleSourceMap(instance, merged);
+    }
+
+    return {
+      code: generatedCode,
+      map: map && JSON.stringify(map, null, instance.config.debugMode ? 2 : 0),
+      dependencies,
+      error: errorOccurred
+    }
   }
 
-  const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
-  let map;
-
-  if (sourceMap && sourceMapsEnabled) {
-    const merged = await mergeSourceMaps(sourceMap, generatedMap);
-    map = getCompatibleSourceMap(merged);
-  }
-
-  return {
-    code: generatedCode,
-    map: map && JSON.stringify(map, null, getConfig().debugMode ? 2 : 0),
-    dependencies,
-    error: errorOccurred
-  }
+  return { transformFile }
 }

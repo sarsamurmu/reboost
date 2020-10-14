@@ -1,8 +1,7 @@
 import * as t from '@babel/types';
 import traverse, { NodePath } from '@babel/traverse';
 
-import { ReboostPlugin } from '../index';
-import { getConfig } from '../shared';
+import { ReboostPlugin, ReboostInstance } from '../index';
 
 const replaceStatement = (path: NodePath, replaceWith: NodePath) => {
   if (replaceWith.isBlockStatement()) {
@@ -55,9 +54,9 @@ export const runTransformation = (ast: t.Node, mode: string) => {
   });
 }
 
-export const NodeEnvPlugin = (): ReboostPlugin => ({
+export const NodeEnvPlugin = (instance: ReboostInstance): ReboostPlugin => ({
   name: 'core-node-env-plugin',
   transformAST(ast) {
-    runTransformation(ast, getConfig().mode);
+    runTransformation(ast, instance.config.mode);
   }
 })

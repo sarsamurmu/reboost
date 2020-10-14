@@ -5,22 +5,21 @@ import { NodeEnvPlugin } from './node-env';
 import { CommonJSMode1Plugin } from './commonjs-mode-1/';
 import { CommonJSMode2Plugin } from './commonjs-mode-2/';
 
-import { ReboostPlugin } from '../index';
-import { getConfig } from '../shared';
+import { ReboostInstance, ReboostPlugin } from '../index';
 
-export const CorePlugins = (): ReboostPlugin[] => {
+export const CorePlugins = (instance: ReboostInstance): ReboostPlugin[] => {
   const plugins = [
     JSONPlugin(),
     LoaderPlugin(),
-    ResolverPlugin(),
-    NodeEnvPlugin()
+    ResolverPlugin(instance),
+    NodeEnvPlugin(instance)
   ];
 
-  if (getConfig().commonJSInterop.mode > 0) {
+  if (instance.config.commonJSInterop.mode > 0) {
     plugins.push(
-      getConfig().commonJSInterop.mode === 1
+      instance.config.commonJSInterop.mode === 1
         ? CommonJSMode1Plugin()
-        : CommonJSMode2Plugin()
+        : CommonJSMode2Plugin(instance)
     )
   }
 
