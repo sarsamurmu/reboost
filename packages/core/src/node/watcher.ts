@@ -7,7 +7,6 @@ import path from 'path';
 import { ReboostInstance } from './index';
 import { diff, getTimestamp, tLog } from './utils';
 import { messageClient } from './proxy-server';
-import { removeDependents } from './file-handler';
 
 export const createWatcher = (instance: ReboostInstance) => {
   const { watchOptions } = instance.config;
@@ -42,8 +41,8 @@ export const createWatcher = (instance: ReboostInstance) => {
 
     dependentsMap.delete(filePath);
 
-    removeDependents(instance, filePath);
-    instance.shared.saveFilesData();
+    instance.cache.removeDependents(filePath);
+    instance.cache.saveData();
 
     messageClient({
       type: 'unlink'

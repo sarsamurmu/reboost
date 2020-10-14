@@ -17,8 +17,7 @@ import net from 'net';
 
 import { createContentServer } from './content-server';
 import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog, getExternalHost, PromiseType, setLoggerMode } from './utils';
-import { createShared } from './shared';
-import { verifyFiles } from './file-handler';
+import { createCacheHelper } from './cache';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
@@ -270,7 +269,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     proxyAddress: '',
     config: {} as ReboostConfig,
     plugins: [] as ReboostPlugin[],
-    shared: {} as ReturnType<typeof createShared>,
+    cache: {} as ReturnType<typeof createCacheHelper>,
 
     Init() {
       // Config initialization
@@ -325,7 +324,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       }
 
       // Shared initialization
-      it.shared = createShared(it.config, it.plugins);
+      it.cache = createCacheHelper(it.config, it.plugins);
     },
 
     onStop(label: string, cb: () => Promise<any> | any) {
@@ -370,11 +369,11 @@ const createInstance = async (initialConfig: ReboostConfig) => {
 
   let shouldClearCache = true;
   let clearCacheReason = '';
-  if (isVersionLessThan(it.shared.getFilesData().version, INCOMPATIBLE_BELOW)) {
+  if (isVersionLessThan(it.cache.filesData.version, INCOMPATIBLE_BELOW)) {
     clearCacheReason = 'Cache version is incompatible';
-  } else if (it.shared.hasPluginsChanged()) {
+  } else if (it.cache.hasPluginsChanged()) {
     clearCacheReason = 'Plugin change detected';
-  } else if (it.shared.getFilesData().mode !== it.config.mode) {
+  } else if (it.cache.filesData.mode !== it.config.mode) {
     clearCacheReason = 'Mode change detected';
   } else {
     shouldClearCache = false;
@@ -388,7 +387,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
 
   if (fs.existsSync(it.config.cacheDir)) {
     tLog('info', chalk.cyan('Refreshing cache...'));
-    verifyFiles(it);
+    it.cache.verifyFiles();
     tLog('info', chalk.cyan('Refresh cache complete'));
   }
 

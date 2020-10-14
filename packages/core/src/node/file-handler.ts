@@ -5,123 +5,10 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
-import { ensureDir, uniqueID, diff, toPosix, getReadableHRTime, logEnabled, tLog } from './utils';
+import { ensureDir, uniqueID, toPosix, getReadableHRTime, logEnabled, tLog } from './utils';
 import { createTransformer } from './transformer';
 import { createWatcher } from './watcher';
-import { ReboostConfig, ReboostInstance } from './index';
-
-export const removeFile = ({ shared }: ReboostInstance, file: string) => {
-  const filesData = shared.getFilesData().files;
-  const fileData = filesData[file];
-  if (fileData) {
-    filesData[file] = undefined;
-    const absoluteFilePath = path.join(shared.getFilesDir(), fileData.uid);
-    fs.unlinkSync(absoluteFilePath);
-    if (fs.existsSync(absoluteFilePath + '.map')) {
-      fs.unlinkSync(absoluteFilePath + '.map');
-    }
-  }
-}
-
-export const removeDependents = (instance: ReboostInstance, dependency: string) => {
-  const dependentsData = instance.shared.getFilesData().dependents;
-  const dependents = dependentsData[dependency];
-  if (dependents) {
-    dependentsData[dependency] = undefined;
-    dependents.forEach((dependent) => removeFile(instance, dependent));
-  }
-}
-
-export const verifyFiles = (instance: ReboostInstance) => {
-  const { shared } = instance;
-  if (fs.existsSync(shared.getFilesDir())) {
-    const files = Object.keys(shared.getFilesData().files);
-    files.forEach((file) => {
-      if (!fs.existsSync(file)) removeFile(instance, file);
-    });
-
-    const dependencies = Object.keys(shared.getFilesData().dependents);
-    dependencies.forEach((dependency) => {
-      if (!fs.existsSync(dependency)) removeDependents(instance, dependency);
-    });
-  }
-
-  shared.saveFilesData();
-}
-
-const depsChanged = async ({ shared }: ReboostInstance, file: string) => {
-  const deps = shared.getFilesData().files[file].dependencies;
-  if (!deps) return false;
-  for (const dependency in deps) {
-    try {
-      const dependencyMeta = deps[dependency];
-      const currentMtime = Math.floor(fs.statSync(dependency).mtimeMs);
-
-      if (dependencyMeta.mtime === currentMtime) continue;
-
-      const currentHash = await getHash(dependency);
-      if (dependencyMeta.hash !== currentHash) return true;
-    } catch (e) {
-      // Probably the `fs.statSync` function caused error if
-      // the dependency file is unavailable
-      return true;
-    }
-  }
-  return false;
-}
-
-const updateDependencies = async (
-  { shared }: ReboostInstance,
-  filePath: string,
-  dependencies: string[],
-  firstTime = false
-): Promise<void> => {
-  const dependentsData = shared.getFilesData().dependents;
-  const fileData = shared.getFilesData().files[filePath];
-  let added: string[];
-  let removed: string[];
-
-  if (firstTime) {
-    added = dependencies;
-    removed = [];
-  } else {
-    const prevDeps = Object.keys(fileData.dependencies || {});
-    ({ added, removed } = diff(prevDeps, dependencies));
-  }
-
-  added.forEach((dependency) => {
-    const dependents = dependentsData[dependency] || [];
-    if (!dependents.includes(filePath)) dependents.push(filePath);
-    dependentsData[dependency] = dependents;
-  });
-
-  removed.forEach((dependency) => {
-    if (dependentsData[dependency]) {
-      const dependents = dependentsData[dependency] || [];
-      // Remove current file from dependents
-      const filtered = dependents.filter((dependent) => dependent !== filePath);
-      dependentsData[dependency] = filtered.length ? filtered : undefined;
-    }
-  });
-
-  if (dependencies.length === 0) return fileData.dependencies = undefined;
-
-  const depsData = {} as ReturnType<typeof shared.getFilesData>['files'][string]['dependencies'];
-  const promises: Promise<void>[] = [];
-
-  dependencies.forEach((dependency) => {
-    promises.push((async () => {
-      depsData[dependency] = {
-        hash: await getHash(dependency),
-        mtime: Math.floor(fs.statSync(dependency).mtimeMs)
-      };
-    })());
-  });
-
-  await Promise.all(promises);
-
-  fileData.dependencies = depsData;
-}
+import { ReboostInstance } from './index';
 
 const sourceMapCommentRE = /^[ \t]*\/\/#\s*sourceMappingURL=.+(?![\s\S]*\/\/#\s*sourceMappingURL=.+)/m;
 const fixSourceMap = (code: string, cacheFilePath: string) => {
@@ -134,15 +21,13 @@ export const createFileHandler = (instance: ReboostInstance) => {
   let filesDir: string;
   let transformer: ReturnType<typeof createTransformer>;
   let watcher: ReturnType<typeof createWatcher>;
-  const { config } = instance;
+  const { config, cache } = instance;
   const memoizedFiles = new Map<string, string>();
   const noop = () => {/* No Operation */};
 
-  const { getFilesDir, getFilesData, saveFilesData } = instance.shared;
-
   return async (ctx: Koa.Context) => {
     if (!initialized) {
-      filesDir = getFilesDir();
+      filesDir = cache.getFilesDir();
       transformer = createTransformer(instance);
       watcher = createWatcher(instance);
 
@@ -181,13 +66,13 @@ export const createFileHandler = (instance: ReboostInstance) => {
 
         if (!error) {
           fs.writeFile(outputFilePath, transformedCode, noop);
-          getFilesData().files[filePath] = {
+          cache.filesData.files[filePath] = {
             uid,
             hash: await getHash(filePath),
             mtime
           };
-          await updateDependencies(instance, filePath, dependencies, true);
-          saveFilesData();
+          await cache.updateDependencies(filePath, dependencies, true);
+          cache.saveData();
         }
 
         if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
@@ -196,14 +81,14 @@ export const createFileHandler = (instance: ReboostInstance) => {
         ctx.set('ETag', mtime + '');
       }
 
-      if (getFilesData().files[filePath]) {
-        const fileData = getFilesData().files[filePath];
+      if (cache.filesData.files[filePath]) {
+        const fileData = cache.filesData.files[filePath];
         const outputFilePath = path.join(filesDir, fileData.uid);
         let hash: string;
 
         try {
           if (
-            await depsChanged(instance, filePath) ||
+            await cache.hasDependenciesChanged(filePath) ||
             (
               (fileData.mtime !== mtime) &&
               (fileData.hash !== (hash = await getHash(filePath)))
@@ -226,8 +111,8 @@ export const createFileHandler = (instance: ReboostInstance) => {
               fs.writeFile(outputFilePath, transformedCode, noop);
               fileData.hash = hash;
               fileData.mtime = mtime;
-              await updateDependencies(instance, filePath, dependencies);
-              saveFilesData();
+              await cache.updateDependencies(filePath, dependencies);
+              cache.saveData();
             }
 
             if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
@@ -242,7 +127,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
 
               if (fileData.mtime !== mtime) {
                 fileData.mtime = mtime;
-                saveFilesData();
+                cache.saveData();
               }
 
               if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
