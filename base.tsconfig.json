@@ -7,8 +7,7 @@
     "noImplicitThis": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "declaration": true,
-    "useDefineForClassFields": false
+    "declaration": true
   },
   "exclude": [
     "**/node_modules/**"
