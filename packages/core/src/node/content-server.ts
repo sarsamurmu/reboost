@@ -81,7 +81,7 @@ const createDirectoryServer = ({ config }: ReboostInstance) => {
   `;
 
   const basePathLength = config.contentServer.basePath.length;
-  return (ctx: Koa.Context, root: string): boolean => {
+  return (ctx: Koa.Context, root: string) => {
     const requestedPath = ctx.path.substring(basePathLength);
     const dirPath = path.join(root, requestedPath);
 
