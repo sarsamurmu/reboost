@@ -129,23 +129,6 @@ export const getReadableHRTime = ([seconds, nanoseconds]: [number, number]) => {
   return (ms ? `${ms}ms ` : '') + `${Math.floor((nanoseconds % 1e6) / 1e3)}μs`;
 }
 
-let aLogMode: ReboostConfig['log'];
-/* istanbul ignore next */
-export const setLoggerMode = (logMode: ReboostConfig['log']) => {
-  aLogMode = logMode;
-}
-
-/* istanbul ignore next */
-export const logEnabled = (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
-  // Sorry for the extra negation *_*
-  return !(!aLogMode || !aLogMode[type]);
-}
-
-/* istanbul ignore next */
-export const tLog = (type: Parameters<typeof logEnabled>[0], ...toLog: any[]) => {
-  if (logEnabled(type)) console.log(...toLog);
-}
-
 const isUndefOrNull = (d: any) => d === null || d === undefined;
 
 /**

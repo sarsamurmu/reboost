@@ -6,7 +6,7 @@ import path from 'path';
 import { ReboostConfig, ReboostPlugin } from './index';
 import { diff } from './utils';
 
-export const createCacheHelper = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
+export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
   let memoizedFilesData: {
     version: string;
     usedPlugins: string;

@@ -8,12 +8,13 @@ import fs from 'fs';
 import path from 'path';
 
 import { PluginContext, ReboostInstance } from '../index';
-import { mergeSourceMaps, toPosix, tLog } from '../utils';
+import { mergeSourceMaps, toPosix } from '../utils';
 import { resolve } from '../core-plugins/resolver';
 import { createProcessor } from './processor';
 import { resolveImports } from './import-resolver';
 
-const getCompatibleSourceMap = ({ config }: ReboostInstance, map: RawSourceMap) => {
+const getCompatibleSourceMap = (instance: ReboostInstance, map: RawSourceMap) => {
+  const { config } = instance;
   map.sourceRoot = 'reboost:///';
 
   map.sources = map.sources.map((sourcePath: string) => {
@@ -27,7 +28,7 @@ const getCompatibleSourceMap = ({ config }: ReboostInstance, map: RawSourceMap) 
     if (fs.existsSync(absolutePath)) {
       map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
     } else {
-      tLog('info', chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
+      instance.log('info', chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
       map.sourcesContent.push(`Unable to find file in "${absolutePath}".`);
     }
   });

@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import path from 'path';
 
 import { ReboostInstance } from './index';
-import { diff, getTimestamp, tLog } from './utils';
+import { diff, getTimestamp } from './utils';
 import { messageClient } from './proxy-server';
 
 export const createWatcher = (instance: ReboostInstance) => {
@@ -21,7 +21,7 @@ export const createWatcher = (instance: ReboostInstance) => {
   watcher.on('change', (filePath) => {
     filePath = path.normalize(filePath);
     
-    tLog('info', chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
+    instance.log('info', chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
     const dependents = dependentsMap.get(filePath);
@@ -36,7 +36,7 @@ export const createWatcher = (instance: ReboostInstance) => {
   watcher.on('unlink', (filePath) => {
     filePath = path.normalize(filePath);
     
-    tLog('info', chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
+    instance.log('info', chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
     if (!dependentsMap.has(filePath)) return;
 
     dependentsMap.delete(filePath);
@@ -69,7 +69,7 @@ export const createWatcher = (instance: ReboostInstance) => {
         added.forEach((dependency) => {
           if (!dependentsMap.has(dependency) && shouldWatch(dependency)) {
             watcher.add(dependency);
-            tLog('watchList', chalk.blue(`Watching ${rootRelative(dependency)}`));
+            instance.log('watchList', chalk.blue(`Watching ${rootRelative(dependency)}`));
           }
           const dependents = dependentsMap.get(dependency) || [];
           if (!dependents.includes(file)) dependents.push(file);
@@ -83,7 +83,7 @@ export const createWatcher = (instance: ReboostInstance) => {
           if (filtered.length === 0 && shouldWatch(dependency)) {
             dependentsMap.delete(dependency);
             watcher.unwatch(dependency);
-            tLog('watchList', chalk.blue(`Unwatched ${rootRelative(dependency)}`));
+            instance.log('watchList', chalk.blue(`Unwatched ${rootRelative(dependency)}`));
             return;
           }
           dependentsMap.set(dependency, filtered);

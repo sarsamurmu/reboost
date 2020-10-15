@@ -4,7 +4,7 @@ import * as t from '@babel/types';
 
 import { ReboostInstance } from '../index';
 import { getPluginHooks } from './processor';
-import { tLog, uniqueID } from '../utils';
+import { uniqueID } from '../utils';
 
 export const resolveDependency = async (
   instance: ReboostInstance,
@@ -16,7 +16,7 @@ export const resolveDependency = async (
     if (resolvedPath) return resolvedPath;
   }
 
-  tLog('info', chalk.red(`Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
+  instance.log('info', chalk.red(`Unable to resolve path "${pathToResolve}" of "${relativeTo}"`));
   return null;
 }
 
@@ -38,7 +38,7 @@ export const resolveImports = async (
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
         if (source === 'reboost/hmr') {
-          tLog('info', chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
+          instance.log('info', chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
         }
 
         sourcePath.replaceWith(t.stringLiteral(`/hot?q=${encodeURIComponent(filePath)}`));

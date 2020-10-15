@@ -1,9 +1,7 @@
 import chalk from 'chalk';
 
-import { tLog } from '../utils';
-
 const movedToDifferentPackage = (name: string, pluginPackage: string) => {
-  tLog('info', chalk.cyan(`
+  console.log(chalk.cyan(`
 ${name} has now it's own package ("@reboost/plugin-${pluginPackage}"),
 so it is no longer included with this package.
 
@@ -25,7 +23,7 @@ const ${name} = require('@reboost/plugin-${pluginPackage}');
 }
 
 const movedToBuiltIn = (name: string) => {
-  tLog('info', chalk.cyan(`
+  console.log(chalk.cyan(`
 ${name} is now moved to \`require('reboost').builtInPlugins\`.
 So now you have to use this syntax to import the plugin
 ------------------

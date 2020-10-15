@@ -16,8 +16,8 @@ import path from 'path';
 import net from 'net';
 
 import { createContentServer } from './content-server';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, tLog, getExternalHost, PromiseType, setLoggerMode } from './utils';
-import { createCacheHelper } from './cache';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, getExternalHost, PromiseType } from './utils';
+import { initCache } from './cache';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
@@ -269,19 +269,17 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     proxyAddress: '',
     config: {} as ReboostConfig,
     plugins: [] as ReboostPlugin[],
-    cache: {} as ReturnType<typeof createCacheHelper>,
+    cache: {} as ReturnType<typeof initCache>,
 
     Init() {
       // Config initialization
       it.config = merge(clone(DefaultConfig as ReboostConfig), initialConfig);
-
-      setLoggerMode(it.config.log);
       
       if (!it.config.entries) {
         console.log(chalk.red('No entry found. Please add some entries first.'));
         return true;
       }
-      if (!path.isAbsolute(it.config.rootDir)) tLog('info', chalk.red('rootDir should be an absolute path'));
+      if (!path.isAbsolute(it.config.rootDir)) it.log('info', chalk.red('rootDir should be an absolute path'));
       if (!path.isAbsolute(it.config.cacheDir)) it.config.cacheDir = path.join(it.config.rootDir, it.config.cacheDir);
       if (!it.config.watchOptions.include) it.config.watchOptions.include = /.*/;
       if (it.config.contentServer) {
@@ -323,10 +321,17 @@ const createInstance = async (initialConfig: ReboostConfig) => {
         it.plugins.unshift(PostCSSPlugin());
       }
 
-      // Shared initialization
-      it.cache = createCacheHelper(it.config, it.plugins);
+      // Cache initialization
+      it.cache = initCache(it.config, it.plugins);
     },
 
+    isLogEnabled(type: keyof Exclude<ReboostConfig['log'], boolean>) {
+      // Sorry for the extra negation *_*
+      return !(!it.config.log || !it.config.log[type]);
+    },
+    log(type: keyof Exclude<ReboostConfig['log'], boolean>, ...toLog: any[]) {
+      if (it.isLogEnabled(type)) console.log(...toLog);
+    },
     onStop(label: string, cb: () => Promise<any> | any) {
       onStopCallbacks.push([cb, label]);
     },
@@ -363,10 +368,6 @@ const createInstance = async (initialConfig: ReboostConfig) => {
 
   if (it.config.dumpCache) rmDir(it.config.cacheDir);
 
-  // TODO: Remove in v1.0
-  const oldCacheFilesDir = path.join(it.config.cacheDir, 'files_data.json');
-  if (fs.existsSync(oldCacheFilesDir)) rmDir(oldCacheFilesDir);
-
   let shouldClearCache = true;
   let clearCacheReason = '';
   if (isVersionLessThan(it.cache.filesData.version, INCOMPATIBLE_BELOW)) {
@@ -380,18 +381,18 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   }
 
   if (shouldClearCache) {
-    tLog('info', chalk.cyan(`${clearCacheReason}, clearing cached files...`));
+    it.log('info', chalk.cyan(`${clearCacheReason}, clearing cached files...`));
     rmDir(it.config.cacheDir);
-    tLog('info', chalk.cyan('Clear cache complete'));
+    it.log('info', chalk.cyan('Clear cache complete'));
   }
 
   if (fs.existsSync(it.config.cacheDir)) {
-    tLog('info', chalk.cyan('Refreshing cache...'));
+    it.log('info', chalk.cyan('Refreshing cache...'));
     it.cache.verifyFiles();
-    tLog('info', chalk.cyan('Refresh cache complete'));
+    it.log('info', chalk.cyan('Refresh cache complete'));
   }
 
-  tLog('info', chalk.green('Starting proxy server...'));
+  it.log('info', chalk.green('Starting proxy server...'));
 
   const proxyServer = createProxyServer(it);
   const contentServer = it.config.contentServer ? createContentServer(it) : undefined;
@@ -428,18 +429,18 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     if (libName) fileContent += `self[${JSON.stringify(libName)}] = _$lib$_;\n`;
 
     fs.writeFileSync(outputPath, fileContent);
-    tLog('info', chalk.cyan(`Generated: ${input} -> ${output}`));
+    it.log('info', chalk.cyan(`Generated: ${input} -> ${output}`));
   }
 
   await startServer('Proxy server', proxyServer, proxyServerPort, proxyServerHost);
-  tLog('info', chalk.green('Proxy server started'));
+  it.log('info', chalk.green('Proxy server started'));
 
   if (contentServer) {
     const contentServerPath = (host: string, port: string | number) => {
       return `http://${host}:${port}${it.config.contentServer.basePath}`.replace(/\/$/, '');
     }
     const startedAt = (address: string) => {
-      tLog('info', chalk.green(`Content server started at: ${address}`));
+      it.log('info', chalk.green(`Content server started at: ${address}`));
     }
 
     const localPort = await portFinder.getPortPromise({

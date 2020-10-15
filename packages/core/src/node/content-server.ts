@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { ReboostInstance } from './index';
-import { isDirectory, uniqueID, getTimestamp, onServerCreated, tLog } from './utils';
+import { isDirectory, uniqueID, getTimestamp, onServerCreated } from './utils';
 
 const createDirectoryServer = ({ config }: ReboostInstance) => {
   const styles = /* css */`
@@ -159,12 +159,12 @@ const createFileServer = (instance: ReboostInstance) => {
   const rootRelative = (filePath: string) => path.relative(instance.config.rootDir, filePath);
 
   watcher.on('change', (filePath) => {
-    tLog('info', chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
+    instance.log('info', chalk.blue(`${getTimestamp()} Changed: ${rootRelative(filePath)}`));
     triggerReload(path.extname(filePath) === '.css');
   });
   
   watcher.on('unlink', (filePath) => {
-    tLog('info', chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
+    instance.log('info', chalk.blue(`${getTimestamp()} Deleted: ${rootRelative(filePath)}`));
     watchedFiles.delete(path.normalize(filePath));
     triggerReload();
   });

@@ -9,12 +9,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { ReboostPlugin, PluginContext, ReboostInstance } from '../index';
-import { bind, mergeSourceMaps, tLog } from '../utils';
-
-const handleError = ({ message }: { message: string }) => {
-  tLog('info', chalk.red(message));
-  return { error: message };
-}
+import { bind, mergeSourceMaps } from '../utils';
 
 const pluginHooksMap = new Map<ReboostInstance, {
   stopHooks: ReboostPlugin['stop'][];
@@ -48,6 +43,11 @@ export const getPluginHooks = (instance: ReboostInstance) => {
 }
 
 export const createProcessor = (instance: ReboostInstance) => {
+  const handleError = ({ message }: { message: string }) => {
+    instance.log('info', chalk.red(message));
+    return { error: message };
+  }
+
   const process = async (
     filePath: string,
     pluginContext: PluginContext
@@ -183,7 +183,7 @@ export const createProcessor = (instance: ReboostInstance) => {
         });
       }
 
-      tLog('info', consoleMessage);
+      instance.log('info', consoleMessage);
 
       return {
         error: message

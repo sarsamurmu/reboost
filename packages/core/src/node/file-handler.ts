@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
-import { ensureDir, uniqueID, toPosix, getReadableHRTime, logEnabled, tLog } from './utils';
+import { ensureDir, uniqueID, toPosix, getReadableHRTime } from './utils';
 import { createTransformer } from './transformer';
 import { createWatcher } from './watcher';
 import { ReboostInstance } from './index';
@@ -43,7 +43,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
     let startTime: [number, number];
     let transformedCode: string;
 
-    if (logEnabled('responseTime')) startTime = process.hrtime();
+    if (instance.isLogEnabled('responseTime')) startTime = process.hrtime();
 
     if (fs.existsSync(filePath)) {
       const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
@@ -155,9 +155,9 @@ export const createFileHandler = (instance: ReboostInstance) => {
       ctx.body = transformedCode;
     }
 
-    if (logEnabled('responseTime')) {
+    if (instance.isLogEnabled('responseTime')) {
       const endTime = process.hrtime(startTime);
-      tLog(
+      instance.log(
         'responseTime',
         chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}:`),
         chalk.white(getReadableHRTime(endTime))
