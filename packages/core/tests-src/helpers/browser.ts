@@ -3,6 +3,14 @@ import puppeteer from 'puppeteer';
 let browser: puppeteer.Browser;
 let pages: puppeteer.Page[] = [];
 
+const closeBrowser = async () => {
+  if (!browser) return;
+  const pBrowser = browser;
+  browser = null;
+  await pBrowser.close();
+  if (pBrowser.process()) pBrowser.process().kill('SIGINT');
+}
+
 const debug = false;
 export const newPage = async (autoClose = true) => {
   if (!browser) {
@@ -12,12 +20,7 @@ export const newPage = async (autoClose = true) => {
       slowMo: 1000,
     } : {});
 
-    browser.on('disconnected', async () => {
-      console.error('BROWSER CRASHED');
-      browser = null;
-      await browser.close();
-      if (browser.process()) browser.process().kill('SIGINT');
-    });
+    browser.on('disconnected', () => closeBrowser());
   }
 
   const page = await browser.newPage();
@@ -46,12 +49,7 @@ afterEach(async () => {
   await Promise.all(pPages.map((page) => page.close()));
 });
 
-afterAll(async () => {
-  if (!browser) return;
-  const pBrowser = browser;
-  browser = null;
-  await pBrowser.close();
-});
+afterAll(() => closeBrowser());
 
 export const waitForConsole = (
   page: puppeteer.Page,
