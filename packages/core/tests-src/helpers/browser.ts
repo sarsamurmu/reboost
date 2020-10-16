@@ -5,20 +5,25 @@ let pages: puppeteer.Page[] = [];
 
 const debug = false;
 export const newPage = async (autoClose = true) => {
-  if (!browser) browser = await puppeteer.launch(debug ? {
-    headless: false,
-    devtools: true,
-    slowMo: 1000,
-  } : {});
+  if (!browser || !browser.isConnected()) {
+    if (browser) browser.close();
+    
+    browser = await puppeteer.launch(debug ? {
+      headless: false,
+      devtools: true,
+      slowMo: 1000,
+    } : {});
+  }
 
-  const page = (await browser.newPage())
+  const page = await browser.newPage();
+  page
     .on('pageerror', ({ message }) => console.log('PAGE ERROR', message))
     .on('requestfailed', (request) => console.log([
       'REQUEST FAIL',
       `TEST NAME: ${expect.getState().currentTestName}`,
       `URL: ${request.url()}`,
       `ERROR MESSAGE: ${request.failure().errorText}`,
-      `STATUS: ${request.response().status}`
+      `STATUS: ${request.response().status()}`
     ].join('\n')));
 
   if (autoClose) pages.push(page);
@@ -30,13 +35,17 @@ export const closePages = async () => {
 }
 
 afterEach(async () => {
-  await Promise.all(pages.map((page) => page.close()));
+  if (pages.length === 0) return;
+  const pPages = pages;
   pages = [];
+  await Promise.all(pPages.map((page) => page.close()));
 });
 
 afterAll(async () => {
-  if (browser) await browser.close();
+  if (!browser) return;
+  const pBrowser = browser;
   browser = null;
+  await pBrowser.close();
 });
 
 export const waitForConsole = (
