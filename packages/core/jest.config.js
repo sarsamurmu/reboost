@@ -4,6 +4,7 @@ module.exports = {
     '**/__tests__/**/*.test.js'
   ],
   testEnvironment: 'node',
+  testTimeout: 15000,
   coverageReporters: [
     'lcov', 'text-summary'
   ],

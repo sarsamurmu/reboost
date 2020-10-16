@@ -7,8 +7,6 @@ import { start } from 'src-node/index';
 import { createFixture } from '../helpers/fixture';
 import { newPage } from '../helpers/browser';
 
-jest.setTimeout(15000);
-
 test('serves directory listing', async () => {
   const fixture = createFixture({
     'public': {
