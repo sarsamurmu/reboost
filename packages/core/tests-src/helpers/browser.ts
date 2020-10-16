@@ -5,14 +5,19 @@ let pages: puppeteer.Page[] = [];
 
 const debug = false;
 export const newPage = async (autoClose = true) => {
-  if (!browser || !browser.isConnected()) {
-    if (browser) browser.close();
-    
+  if (!browser) {
     browser = await puppeteer.launch(debug ? {
       headless: false,
       devtools: true,
       slowMo: 1000,
     } : {});
+
+    browser.on('disconnected', async () => {
+      console.error('BROWSER CRASHED');
+      browser = null;
+      await browser.close();
+      if (browser.process()) browser.process().kill('SIGINT');
+    });
   }
 
   const page = await browser.newPage();
