@@ -172,140 +172,346 @@ describe('plugins', () => {
     await service.stop();
   });
 
-  test('transformContent hook', async () => {
-    const fixture = createFixture({
-      'main.html': '<script type="module" src="./main.js"></script>',
-      'src': {
-        'index.js': 'import "./log.js"',
-        'log.js': '',
-      }
-    }).apply();
-    type transformFnT = ReboostPlugin['transformContent'];
-    const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
-      if (filePath === fixture.p('./src/log.js')) {
-        return {
-          code: 'From transformer 1',
-          type: 'plain',
-          map: undefined
+  describe('transformContent hook', () => {
+    test('without error', async () => {
+      const fixture = createFixture({
+        'main.html': '<script type="module" src="./main.js"></script>',
+        'src': {
+          'index.js': 'import "./log.js"',
+          'log.js': '',
         }
-      }
-    });
-    const transformFn2 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
-      if (filePath === fixture.p('./src/log.js')) {
-        return {
-          code: 'console.log("By transformer 2")',
-          type: 'js',
-          map: undefined
+      }).apply();
+      type transformFnT = ReboostPlugin['transformContent'];
+      const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+        if (filePath === fixture.p('./src/log.js')) {
+          return {
+            code: 'From transformer 1',
+            type: 'plain',
+            map: undefined
+          }
         }
-      }
-    });
-    const service = await start({
-      rootDir: fixture.p('.'),
-      entries: [['./src/index.js', './main.js']],
-      contentServer: { root: '.' },
-      log: false,
-      plugins: [
-        { name: '1', transformContent: transformFn1 },
-        { name: '2', transformContent: transformFn2 }
-      ]
-    });
-    const page = await newPage();
+      });
+      const transformFn2 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+        if (filePath === fixture.p('./src/log.js')) {
+          return {
+            code: 'console.log("By transformer 2")',
+            type: 'js',
+            map: undefined
+          }
+        }
+      });
+      const service = await start({
+        rootDir: fixture.p('.'),
+        entries: [['./src/index.js', './main.js']],
+        contentServer: { root: '.' },
+        log: false,
+        plugins: [
+          { name: '1', transformContent: transformFn1 },
+          { name: '2', transformContent: transformFn2 }
+        ]
+      });
+      const page = await newPage();
 
-    await Promise.all([
-      waitForConsole(page, 'By transformer 2'),
-      page.goto(`${service.contentServer.local}/main.html`)
-    ]);
-    expect(transformFn1).toBeCalledTimes(2);
-    expect(transformFn1.mock.results[0].value).toBeUndefined();
-    expect(transformFn1.mock.results[1].value).toEqual({
-      code: 'From transformer 1',
-      type: 'plain',
-      map: undefined
-    });
-    expect(transformFn2).toBeCalledTimes(2);
-    expect(transformFn2.mock.results[0].value).toBeUndefined();
-    expect(transformFn2.mock.calls[1]).toEqual([
-      {
+      await Promise.all([
+        waitForConsole(page, 'By transformer 2'),
+        page.goto(`${service.contentServer.local}/main.html`)
+      ]);
+      expect(transformFn1).toBeCalledTimes(2);
+      expect(transformFn1.mock.results[0].value).toBeUndefined();
+      expect(transformFn1.mock.results[1].value).toEqual({
         code: 'From transformer 1',
         type: 'plain',
         map: undefined
-      },
-      fixture.p('./src/log.js')
-    ]);
-    expect(transformFn2.mock.results[1].value).toEqual({
-      code: 'console.log("By transformer 2")',
-      type: 'js',
-      map: undefined
+      });
+      expect(transformFn2).toBeCalledTimes(2);
+      expect(transformFn2.mock.results[0].value).toBeUndefined();
+      expect(transformFn2.mock.calls[1]).toEqual([
+        {
+          code: 'From transformer 1',
+          type: 'plain',
+          map: undefined
+        },
+        fixture.p('./src/log.js')
+      ]);
+      expect(transformFn2.mock.results[1].value).toEqual({
+        code: 'console.log("By transformer 2")',
+        type: 'js',
+        map: undefined
+      });
+
+      await service.stop();
     });
 
-    await service.stop();
-  });
-
-  test('transformIntoJS hook', async () => {
-    const fixture = createFixture({
-      'main.html': '<script type="module" src="./main.js"></script>',
-      'src': {
-        'index.js': 'import "./plain.txt"',
-        'plain.txt': 'A plain text',
-      }
-    }).apply();
-    type transformFnT = ReboostPlugin['transformIntoJS'];
-    const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>(({ code, type }) => {
-      if (type === 'txt') {
-        return {
-          code: `console.log(${JSON.stringify(code)})`,
+    test('with error', async () => {
+      const fixture = createFixture({
+        'main.html': '<script type="module" src="./main.js"></script>',
+        'src': {
+          'index.js': 'import "./log.js"',
+          'log.js': '',
         }
-      }
-    });
-    const mockFn2 = jest.fn();
-    const service = await start({
-      rootDir: fixture.p('.'),
-      entries: [['./src/index.js', './main.js']],
-      contentServer: { root: '.' },
-      log: false,
-      plugins: [
-        { name: '1', transformIntoJS: transformFn },
-        { name: '2', transformIntoJS: mockFn2 }
-      ]
-    });
-    const page = await newPage();
+      }).apply();
+      type transformFnT = ReboostPlugin['transformContent'];
+      const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+        if (filePath === fixture.p('./src/log.js')) {
+          return new Error('Error from transformer 1');
+        }
+      });
+      const transformFn2 = jest.fn();
+      const service = await start({
+        rootDir: fixture.p('.'),
+        entries: [['./src/index.js', './main.js']],
+        contentServer: { root: '.' },
+        log: false,
+        plugins: [
+          { name: '1', transformContent: transformFn1 },
+          { name: '2', transformContent: transformFn2 }
+        ]
+      });
+      const page = await newPage();
 
-    await Promise.all([
-      waitForConsole(page, 'A plain text'),
-      page.goto(`${service.contentServer.local}/main.html`)
-    ]);
-    expect(transformFn).toBeCalledTimes(1);
-    expect(transformFn.mock.results[0].value).toEqual({
-      code: 'console.log("A plain text")'
-    });
-    expect(mockFn2).toBeCalledTimes(0);
+      await Promise.all([
+        waitForConsole(page, (msg) => {
+          if (msg.text().includes('Error from transformer 1')) {
+            expect(msg.type()).toBe('error');
+            return true;
+          }
+        }),
+        page.goto(`${service.contentServer.local}/main.html`)
+      ]);
+      expect(transformFn1).toBeCalledTimes(2);
+      expect(transformFn1.mock.results[0].value).toBeUndefined();
+      expect(transformFn1.mock.results[1].value).toBeInstanceOf(Error);
+      expect(transformFn1.mock.results[1].value).toEqual(expect.objectContaining({
+        message: 'Error from transformer 1'
+      }));
+      expect(transformFn2).toBeCalledTimes(1);
+      expect(transformFn1.mock.results[0].value).toBeUndefined();
 
-    await service.stop();
+      await service.stop();
+    });
   });
 
-  test('transformJSContent hook', async () => {
+  describe('transformIntoJS hook', () => {
+    test('without error', async () => {
+      const fixture = createFixture({
+        'main.html': '<script type="module" src="./main.js"></script>',
+        'src': {
+          'index.js': 'import "./plain.txt"',
+          'plain.txt': 'A plain text',
+        }
+      }).apply();
+      type transformFnT = ReboostPlugin['transformIntoJS'];
+      const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>(({ code, type }) => {
+        if (type === 'txt') {
+          return {
+            code: `console.log(${JSON.stringify(code)})`,
+          }
+        }
+      });
+      const mockFn2 = jest.fn();
+      const service = await start({
+        rootDir: fixture.p('.'),
+        entries: [['./src/index.js', './main.js']],
+        contentServer: { root: '.' },
+        log: false,
+        plugins: [
+          { name: '1', transformIntoJS: transformFn },
+          { name: '2', transformIntoJS: mockFn2 }
+        ]
+      });
+      const page = await newPage();
+
+      await Promise.all([
+        waitForConsole(page, 'A plain text'),
+        page.goto(`${service.contentServer.local}/main.html`)
+      ]);
+      expect(transformFn).toBeCalledTimes(1);
+      expect(transformFn.mock.results[0].value).toEqual({
+        code: 'console.log("A plain text")'
+      });
+      expect(mockFn2).toBeCalledTimes(0);
+
+      await service.stop();
+    });
+
+    test('with error', async () => {
+      const fixture = createFixture({
+        'main.html': '<script type="module" src="./main.js"></script>',
+        'src': {
+          'index.js': 'import "./plain.txt"',
+          'plain.txt': 'A plain text',
+        }
+      }).apply();
+      type transformFnT = ReboostPlugin['transformIntoJS'];
+      const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>(({ code, type }) => {
+        if (type === 'txt') {
+          return new Error('Error from the transformer');
+        }
+      });
+      const mockFn2 = jest.fn();
+      const service = await start({
+        rootDir: fixture.p('.'),
+        entries: [['./src/index.js', './main.js']],
+        contentServer: { root: '.' },
+        log: false,
+        plugins: [
+          { name: '1', transformIntoJS: transformFn },
+          { name: '2', transformIntoJS: mockFn2 }
+        ]
+      });
+      const page = await newPage();
+
+      await Promise.all([
+        waitForConsole(page, (msg) => {
+          if (msg.text().includes('Error from the transformer')) {
+            expect(msg.type()).toBe('error');
+            return true;
+          }
+        }),
+        page.goto(`${service.contentServer.local}/main.html`)
+      ]);
+      expect(transformFn).toBeCalledTimes(1);
+      expect(transformFn.mock.results[0].value).toBeInstanceOf(Error);
+      expect(transformFn.mock.results[0].value).toEqual(expect.objectContaining({
+        message: 'Error from the transformer'
+      }));
+      expect(mockFn2).toBeCalledTimes(0);
+
+      await service.stop();
+    });
+  });
+
+  describe('transformJSContent hook', () => {
+    test('without error', async () => {
+      const fixture = createFixture({
+        'main.html': '<script type="module" src="./main.js"></script>',
+        'src': {
+          'index.js': 'import "./log.js"',
+          'log.js': '',
+        }
+      }).apply();
+      type transformFnT = ReboostPlugin['transformJSContent'];
+      const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+        if (filePath === fixture.p('./src/log.js')) {
+          return {
+            code: 'From transformer 1',
+            map: undefined
+          }
+        }
+      });
+      const transformFn2 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+        if (filePath === fixture.p('./src/log.js')) {
+          return {
+            code: 'console.log("By transformer 2")',
+            map: undefined
+          }
+        }
+      });
+      const service = await start({
+        rootDir: fixture.p('.'),
+        entries: [['./src/index.js', './main.js']],
+        contentServer: { root: '.' },
+        log: false,
+        plugins: [
+          { name: '1', transformJSContent: transformFn1 },
+          { name: '2', transformJSContent: transformFn2 }
+        ]
+      });
+      const page = await newPage();
+
+      await Promise.all([
+        waitForConsole(page, 'By transformer 2'),
+        page.goto(`${service.contentServer.local}/main.html`)
+      ]);
+      expect(transformFn1).toBeCalledTimes(2);
+      expect(transformFn1.mock.results[0].value).toBeUndefined();
+      expect(transformFn1.mock.results[1].value).toEqual({
+        code: 'From transformer 1',
+        map: undefined
+      });
+      expect(transformFn2).toBeCalledTimes(2);
+      expect(transformFn2.mock.results[0].value).toBeUndefined();
+      expect(transformFn2.mock.calls[1]).toEqual([
+        {
+          code: 'From transformer 1',
+          type: 'js',
+          map: expect.anything()
+        },
+        fixture.p('./src/log.js')
+      ]);
+      expect(transformFn2.mock.results[1].value).toEqual({
+        code: 'console.log("By transformer 2")',
+        map: undefined
+      });
+
+      await service.stop();
+    });
+
+    test('with error', async () => {
+      const fixture = createFixture({
+        'main.html': '<script type="module" src="./main.js"></script>',
+        'src': {
+          'index.js': 'import "./log.js"',
+          'log.js': '',
+        }
+      }).apply();
+      type transformFnT = ReboostPlugin['transformJSContent'];
+      const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+        if (filePath === fixture.p('./src/log.js')) {
+          return new Error('Error from transformer 1');
+        }
+      });
+      const transformFn2 = jest.fn();
+      const service = await start({
+        rootDir: fixture.p('.'),
+        entries: [['./src/index.js', './main.js']],
+        contentServer: { root: '.' },
+        log: false,
+        plugins: [
+          { name: '1', transformJSContent: transformFn1 },
+          { name: '2', transformJSContent: transformFn2 }
+        ]
+      });
+      const page = await newPage();
+
+      await Promise.all([
+        waitForConsole(page, (msg) => {
+          if (msg.text().includes('Error from transformer 1')) {
+            expect(msg.type()).toBe('error');
+            return true;
+          }
+        }),
+        page.goto(`${service.contentServer.local}/main.html`)
+      ]);
+      expect(transformFn1).toBeCalledTimes(2);
+      expect(transformFn1.mock.results[0].value).toBeUndefined();
+      expect(transformFn1.mock.results[1].value).toBeInstanceOf(Error);
+      expect(transformFn1.mock.results[1].value).toEqual(expect.objectContaining({
+        message: 'Error from transformer 1'
+      }));
+      expect(transformFn2).toBeCalledTimes(1);
+      expect(transformFn1.mock.results[0].value).toBeUndefined();
+
+      await service.stop();
+    });
+  });
+
+  test('transformAST hook', async () => {
     const fixture = createFixture({
       'main.html': '<script type="module" src="./main.js"></script>',
       'src': {
         'index.js': 'import "./log.js"',
-        'log.js': '',
+        'log.js': 'console.log("123456")',
       }
     }).apply();
-    type transformFnT = ReboostPlugin['transformJSContent'];
-    const transformFn1 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
+    type transformFnT = ReboostPlugin['transformAST'];
+    const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((ast, { traverse }, filePath) => {
       if (filePath === fixture.p('./src/log.js')) {
-        return {
-          code: 'From transformer 1',
-          map: undefined
-        }
-      }
-    });
-    const transformFn2 = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((_, filePath) => {
-      if (filePath === fixture.p('./src/log.js')) {
-        return {
-          code: 'console.log("By transformer 2")',
-          map: undefined
-        }
+        traverse(ast, {
+          StringLiteral(path) {
+            path.node.value = path.node.value.split('').reverse().join('');
+          }
+        });
       }
     });
     const service = await start({
@@ -314,36 +520,16 @@ describe('plugins', () => {
       contentServer: { root: '.' },
       log: false,
       plugins: [
-        { name: '1', transformJSContent: transformFn1 },
-        { name: '2', transformJSContent: transformFn2 }
+        { name: '1', transformAST: transformFn }
       ]
     });
     const page = await newPage();
 
     await Promise.all([
-      waitForConsole(page, 'By transformer 2'),
+      waitForConsole(page, '654321'),
       page.goto(`${service.contentServer.local}/main.html`)
     ]);
-    expect(transformFn1).toBeCalledTimes(2);
-    expect(transformFn1.mock.results[0].value).toBeUndefined();
-    expect(transformFn1.mock.results[1].value).toEqual({
-      code: 'From transformer 1',
-      map: undefined
-    });
-    expect(transformFn2).toBeCalledTimes(2);
-    expect(transformFn2.mock.results[0].value).toBeUndefined();
-    expect(transformFn2.mock.calls[1]).toEqual([
-      {
-        code: 'From transformer 1',
-        type: 'js',
-        map: expect.anything()
-      },
-      fixture.p('./src/log.js')
-    ]);
-    expect(transformFn2.mock.results[1].value).toEqual({
-      code: 'console.log("By transformer 2")',
-      map: undefined
-    });
+    expect(transformFn).toBeCalledTimes(2);
 
     await service.stop();
   });

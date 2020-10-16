@@ -126,7 +126,7 @@ export const createProcessor = (instance: ReboostInstance) => {
       ast = parse(code, {
         sourceType: 'module'
       });
-    } catch (e) {
+    } catch (e) /* istanbul ignore next */ {
       let message = '';
       let consoleMessage = '';
       const frameMessage = e.message.replace(/\s*\(.*\)$/, '');
