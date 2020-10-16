@@ -10,10 +10,17 @@ export const newPage = async (autoClose = true) => {
     devtools: true,
     slowMo: 1000,
   } : {});
-  const page = await browser.newPage();
-  page
-    .on('pageerror', ({ message }) => console.log('PAGE ERR', message))
-    .on('requestfailed', (request) => console.log('REQUEST FAIL', request.failure().errorText, request.url()));
+
+  const page = (await browser.newPage())
+    .on('pageerror', ({ message }) => console.log('PAGE ERROR', message))
+    .on('requestfailed', (request) => console.log([
+      'REQUEST FAIL',
+      `TEST NAME: ${expect.getState().currentTestName}`,
+      `URL: ${request.url()}`,
+      `ERROR MESSAGE: ${request.failure().errorText}`,
+      `STATUS: ${request.response().status}`
+    ].join('\n')));
+
   if (autoClose) pages.push(page);
   return page;
 }
