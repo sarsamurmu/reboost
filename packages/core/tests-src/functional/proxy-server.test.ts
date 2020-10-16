@@ -343,7 +343,7 @@ describe('plugins', () => {
         }
       }).apply();
       type transformFnT = ReboostPlugin['transformIntoJS'];
-      const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>(({ code, type }) => {
+      const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>(({ type }) => {
         if (type === 'txt') {
           return new Error('Error from the transformer');
         }
