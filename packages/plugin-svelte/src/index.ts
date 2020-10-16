@@ -5,12 +5,12 @@ import path from 'path';
 
 import { ReboostPlugin } from 'reboost';
 
-interface SveltePluginOptions {
+interface Options {
   configFile?: string;
   preprocess?: any;
 }
 
-export = (options: SveltePluginOptions = {}): ReboostPlugin => {
+export = (options: Options = {}): ReboostPlugin => {
   let sveltePath: string;
   let configFile: string;
   let svelteConfig = {} as Record<string, any>;
