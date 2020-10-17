@@ -46,7 +46,9 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
           usage = 'All';
         } else if (t.isImportSpecifier(specifier)) {
           usage = 'Member';
-          importedName = specifier.imported.name;
+          importedName = t.isIdentifier(specifier.imported)
+            ? specifier.imported.name
+            : specifier.imported.value;
         }
 
         declarators.push(
