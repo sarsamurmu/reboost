@@ -11,7 +11,7 @@ module.exports = (
       {
         type: 'input',
         name: 'name',
-        message: 'Name of the plugin'
+        message: 'Name of the plugin (excluding starting "plugin-")'
       },
       {
         type: 'input',
