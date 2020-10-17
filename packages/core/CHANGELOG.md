@@ -1,3 +1,12 @@
+## 0.15.0
+- Update dependencies
+- Now reloading works on blank HTML pages
+- Option to enable/disable directory listing
+- Option to change base path of content server
+- JSX is now only enabled for files with `.jsx` or `.tsx` extension
+- Now using ETag for faster file serving
+- Major refactorization
+
 ## 0.14.1
 - Fix plugin error handling
 

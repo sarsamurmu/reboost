@@ -169,6 +169,16 @@ Type: `object`
 Options for the content server. The content server serves your static
 files like HTML, CSS, JS, images, etc.
 
+##### `contentServer.basePath`
+Type: `string`\
+Default: `/`
+
+All content files will be available under this path.
+
+Assume that your server is running on `http://localhost:8000`. If you have file named `index.html`,
+it will be available on `http://localhost:8000/index.html`. If you set `basePath` to `/some-path`,
+now the `index.html` should be available on `http://localhost:8000/some-path/index.html`.
+
 ##### `contentServer.extensions`
 Type: `string[]`\
 Default: `['.html']`
@@ -232,7 +242,7 @@ start({
 Type: `number`
 
 Port to use for the content server. Fallbacks to any available port when the
-given port unavailable.
+given port is unavailable.
 
 ##### `contentServer.proxy`
 Type: `object`
@@ -262,6 +272,12 @@ start({
 Type: `string`
 
 Root directory which will be served by the content server.
+
+##### `contentServer.serveIndex`
+Type: `string`\
+Default: `true`
+
+Serves directory listing for directories that don't have an index file.
 
 #### `entries`
 Type: `([string, string] | [string, string, string])[]`
