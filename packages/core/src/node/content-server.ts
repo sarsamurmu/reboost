@@ -132,7 +132,7 @@ const createDirectoryServer = ({ config }: ReboostInstance) => {
   }
 }
 
-const createFileServer = (instance: ReboostInstance) => {
+const attachFileServer = (instance: ReboostInstance, app: Koa) => {
   const sendDirectory = createDirectoryServer(instance);
   const { contentServer, debugMode } = instance.config;
   const { root } = contentServer;
@@ -169,17 +169,17 @@ const createFileServer = (instance: ReboostInstance) => {
     triggerReload();
   });
 
-  const onServerCreatedCallback: Parameters<typeof onServerCreated>[1] = (server) => {
+  onServerCreated(app, (server) => {
     const wss = new WebSocket.Server({ server });
     wss.on('connection', (socket) => {
       webSockets.add(socket);
       socket.on('close', () => webSockets.delete(socket));
     });
     instance.onStop("Closes content server's websocket", () => wss.close());
-  }
+  });
 
   const initScriptHTML = `<script src="${initScriptPath}"></script>`;
-  const koaMiddleware: Koa.Middleware = async (ctx, next) => {
+  app.use(async (ctx, next) => {
     if (ctx.path === initScriptPath) {
       ctx.type = 'text/javascript';
       ctx.body = `const debugMode = ${instance.config.debugMode};\n\n`;
@@ -199,7 +199,7 @@ const createFileServer = (instance: ReboostInstance) => {
     try {
       sentFilePath = await sendFile(ctx, requestedPath || '/', sendOptions);
       sentFilePath = path.normalize(sentFilePath);
-    } catch (err) {/* Ignored */}
+    } catch (err) {/* Ignored */ }
 
     if (sentFilePath) {
       if (!watchedFiles.has(sentFilePath)) {
@@ -241,15 +241,12 @@ const createFileServer = (instance: ReboostInstance) => {
     if (contentServer.serveIndex) sendDirectory(ctx, root);
 
     return next();
-  }
-
-  return [koaMiddleware, onServerCreatedCallback] as const;
+  });
 }
 
 export const createContentServer = (instance: ReboostInstance) => {
   const contentServer = new Koa();
   const config = instance.config;
-  const [koaMiddleware, onServerCreatedCallback] = createFileServer(instance);
 
   const { middleware } = config.contentServer;
   if (middleware) {
@@ -267,8 +264,7 @@ export const createContentServer = (instance: ReboostInstance) => {
     }
   }
 
-  contentServer.use(koaMiddleware);
-  onServerCreated(contentServer, onServerCreatedCallback);
+  attachFileServer(instance, contentServer);
 
   return contentServer;
 }
