@@ -11,8 +11,7 @@ export const newPage = async (autoClose = true) => {
       'REQUEST FAIL',
       `TEST NAME: ${expect.getState().currentTestName}`,
       `URL: ${request.url()}`,
-      `ERROR MESSAGE: ${request.failure().errorText}`,
-      `STATUS: ${request.response().status()}`
+      `ERROR MESSAGE: ${request.failure().errorText}`
     ].join('\n')));
 
   if (autoClose) autoClosePages.push(page);
