@@ -13,6 +13,7 @@ const SassPlugin = require('@reboost/plugin-sass');
 const SveltePlugin = require('@reboost/plugin-svelte');
 const VuePlugin = require('@reboost/plugin-vue');
 
+console.time();
 start({
   entries: [
     ['./src/babel/index.js', './public/dist/babel.js'],
@@ -29,7 +30,8 @@ start({
   },
   contentServer: {
     root: './public',
-    index: false
+    index: false,
+    // basePath: '/custom-path',
   },
   plugins: [
     UsePlugin({
@@ -67,4 +69,4 @@ start({
   // Don't use these options, these are only for debugging
   dumpCache: true,
   debugMode: true,
-});
+}).then(() => console.timeEnd());
