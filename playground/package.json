@@ -12,6 +12,7 @@
     "@reboost/plugin-sass": "file:../packages/plugin-sass",
     "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
     "@reboost/plugin-vue": "file:../packages/plugin-vue",
+    "@reboost/plugin-postcss": "file:../packages/plugin-postcss",
     "lit-element": "^2.4.0",
     "node-sass": "^4.14.1",
     "postcss-nesting": "^7.0.1",

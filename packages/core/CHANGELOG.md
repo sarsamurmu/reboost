@@ -1,3 +1,9 @@
+## 0.16.0
+- Parted up PostCSS plugin.
+  
+  This means PostCSS will not work out of the box. To add support for PostCSS
+  [follow this](/docs/recipes.md#postcss).
+
 ## 0.15.0
 - Update dependencies
 - Now reloading works on blank HTML pages

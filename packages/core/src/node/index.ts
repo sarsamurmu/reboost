@@ -21,7 +21,6 @@ import { initCache } from './cache';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
 import { CSSPlugin, PluginName as CSSPluginName } from './plugins/css';
-import { PostCSSPlugin, PluginName as PostCSSPluginName } from './plugins/postcss';
 import { PublicResolveFn, resolve } from './core-plugins/resolver';
 import { createProxyServer } from './proxy-server';
 
@@ -316,9 +315,6 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       }
       if (!pluginNames.includes(CSSPluginName)) {
         it.plugins.unshift(CSSPlugin());
-      }
-      if (!pluginNames.includes(PostCSSPluginName)) {
-        it.plugins.unshift(PostCSSPlugin());
       }
 
       // Cache initialization

@@ -5,9 +5,9 @@ import { codeFrameColumns } from '@babel/code-frame';
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostPlugin, ReboostConfig } from '../index';
+import { ReboostPlugin, ReboostConfig } from 'reboost';
 
-export const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
+const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
   let errorMessage = `${pluginName}: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
   errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
 
@@ -23,7 +23,7 @@ export const postcssError = (pluginName: string, error: any, config: ReboostConf
   return new Error(errorMessage);
 }
 
-export interface PostCSSPluginOptions {
+interface Options {
   /** PostCSS config context */
   ctx?: Record<string, any>;
   /** PostCSS config directory */
@@ -32,8 +32,7 @@ export interface PostCSSPluginOptions {
   postcss?: any;
 }
 
-export const PluginName = 'core-postcss-plugin';
-export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin => {
+export = (options: Options = {}): ReboostPlugin => {
   type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
   let postcss: typeof DefaultPostCSS;
@@ -63,7 +62,7 @@ export const PostCSSPlugin = (options: PostCSSPluginOptions = {}): ReboostPlugin
   }
 
   return {
-    name: PluginName,
+    name: 'postcss-plugin',
     setup({ config, chalk }) {
       checkOptions(config, (err) => config.log && chalk.red(err.message));
     },

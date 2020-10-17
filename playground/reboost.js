@@ -12,6 +12,7 @@ const ReactFastRefreshPlugin = require('@reboost/plugin-react-refresh');
 const SassPlugin = require('@reboost/plugin-sass');
 const SveltePlugin = require('@reboost/plugin-svelte');
 const VuePlugin = require('@reboost/plugin-vue');
+const PostCSSPlugin = require('@reboost/plugin-postcss');
 
 console.time();
 start({
@@ -34,6 +35,7 @@ start({
     // basePath: '/custom-path',
   },
   plugins: [
+    PostCSSPlugin(),
     UsePlugin({
       include: /.png$/,
       use: FilePlugin()

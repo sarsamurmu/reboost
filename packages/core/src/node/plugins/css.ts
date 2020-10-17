@@ -5,10 +5,10 @@ import moduleValues from 'postcss-modules-values';
 import moduleScope from 'postcss-modules-scope';
 import { extractICSS, ExtractedICSS } from 'icss-utils';
 import { RawSourceMap } from 'source-map';
+import { codeFrameColumns } from '@babel/code-frame';
 
 import path from 'path';
 
-import { postcssError } from './postcss';
 import { ReboostConfig, ReboostPlugin } from '../index';
 
 type Modes = 'local' | 'global' | 'pure';
@@ -68,6 +68,22 @@ const getScript = (css: string) => `
 
   export { __styleTag }
 `;
+
+export const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
+  let errorMessage = `${pluginName}: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
+  errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
+
+  errorMessage += codeFrameColumns(error.source, {
+    start: {
+      line: error.line,
+      column: error.column
+    }
+  }, {
+    message: error.reason
+  });
+
+  return new Error(errorMessage);
+}
 
 export const PluginName = 'core-css-plugin';
 export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
