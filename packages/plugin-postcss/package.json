@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-postcss",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "PostCSS plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -27,16 +27,15 @@
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "postcss": "^7.0.34"
+    "postcss": "^8.1.1"
   },
   "dependencies": {
     "@babel/code-frame": "^7.10.4",
-    "postcss-load-config": "^2.1.0"
+    "postcss-load-config": "^3.0.0"
   },
   "devDependencies": {
     "@types/babel__code-frame": "^7.0.2",
-    "@types/postcss-load-config": "^2.0.1",
-    "postcss": "^7.0.34",
+    "postcss": "^8.1.1",
     "typescript": "^4.0.3"
   }
 }

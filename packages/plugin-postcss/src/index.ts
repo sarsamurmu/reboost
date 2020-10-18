@@ -96,7 +96,7 @@ export = (options: Options = {}): ReboostPlugin => {
           const runProcess = ({ plugins, options }: LoadConfigResult) => {
             const onError = (err: any) => resolve(makeError(err, this.config));
             type OptT = ProcessOptions;
-            
+
             loadPostCSS(this)(plugins)
               .process(data.code, Object.assign<OptT, OptT, OptT>(
                 {},
