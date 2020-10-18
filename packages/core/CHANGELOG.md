@@ -1,3 +1,6 @@
+## 0.16.1
+- Support for PostCSS 8
+
 ## 0.16.0
 - Parted up PostCSS plugin.
   
