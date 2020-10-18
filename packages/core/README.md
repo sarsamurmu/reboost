@@ -64,7 +64,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - Support for Plugins.
 - Import resolving.
 - Built-in Hot Reload API.
-- Out of the box support for JSON, CSS Modules, JSX, PostCSS, and TypeScript.
+- Out of the box support for JSON, CSS Modules, JSX, and TypeScript.
 - Preprocessor support.
 - **Works with [Electron](https://www.electronjs.org/)**.
 
@@ -78,7 +78,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - [TSX](/docs/recipes.md#tsx)
 - JS/TS Decorators
 - [Babel](/docs/recipes.md#babel)
-- PostCSS
+- [PostCSS](/docs/recipes.md#postcss)
 - [Preact](/docs/recipes.md#preact)
 - [React (with Fast Refresh)](/docs/recipes.md#react-with-fast-refresh)
 - [Sass/SCSS](/docs/recipes.md#sass-or-scss)
