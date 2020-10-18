@@ -82,7 +82,7 @@ start({
 ```
 
 ## Vue 3
-Reboost supports Vue 3 using [VuePlugin](https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-vue).
+Reboost supports Vue 3 using [VuePlugin](../packages/plugin-vue/README.md).
 
 Change configuration to match this
 ```js
@@ -225,10 +225,25 @@ const BrandLogo = () => <img src={logo} height="100px">;
 ```
 
 ## PostCSS
-Works out of the box.
+You can use [PostCSSPlugin](../packages/plugin-postcss/README.md) to use PostCSS with Reboost.
+Adjust your configuration to match this.
+```js
+const { start } = require('reboost');
+// NOTE: You have to install @reboost/plugin-postcss from npm
+const PostCSSPlugin = require('@reboost/plugin-postcss');
+
+start({
+  // Other options
+  plugins: [
+    PostCSSPlugin(),
+    // Other plugins
+  ],
+  // ...
+})
+```
 
 ## Svelte
-Adjust your configuration to match this
+Use [SveltePlugin](../packages/plugin-svelte/README.md). Adjust your configuration to match this
 ```js
 const { start, DefaultConfig } = require('reboost');
 // NOTE: You have to install @reboost/plugin-svelte from npm
@@ -252,7 +267,7 @@ start({
 ```
 
 ## Babel
-To enable Babel transformation just enable [BabelPlugin](./plugins/babel.md)
+To enable Babel transformation just enable [BabelPlugin](../packages/plugin-babel/README.md)
 
 BTW, here's an example
 ```js

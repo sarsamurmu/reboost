@@ -35,12 +35,12 @@ const { start, builtInPlugins: { ${name} } } = require('reboost');
 
 // TODO: Remove these on v1.0
 export const BabelPlugin = () => movedToDifferentPackage('BabelPlugin', 'babel');
+export const PostCSSPlugin = () => movedToDifferentPackage('PostCSSPlugin', 'postcss');
 export const SassPlugin = () => movedToDifferentPackage('SassPlugin', 'sass');
 export const SveltePlugin = () => movedToDifferentPackage('SveltePlugin', 'svelte');
 
 export const CSSPlugin = () => movedToBuiltIn('CSSPlugin');
 export const esbuildPlugin = () => movedToBuiltIn('esbuildPlugin');
 export const FilePlugin = () => movedToBuiltIn('FilePlugin');
-export const PostCSSPlugin = () => movedToBuiltIn('PostCSSPlugin');
 export const ReplacePlugin = () => movedToBuiltIn('ReplacePlugin');
 export const UsePlugin = () => movedToBuiltIn('UsePlugin');
