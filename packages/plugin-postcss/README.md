@@ -2,7 +2,9 @@
 [![license](https://img.shields.io/npm/l/@reboost/plugin-postcss?style=flat-square)](/LICENSE)
 
 # PostCSS Plugin
-Adds support for transforming stylesheets with PostCSS.
+Adds support for transforming stylesheets with PostCSS. This plugin does not work with
+PostCSS versions below 8, if you want to use PostCSS 7, please use the older version
+of this plugin.
 
 ## Usage
 ### Setup
@@ -10,10 +12,9 @@ Install it using `npm`
 ```shell
 npm i -D @reboost/plugin-postcss
 ```
-Install `postcss` package, if not already installed, for compatibility reasons this plugin
-only works with PostCSS 7
+Install `postcss` package, if not already installed.
 ```shell
-npm i postcss@7.0.34
+npm i postcss
 ```
 Import it from the package
 ```js

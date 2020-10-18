@@ -1,26 +1,30 @@
 import loadConfig from 'postcss-load-config';
-import DefaultPostCSS, { ProcessOptions } from 'postcss';
+import type { default as PostCSS, ProcessOptions, CssSyntaxError } from 'postcss';
 import { codeFrameColumns } from '@babel/code-frame';
 
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostPlugin, ReboostConfig } from 'reboost';
+import { ReboostPlugin, ReboostConfig, PluginContext } from 'reboost';
 
-const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
-  let errorMessage = `${pluginName}: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
-  errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
+const isCssSyntaxError = (e: Error): e is CssSyntaxError => e.name === 'CssSyntaxError';
+const makeError = (error: Error, config: ReboostConfig) => {
+  if (isCssSyntaxError(error)) {
+    let errorMessage = `PostCSSPlugin: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
+    errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
 
-  errorMessage += codeFrameColumns(error.source, {
-    start: {
-      line: error.line,
-      column: error.column
-    }
-  }, {
-    message: error.reason
-  });
-
-  return new Error(errorMessage);
+    errorMessage += codeFrameColumns(error.source, {
+      start: {
+        line: error.line,
+        column: error.column
+      }
+    }, {
+      message: error.reason
+    });
+    return new Error(errorMessage);
+  } else {
+    console.error(error);
+  }
 }
 
 interface Options {
@@ -28,14 +32,11 @@ interface Options {
   ctx?: Record<string, any>;
   /** PostCSS config directory */
   path?: string;
-  /** Custom PostCSS module to use for processing */
-  postcss?: any;
 }
 
 export = (options: Options = {}): ReboostPlugin => {
   type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
-  let postcss: typeof DefaultPostCSS;
 
   let optionsCheckPassed = false;
   const checkOptions = (config: ReboostConfig, onError: (error: Error) => void) => {
@@ -61,6 +62,27 @@ export = (options: Options = {}): ReboostPlugin => {
     }
   }
 
+  const loadPostCSS = (() => {
+    let postcss: typeof PostCSS;
+    return (ctx: PluginContext) => {
+      if (!postcss) {
+        const postcssPath = ctx.resolve(__filename, 'postcss', {
+          mainFields: ['main']
+        });
+
+        if (postcssPath) {
+          postcss = require(postcssPath);
+        } else {
+          console.log(ctx.chalk.red(
+            'You need to install "postcss" package in order to use PostCSSPlugin.\n' +
+            'Please run "npm i postcss" to install PostCSS.'
+          ));
+        }
+      }
+      return postcss;
+    }
+  })();
+
   return {
     name: 'postcss-plugin',
     setup({ config, chalk }) {
@@ -70,12 +92,12 @@ export = (options: Options = {}): ReboostPlugin => {
       if (data.type === 'css') {
         return new Promise((resolve) => {
           checkOptions(this.config, (err) => resolve(err));
-          if (!postcss) postcss = options.postcss || DefaultPostCSS;
 
           const runProcess = ({ plugins, options }: LoadConfigResult) => {
-            const onError = (err: any) => resolve(postcssError('PostCSSPlugin', err, this.config));
+            const onError = (err: any) => resolve(makeError(err, this.config));
             type OptT = ProcessOptions;
-            postcss(plugins)
+
+            loadPostCSS(this)(plugins)
               .process(data.code, Object.assign<OptT, OptT, OptT>(
                 {},
                 options,
