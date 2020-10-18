@@ -1,6 +1,6 @@
 {
   "name": "@reboost/create-app",
-  "version": "0.15.0",
+  "version": "0.16.1",
   "description": "Create Reboost enabled app",
   "main": "./dist/index.js",
   "publishConfig": {

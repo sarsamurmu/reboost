@@ -1,4 +1,4 @@
-import postcss from 'postcss';
+import postcss, { CssSyntaxError } from 'postcss';
 import localByDefault from 'postcss-modules-local-by-default';
 import extractImports from 'postcss-modules-extract-imports';
 import moduleValues from 'postcss-modules-values';
@@ -69,21 +69,7 @@ const getScript = (css: string) => `
   export { __styleTag }
 `;
 
-export const postcssError = (pluginName: string, error: any, config: ReboostConfig) => {
-  let errorMessage = `${pluginName}: Error while processing "${path.relative(config.rootDir, error.file)}"\n`;
-  errorMessage += `${error.reason} on line ${error.line} at column ${error.column}\n\n`;
-
-  errorMessage += codeFrameColumns(error.source, {
-    start: {
-      line: error.line,
-      column: error.column
-    }
-  }, {
-    message: error.reason
-  });
-
-  return new Error(errorMessage);
-}
+const isCssSyntaxError = (e: Error): e is CssSyntaxError => e.name === 'CssSyntaxError';
 
 export const PluginName = 'core-css-plugin';
 export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
@@ -115,12 +101,13 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
               localByDefault({ mode }),
               extractImports(),
               moduleScope({
-                generateScopedName: (exportedName: string) => `_${exportedName}_${getID(exportedName + filePath)}_`,
+                generateScopedName: (exportedName) => `_${exportedName}_${getID(exportedName + filePath)}_`,
                 exportGlobals: modsOptions.exportGlobals
-              } as any),
-              postcss.plugin('import-export-extractor', () => (root) => {
-                extractedICSS = extractICSS(root, true);
-              })
+              }),
+              {
+                postcssPlugin: 'icss extractor',
+                Once(root) { extractedICSS = extractICSS(root, true) }
+              },
             ]).process(css, {
               from: filePath,
               to: filePath,
@@ -187,7 +174,24 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 code: script
               });
             }, (err) => {
-              resolve(postcssError('CSSPlugin', err, this.config));
+              if (isCssSyntaxError(err)) {
+                let errorMessage = `CSSPlugin: Error while processing "${path.relative(this.config.rootDir, err.file)}"\n`;
+                errorMessage += `${err.reason} on line ${err.line} at column ${err.column}\n\n`;
+
+                errorMessage += codeFrameColumns(err.source, {
+                  start: {
+                    line: err.line,
+                    column: err.column
+                  }
+                }, {
+                  message: err.reason
+                });
+
+                resolve(new Error(errorMessage));
+              } else {
+                console.error(err);
+                resolve();
+              }
             });
           });
         }
