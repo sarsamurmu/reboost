@@ -27,14 +27,17 @@
   "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-postcss",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
+  "peerDependencies": {
+    "postcss": "^7.0.34"
+  },
   "dependencies": {
     "@babel/code-frame": "^7.10.4",
-    "postcss": "^7.0.34",
     "postcss-load-config": "^2.1.0"
   },
   "devDependencies": {
     "@types/babel__code-frame": "^7.0.2",
     "@types/postcss-load-config": "^2.0.1",
+    "postcss": "^7.0.34",
     "typescript": "^4.0.3"
   }
 }
