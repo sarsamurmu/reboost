@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@reboost/plugin-postcss",
   "version": "0.15.0",
   "description": "PostCSS plugin for Reboost",
