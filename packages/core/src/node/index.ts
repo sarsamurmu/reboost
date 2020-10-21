@@ -330,7 +330,11 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       deepFreeze(it.config);
 
       // Plugins initialization
-      it.plugins = it.config.plugins.flat();
+      const flatPlugins: ReboostPlugin[] = [];
+      it.config.plugins.forEach((plugin) => {
+        flatPlugins.push(...(Array.isArray(plugin) ? plugin : [plugin]));
+      });
+      it.plugins = flatPlugins;
 
       it.plugins.push(...CorePlugins(it));
       const pluginNames = it.plugins.map(({ name }) => name);

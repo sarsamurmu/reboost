@@ -1,12 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ES2018",
     "module": "CommonJS",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
     "declaration": true
   },
   "exclude": [
