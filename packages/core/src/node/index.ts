@@ -270,13 +270,14 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     plugins: [] as ReboostPlugin[],
     cache: {} as ReturnType<typeof initCache>,
 
-    Init() {
+    /** Returns false if no entry found. If it returns false, close the app without further execution */
+    Init(): any {
       // Config initialization
       it.config = merge(clone(DefaultConfig as ReboostConfig), initialConfig);
       
       if (!it.config.entries) {
         console.log(chalk.red('No entry found. Please add some entries first.'));
-        return true;
+        return false;
       }
       if (!path.isAbsolute(it.config.rootDir)) it.log('info', chalk.red('rootDir should be an absolute path'));
       if (!path.isAbsolute(it.config.cacheDir)) it.config.cacheDir = path.join(it.config.rootDir, it.config.cacheDir);
@@ -293,19 +294,43 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       }
 
       it.config.resolve.modules = [].concat(it.config.resolve.modules);
-      it.config.resolve.modules.slice().forEach((modDirName) => {
+      // Add absolute path for relative modules dir path, so that resolve can work
+      // for any plugins to load peerDependencies
+      it.config.resolve.modules.forEach((modDirName) => {
         if (path.isAbsolute(modDirName)) return;
         (it.config.resolve.modules as string[]).push(path.join(it.config.rootDir, modDirName));
       });
 
+      const resolveAlias = it.config.resolve.alias;
+      if (resolveAlias) {
+        if (Array.isArray(resolveAlias)) {
+          resolveAlias.forEach((aliasData) => {
+            if (Array.isArray(aliasData.alias)) {
+              aliasData.alias = aliasData.alias.map((aPath) => (
+                aPath.startsWith('.') ? path.join(it.config.rootDir, aPath) : aPath
+              ));
+            } else if (aliasData.alias && aliasData.alias.startsWith('.')) {
+              aliasData.alias = path.join(it.config.rootDir, aliasData.alias);
+            }
+          });
+        } else {
+          Object.keys(resolveAlias).forEach((key) => {
+            const aliasPath = resolveAlias[key];
+            if (Array.isArray(aliasPath)) {
+              resolveAlias[key] = aliasPath.map((aPath) => (
+                aPath.startsWith('.') ? path.join(it.config.rootDir, aPath) : aPath
+              ));
+            } else if (aliasPath && aliasPath.startsWith('.')) {
+              resolveAlias[key] = path.join(it.config.rootDir, aliasPath);
+            }
+          });
+        }
+      }
+
       deepFreeze(it.config);
 
       // Plugins initialization
-      const flatPlugins: ReboostPlugin[] = [];
-      it.config.plugins.forEach((plugin) => {
-        flatPlugins.push(...(Array.isArray(plugin) ? plugin : [plugin]));
-      });
-      it.plugins = flatPlugins;
+      it.plugins = it.config.plugins.flat();
 
       it.plugins.push(...CorePlugins(it));
       const pluginNames = it.plugins.map(({ name }) => name);
@@ -359,8 +384,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   }
 
   // Initialize all properties
-  const shouldClose = it.Init();
-  if (shouldClose) return;
+  if (it.Init() === false) return false;
 
   if (it.config.dumpCache) rmDir(it.config.cacheDir);
 
@@ -489,9 +513,9 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   return it;
 }
 
-// It shows full structure in VSCode's popup if `type` is used instead of `interface`
+// It shows full structure of the type in VSCode's popup if `type` is used instead of `interface`
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ReboostInstance extends PromiseType<ReturnType<typeof createInstance>> { }
+export interface ReboostInstance extends Exclude<PromiseType<ReturnType<typeof createInstance>>, false> { }
 
 export const start = async (config: ReboostConfig = {} as any): Promise<ReboostService> => {
   const instance = await createInstance(config);
