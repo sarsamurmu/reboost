@@ -4,6 +4,9 @@
   "description": "A super fast dev server for rapid web development",
   "main": "./dist/node/index.js",
   "types": "./dist/node/index.d.ts",
+  "engines": {
+    "node": ">= 10.3.0"
+  },
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "node ../../rmDist",
