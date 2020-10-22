@@ -447,6 +447,11 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     const outputPath = path.join(it.config.rootDir, output);
     ensureDir(path.dirname(outputPath));
 
+    if (!fs.existsSync(path.join(it.config.rootDir, input))) {
+      it.log('info', chalk.red(`The input file does not exist: ${JSON.stringify(input)}`));
+      continue;
+    }
+
     let fileContent = `import '${fullAddress}/setup';\n`;
     fileContent += 'import';
     if (libName) fileContent += ' * as _$lib$_ from';

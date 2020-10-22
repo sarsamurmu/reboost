@@ -25,6 +25,21 @@ export const createFileHandler = (instance: ReboostInstance) => {
   const memoizedFiles = new Map<string, string>();
   const noop = () => {/* No Operation */};
 
+  const getETag = (filePath: string) => {
+    let eTag: string = '' + Math.floor(fs.statSync(filePath).mtimeMs);
+
+    const deps = instance.cache.filesData.files[filePath].dependencies;
+    if (deps) {
+      Object.keys(deps).sort().forEach((dependency) => {
+        try {
+          eTag += Math.floor(fs.statSync(dependency).mtimeMs);
+        } catch (e) {/* Do nothing */}
+      });
+    }
+
+    return eTag;
+  }
+
   return async (ctx: Koa.Context) => {
     if (!initialized) {
       filesDir = cache.getFilesDir();
@@ -78,7 +93,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
         if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, dependencies);
         
-        ctx.set('ETag', mtime + '');
+        ctx.set('ETag', getETag(filePath));
       }
 
       if (cache.filesData.files[filePath]) {
@@ -118,9 +133,9 @@ export const createFileHandler = (instance: ReboostInstance) => {
             if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
             watcher.setDependencies(filePath, dependencies);
 
-            ctx.set('ETag', mtime + '');
+            ctx.set('ETag', getETag(filePath));
           } else {
-            if (ctx.get('If-None-Match') === mtime + '') {
+            if (ctx.get('If-None-Match') === getETag(filePath)) {
               ctx.status = 304;
             } else {
               transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
