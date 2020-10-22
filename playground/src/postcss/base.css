@@ -1,0 +1,15 @@
+body {
+  padding: 10px;
+  font-family: sans-serif;
+
+  & > p {
+    font-size: 1.5rem;
+  }
+
+  & > .pink-box {
+    background-color: rgb(255, 0, 119);
+    color: white;
+    padding: 10px 14px;
+    display: inline-block;
+  }
+}

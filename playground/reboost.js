@@ -19,10 +19,12 @@ start({
   entries: [
     ['./src/babel/index.js', './public/dist/babel.js'],
     ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
+    ['./src/css-and-assets/index.js', './public/dist/css-and-assets.js'],
     ['./src/hot-reload-test/index.js', './public/dist/hot-reload-test.js'],
     ['./src/lit-element/index.js', './public/dist/lit-element.js'],
+    ['./src/postcss/index.js', './public/dist/postcss.js'],
     ['./src/react/index.jsx', './public/dist/react.js'],
-    ['./src/react-fast-refresh/index.jsx', './public/dist/react-fast-refresh.js'],
+    ['./src/sass/index.js', './public/dist/sass.js'],
     ['./src/svelte/index.js', './public/dist/svelte.js'],
     ['./src/vue/index.js', './public/dist/vue.js']
   ],
@@ -35,7 +37,10 @@ start({
     // basePath: '/custom-path',
   },
   plugins: [
-    PostCSSPlugin(),
+    UsePlugin({
+      include: '**/src/postcss/**',
+      use: PostCSSPlugin()
+    }),
     UsePlugin({
       include: /.png$/,
       use: FilePlugin()

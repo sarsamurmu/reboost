@@ -1,7 +1,0 @@
-@import 'vars.scss';
-
-@for $i from 0 through $sizes {
-  .size-#{$i} {
-    font-size: $i * 1px;
-  }
-}
