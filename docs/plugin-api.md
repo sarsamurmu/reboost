@@ -149,9 +149,6 @@ module.exports = function plugin() {
 
 Here are all the items available in plugin context
 
-#### `config`
-The configuration object passed when starting Reboost.
-
 #### `addDependency`
 Type: `(dependency: string) => void`
 
@@ -164,6 +161,9 @@ The first argument should be the absolute path to the dependency file.
 
 #### `chalk`
 The [`chalk`](https://www.npmjs.com/package/chalk) module.
+
+#### `config`
+The configuration object passed when starting Reboost.
 
 #### `getCompatibleSourceMap`
 Type: `(map: RawSourceMap) => RawSourceMap`
@@ -179,6 +179,10 @@ generated comment string for the source map object.
 
 #### `MagicString`
 The [`magic-string`](https://www.npmjs.com/package/magic-string) class.
+
+#### `meta`
+A object that you can use to append data. You can use this to
+pass any data to other plugins.
 
 #### `mergeSourceMaps`
 Type: `(oldMap: RawSourceMap, newMap: RawSourceMap) => RawSourceMap`
