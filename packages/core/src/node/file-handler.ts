@@ -88,12 +88,11 @@ export const createFileHandler = (instance: ReboostInstance) => {
           };
           await cache.updateDependencies(filePath, dependencies, true);
           cache.saveData();
+          if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+          ctx.set('ETag', getETag(filePath));
         }
 
-        if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
         watcher.setDependencies(filePath, dependencies);
-        
-        ctx.set('ETag', getETag(filePath));
       }
 
       if (cache.filesData.files[filePath]) {
@@ -128,12 +127,11 @@ export const createFileHandler = (instance: ReboostInstance) => {
               fileData.mtime = mtime;
               await cache.updateDependencies(filePath, dependencies);
               cache.saveData();
+              if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
+              ctx.set('ETag', getETag(filePath));
             }
 
-            if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
             watcher.setDependencies(filePath, dependencies);
-
-            ctx.set('ETag', getETag(filePath));
           } else {
             if (ctx.get('If-None-Match') === getETag(filePath)) {
               ctx.status = 304;
