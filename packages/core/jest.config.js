@@ -8,8 +8,6 @@ module.exports = {
     '^src-node/(.*)$': '<rootDir>/dist/node/$1'
   },
   snapshotResolver: '<rootDir>/tests-src/snapshotResolver.js',
-  globalSetup: '<rootDir>/tests-src/globalSetup.js',
-  globalTeardown: '<rootDir>/tests-src/globalTeardown.js',
   testEnvironment: '<rootDir>/tests-src/testEnvironment.js',
   testTimeout: 15000,
 }
