@@ -1,3 +1,9 @@
+## 0.16.2
+- Fixed alias resolving
+- Target Node 10.3.0
+- New property `meta` in Plugin Context
+- Fixed issue with cache when dependencies change
+
 ## 0.16.1
 - Support for PostCSS 8
 
