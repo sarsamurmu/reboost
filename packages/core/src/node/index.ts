@@ -48,13 +48,14 @@ export interface JSContent {
 }
 
 export interface PluginContext {
-  config: ReboostConfig;
   addDependency: (dependency: string) => void;
   chalk: typeof chalk;
+  config: ReboostConfig;
   getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
   getSourceMapComment: (map: any) => string;
   MagicString: typeof MagicString;
   mergeSourceMaps: typeof mergeSourceMaps;
+  meta: Record<string, any>;
   resolve: PublicResolveFn;
 }
 

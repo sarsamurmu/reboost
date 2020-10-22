@@ -43,11 +43,12 @@ const getPluginContext = (
   filePath: string,
   mergedDependencies: string[]
 ): PluginContext => ({
+  chalk,
   config: instance.config,
+  meta: {},
   addDependency(dependency) {
     mergedDependencies.push(path.normalize(dependency));
   },
-  chalk,
   getCompatibleSourceMap: (map) => getCompatibleSourceMap(instance, map),
   getSourceMapComment(map) {
     let comment = '/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';

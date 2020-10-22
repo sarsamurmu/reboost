@@ -483,3 +483,47 @@ test('transformAST hook', async () => {
 
   await service.stop();
 });
+
+test('meta object', async () => {
+  const fixture = createFixture({
+    'main.html': '<script type="module" src="./main.js"></script>',
+    'src': {
+      'index.js': 'console.log("works")',
+    }
+  }).apply();
+  type LoadFnT = ReboostPlugin['load'];
+  const metaKey = 'meta-key';
+  const mockPlugin1 = {
+    name: 'plugin-1',
+    load: jest.fn<ReturnType<LoadFnT>, Parameters<LoadFnT>>(function (this: ThisParameterType<LoadFnT>) {
+      expect(this.meta[metaKey]).toBeUndefined();
+      this.meta[metaKey] = 'from plugin-1';
+      return null;
+    }),
+  }
+  const mockPlugin2 = {
+    name: 'plugin-2',
+    load: jest.fn<ReturnType<LoadFnT>, Parameters<LoadFnT>>(function (this: ThisParameterType<LoadFnT>) {
+      expect(this.meta[metaKey]).toBe('from plugin-1');
+      return null;
+    }),
+  }
+  const service = await start({
+    rootDir: fixture.p('.'),
+    entries: [['./src/index.js', './main.js']],
+    contentServer: { root: '.' },
+    log: false,
+    plugins: [mockPlugin1, mockPlugin2]
+  });
+  const page = await newPage();
+
+  await Promise.all([
+    waitForConsole(page, 'works'),
+    page.goto(`${service.contentServer.local}/main.html`)
+  ]);
+
+  expect(mockPlugin1.load).toBeCalledTimes(1);
+  expect(mockPlugin2.load).toBeCalledTimes(1);
+
+  await service.stop();
+});
