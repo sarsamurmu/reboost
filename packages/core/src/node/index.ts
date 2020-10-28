@@ -466,9 +466,9 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   it.log('info', chalk.green('Proxy server started'));
 
   if (contentServer) {
-    const contentServerPath = (host: string, port: string | number) => {
-      return `http://${host}:${port}${it.config.contentServer.basePath}`.replace(/\/$/, '');
-    }
+    const contentServerPath = (host: string, port: string | number) => (
+      `http://${host}:${port}${it.config.contentServer.basePath}`.replace(/\/$/, '')
+    )
     const startedAt = (address: string) => {
       it.log('info', chalk.green(`Content server started at: ${address}`));
     }

@@ -26,9 +26,9 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
   );
   const def = (a: any) => !!a;
   const plugins = Array.isArray(options.use) ? options.use : [options.use];
-  const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
-    return plugins.map((plugin) => plugin[hookName]).filter(def);
-  }
+  const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => (
+    plugins.map((plugin) => plugin[hookName]).filter(def)
+  )
 
   const setupHooks = getHooks('setup');
   const stopHooks = getHooks('stop');
@@ -107,6 +107,6 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
   }
 }
 
-export const UsePlugin = (...options: UsePluginOptions[]): ReboostPlugin[] => {
-  return options.map(createPlugin);
-}
+export const UsePlugin = (...options: UsePluginOptions[]): ReboostPlugin[] => (
+  options.map(createPlugin)
+)

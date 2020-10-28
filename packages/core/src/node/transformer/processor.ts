@@ -22,9 +22,9 @@ const pluginHooksMap = new Map<ReboostInstance, {
 }>();
 export const getPluginHooks = (instance: ReboostInstance) => {
   if (!pluginHooksMap.has(instance)) {
-    const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => {
-      return instance.plugins.map((plugin) => plugin[hookName]).filter((a) => !!a);
-    }
+    const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => (
+      instance.plugins.map((plugin) => plugin[hookName]).filter((a) => !!a)
+    )
 
     pluginHooksMap.set(instance, {
       stopHooks: getHooks('stop'),
