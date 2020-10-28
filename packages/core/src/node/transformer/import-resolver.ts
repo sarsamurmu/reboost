@@ -46,13 +46,13 @@ export const resolveImports = async (
         let finalPath = null;
         let routed = false;
         if (source.startsWith('#/')) {
-          finalPath = source.replace(/^#/, '');
+          finalPath = source.substring(1);
           routed = true;
         } else {
           const resolvedPath = await resolveDependency(instance, source, filePath);
           if (resolvedPath) {
             if (resolvedPath.startsWith('#/')) {
-              finalPath = resolvedPath.replace(/^#/, '');
+              finalPath = resolvedPath.substring(1);
               routed = true;
             } else {
               finalPath = resolvedPath;
