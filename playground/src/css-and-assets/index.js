@@ -1,5 +1,6 @@
 import styles from './styles/index.module.css';
 import JSLogo from './assets/js-logo.png';
+import './styles/normal.css';
 
 console.log(styles);
 
