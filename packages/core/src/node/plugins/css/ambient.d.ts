@@ -1,6 +1,7 @@
 declare module 'postcss-modules-local-by-default' {
+  type Modes = 'global' | 'local' | 'pure';
   function main(options: {
-    mode: 'global' | 'local' | 'pure'
+    mode: Modes | ((filePath: string) => Modes)
   }): import('postcss').Plugin;
   export = main;
 }

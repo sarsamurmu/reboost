@@ -1,10 +1,10 @@
-export { CSSPlugin } from './css';
+export { CSSPlugin } from './css/index';
 export { esbuildPlugin } from './esbuild';
 export { FilePlugin } from './file';
 export { ReplacePlugin } from './replace';
 export { UsePlugin } from './use';
 
-import { CSSPluginOptions } from './css';
+import { CSSPluginOptions } from './css/index';
 import { esbuildPluginOptions } from './esbuild';
 import { UsePluginOptions } from './use';
 
