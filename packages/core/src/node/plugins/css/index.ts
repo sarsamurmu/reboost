@@ -1,4 +1,4 @@
-import postcss, { CssSyntaxError } from 'postcss';
+import postcss, { CssSyntaxError, ProcessOptions } from 'postcss';
 import { RawSourceMap } from 'source-map';
 import { codeFrameColumns } from '@babel/code-frame';
 
@@ -6,10 +6,10 @@ import path from 'path';
 
 import { ReboostPlugin } from '../../index';
 import { merge } from '../../utils';
-import { generateModuleCode, getPlugins, ModuleMode, runtimeCode } from './generator';
+import { generateModuleCode, getPlugins, Modes, runtimeCode } from './generator';
 
 interface ModuleOptions {
-  mode: ModuleMode;
+  mode: Modes | ((filePath: string) => Modes);
   exportGlobals: boolean;
   test: RegExp;
 }
@@ -25,7 +25,7 @@ const isCssSyntaxError = (e: Error): e is CssSyntaxError => e.name === 'CssSynta
 export const PluginName = 'core-css-plugin';
 export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
   const defaultModuleOptions = (): Required<ModuleOptions> => ({
-    mode: 'local' as ModuleMode,
+    mode: 'local',
     exportGlobals: false,
     test: /\.module\./i
   });
@@ -53,26 +53,31 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
       if (data.type === 'css') {
         const { code: css, map } = data;
         const isModule = modsEnabled && modsOptions.test.test(filePath);
+        const hasImports = options.import && /@import/.test(css);
+        // const hasURLs = options.url && /url\(.*?\)/.test(css);
+        const processOptions: ProcessOptions = {
+          from: filePath,
+          to: filePath,
+          map: {
+            inline: false,
+            annotation: false
+          }
+        };
 
-        if (isModule) {
+        if (isModule || hasImports /* || hasURLs */) {
           return new Promise((resolve) => {
             const { plugins, extracted } = getPlugins({
               filePath,
-              handleImports: options.import,
-              moduleMode: typeof modsOptions.mode === 'function'
-                ? (modsOptions.mode(filePath) || defaultModuleOptions().mode)
-                : modsOptions.mode,
-              exportGlobals: modsOptions.exportGlobals
+              handleImports: hasImports,
+              module: isModule && {
+                mode: typeof modsOptions.mode === 'function'
+                  ? (modsOptions.mode(filePath) || (defaultModuleOptions().mode as Modes))
+                  : modsOptions.mode,
+                exportGlobals: modsOptions.exportGlobals
+              }
             });
             
-            postcss(plugins).process(css, {
-              from: filePath,
-              to: filePath,
-              map: {
-                inline: false,
-                annotation: false
-              }
-            }).then(async (result) => {
+            postcss(plugins).process(css, processOptions).then(async (result) => {
               let cssSourceMap;
               if (options.sourceMap) {
                 const generatedMap = result.map.toJSON() as any as RawSourceMap;
@@ -82,20 +87,21 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                   path.join(path.dirname(filePath), sourcePath)
                 ));
 
-                const sourceMap = map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap;
-                cssSourceMap = this.getCompatibleSourceMap(sourceMap);
+                cssSourceMap = this.getCompatibleSourceMap(
+                  map ? await this.mergeSourceMaps(map, generatedMap) : generatedMap
+                );
               }
 
-              const code = generateModuleCode({
-                filePath,
-                css: result.css,
-                config: this.config,
-                sourceMap: cssSourceMap,
-                imports: extracted.imports,
-                module: { icss: extracted.icss }
+              resolve({
+                code: generateModuleCode({
+                  filePath,
+                  css: result.css,
+                  config: this.config,
+                  sourceMap: cssSourceMap,
+                  imports: extracted.imports,
+                  module: isModule && { icss: extracted.icss }
+                })
               });
-
-              resolve({ code });
             }, (err) => {
               if (isCssSyntaxError(err)) {
                 let errorMessage = `CSSPlugin: Error while processing "${path.relative(this.config.rootDir, err.file)}"\n`;
@@ -119,18 +125,16 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
           });
         }
 
-        const sourceMap = this.getCompatibleSourceMap(
-          // Use default source map if `map` is not available
-          map || new this.MagicString(css).generateMap({ source: filePath })
-        );
-
+        // The file is a normal CSS file with no imports or url functions
         return {
           code: generateModuleCode({
             filePath,
             css,
             config: this.config,
-            sourceMap,
-            // TODO: Resolve imports of Regular CSS files
+            sourceMap: this.getCompatibleSourceMap(
+              // Use default source map if `map` is not available
+              map || new this.MagicString(css).generateMap({ source: filePath })
+            ),
             imports: [],
             module: false
           })

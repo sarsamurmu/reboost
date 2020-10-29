@@ -22,31 +22,37 @@ const getID = (key: string) => {
   return idMap.get(key);
 }
 
-type Modes = 'local' | 'global' | 'pure';
-export type ModuleMode = Modes | ((filePath: string) => Modes);
+export type Modes = 'local' | 'global' | 'pure';
 export const getPlugins = (options: {
   filePath: string;
   handleImports: boolean;
-  moduleMode: ModuleMode;
-  exportGlobals: boolean;
+  module: false | {
+    mode: Modes;
+    exportGlobals: boolean;
+  }
 }) => {
   const extracted = {
     imports: [] as ParsedImport[],
     icss: undefined as ExtractedICSS
   }
-  const plugins: AcceptedPlugin[] = [
-    moduleValues(),
-    localByDefault({ mode: options.moduleMode }),
-    extractImports(),
-    moduleScope({
-      generateScopedName: (exportedName) => `_${exportedName}_${getID(exportedName + options.filePath)}_`,
-      exportGlobals: options.exportGlobals
-    }),
-    {
-      postcssPlugin: 'icss-extractor',
-      Once(root) { extracted.icss = extractICSS(root, true) }
-    },
-  ]
+  const plugins: AcceptedPlugin[] = [];
+
+  if (options.module) {
+    plugins.push(
+      moduleValues(),
+      localByDefault({ mode: options.module.mode }),
+      extractImports(),
+      moduleScope({
+        generateScopedName: (exportedName) => `_${exportedName}_${getID(exportedName + options.filePath)}_`,
+        exportGlobals: options.module.exportGlobals
+      }),
+      {
+        postcssPlugin: 'icss-extractor',
+        Once(root) { extracted.icss = extractICSS(root, true) }
+      },
+    );
+  }
+
   if (options.handleImports) plugins.push(importParser(extracted.imports));
 
   return { plugins, extracted }
@@ -99,7 +105,7 @@ export const generateModuleCode = (data: {
     });
   }
 
-  let cssStr = `\n/* ${path.relative(data.config.rootDir, data.filePath)} */\n\n`;
+  let cssStr = `\n/* ${path.relative(data.config.rootDir, data.filePath).replace(/\\/g, '/')} */\n\n`;
   cssStr += data.css;
   if (data.sourceMap) {
     cssStr += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
