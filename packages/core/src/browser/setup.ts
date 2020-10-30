@@ -75,7 +75,8 @@ Object.defineProperty(Reboost, '[[Private]]', {
   configurable: false
 });
 
-Reboost.reload = () => debugMode ? console.log('TRIGGER RELOAD') : self.location.reload();
+// eslint-disable-next-line no-constant-condition
+Reboost.reload = () => (false && debugMode) ? console.log('TRIGGER RELOAD') : self.location.reload();
 
 const aSelf = self as any;
 if (!aSelf.process) {
