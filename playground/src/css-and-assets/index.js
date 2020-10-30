@@ -1,8 +1,9 @@
 import styles from './styles/index.module.css';
 import JSLogo from './assets/js-logo.png';
-import './styles/normal.css';
+import normalCSS from './styles/normal.css';
 
 console.log(styles);
+console.log(normalCSS.toString());
 
 document.body.append(...new DOMParser().parseFromString(/* html */`
   <div>
