@@ -67,6 +67,7 @@ export const generateModuleCode = (data: {
   module: false | { icss: ExtractedICSS; }
 }) => {
   let code = '';
+  let defaultExportObjStr = '{}';
 
   if (data.module) {
     const localNameMap = {} as Record<string, string>;
@@ -79,7 +80,7 @@ export const generateModuleCode = (data: {
     });
 
     Object.keys(icssImports).forEach((key, idx) => {
-      if (idx === 0) code += '// ICSS imports\n'
+      if (idx === 0) code += '// ICSS imports\n';
       const localName = localNameMap[key] = 'styles_' + idx;
       code += `import ${localName} from ${JSON.stringify(key)};\n`;
 
@@ -92,7 +93,7 @@ export const generateModuleCode = (data: {
     });
 
     // { "{key}": "{value}" } -> { "{key}": `{valueWithReplacements}` }
-    code += 'export default ' + JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (_, key: string, value: string) => {
+    defaultExportObjStr = JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (_, key: string, value: string) => {
       const transformed = value.split(' ').map((className) => {
         const classNameData = importedClassMap[className];
         if (classNameData) {
@@ -104,6 +105,8 @@ export const generateModuleCode = (data: {
       return `"${key}": \`${transformed}\``;
     });
   }
+
+  code += `const defaultExport = ${defaultExportObjStr};\n`;
 
   let cssStr = `\n/* ${path.relative(data.config.rootDir, data.filePath).replace(/\\/g, '/')} */\n\n`;
   cssStr += data.css;
@@ -119,6 +122,8 @@ export const generateModuleCode = (data: {
 
     const updateListeners = new Set();
     const css = ${JSON.stringify(cssStr)};
+    let exportedCSS = css;
+    defaultExport.toString = () => exportedCSS;
     
     let style;
     const removeStyle = () => {
@@ -132,18 +137,21 @@ export const generateModuleCode = (data: {
       style.textContent = css;
       document.head.appendChild(style);
 
-      updateListeners.add(({ __css }) => style && (style.textContent = __css));
+      updateListeners.add(({ __css }) => {
+        if (style) style.textContent = __css;
+        exportedCSS = __css;
+      });
 
       hot.self.accept((...args) => updateListeners.forEach((cb) => cb(...args)));
     }
 
+    export default defaultExport;
     export {
       css as __css,
       removeStyle as __removeStyle,
       updateListeners as __updateListeners
     }
   `;
-
   
   if (data.imports.length) {
     code += `
@@ -188,7 +196,7 @@ export const runtimeCode = `
   // and handles the style with media
   export const ImportedStyle = (module, media) => {
     let style;
-    const updateListener = ({ __css }) => (style.textContent = __css);
+    const listener = ({ __css }) => (style.textContent = __css);
 
     return {
       apply() {
@@ -198,12 +206,12 @@ export const runtimeCode = `
         style.textContent = module.__css;
         if (media) style.media = media;
         document.head.appendChild(style);
-        module.__updateListeners.add(updateListener);
+        module.__updateListeners.add(listener);
       },
       destroy() {
         if (!style) return;
         style.remove();
-        module.__updateListeners.delete(updateListener);
+        module.__updateListeners.delete(listener);
       }
     }
   }
