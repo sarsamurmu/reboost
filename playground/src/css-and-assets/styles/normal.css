@@ -3,3 +3,13 @@
 .center {
   text-align: center;
 }
+
+.bg-card {
+  /* background-image: url("https://images.unsplash.com/photo-1603979650012-3b01cdb04e69?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=80"); */
+  background-image: url("../assets/card-bg.jpg");
+  background-size: cover;
+  margin-top: 50px;
+  text-align: center;
+  padding: 100px;
+  border-radius: 10px;
+}

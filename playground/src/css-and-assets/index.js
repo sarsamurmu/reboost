@@ -16,5 +16,8 @@ document.body.append(...new DOMParser().parseFromString(/* html */`
       Built with
       <img src=${JSLogo}>
     </p>
+    <div class="bg-card">
+      A Card
+    </div>
   </div>
 `, 'text/html').body.children);

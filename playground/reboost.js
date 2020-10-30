@@ -42,7 +42,7 @@ start({
       use: PostCSSPlugin()
     }),
     UsePlugin({
-      include: /.png$/,
+      include: /\.(png|jpg)$/,
       use: FilePlugin()
     }),
     SassPlugin({
