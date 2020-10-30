@@ -9,7 +9,7 @@ import { RawSourceMap } from 'source-map';
 import path from 'path';
 
 import { ReboostConfig } from '../../index';
-import { ParsedImport, importParser } from './import-parser';
+import { ParsedImport, importParser, ParsedURL, urlParser } from './parsers';
 
 const camelCase = (string: string) => string.replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => (
   index === 0 ? match.toLowerCase() : match.toUpperCase()
@@ -26,6 +26,7 @@ export type Modes = 'local' | 'global' | 'pure';
 export const getPlugins = (options: {
   filePath: string;
   handleImports: boolean;
+  handleURLS: boolean;
   module: false | {
     mode: Modes;
     exportGlobals: boolean;
@@ -33,6 +34,7 @@ export const getPlugins = (options: {
 }) => {
   const extracted = {
     imports: [] as ParsedImport[],
+    urls: [] as ParsedURL[],
     icss: undefined as ExtractedICSS
   }
   const plugins: AcceptedPlugin[] = [];
@@ -54,6 +56,7 @@ export const getPlugins = (options: {
   }
 
   if (options.handleImports) plugins.push(importParser(extracted.imports));
+  if (options.handleURLS) plugins.push(urlParser(extracted.urls));
 
   return { plugins, extracted }
 }
@@ -64,6 +67,7 @@ export const generateModuleCode = (data: {
   config: ReboostConfig;
   sourceMap: RawSourceMap;
   imports: ParsedImport[];
+  urls: ParsedURL[];
   module: false | { icss: ExtractedICSS; }
 }) => {
   let code = '';
@@ -92,18 +96,18 @@ export const generateModuleCode = (data: {
       });
     });
 
-    // { "{key}": "{value}" } -> { "{key}": `{valueWithReplacements}` }
-    defaultExportObjStr = JSON.stringify(icssExports, null, 2).replace(/"(.*)":\s?"(.*)"/g, (_, key: string, value: string) => {
-      const transformed = value.split(' ').map((className) => {
+    // Makes string of JS object
+    defaultExportObjStr = '{\n' + Object.keys(icssExports).map((key) => {
+      const value = '`' + icssExports[key].split(' ').map((className) => {
         const classNameData = importedClassMap[className];
         if (classNameData) {
           return `\${${localNameMap[classNameData.from]}[${JSON.stringify(classNameData.name)}]}`;
         }
         return className;
-      }).join(' ');
+      }).join(' ') + '`';
 
-      return `"${key}": \`${transformed}\``;
-    });
+      return `  ${JSON.stringify(key)}: ${value},`;
+    }).join('\n') + '}';
   }
 
   code += `const defaultExport = ${defaultExportObjStr};\n`;
@@ -116,12 +120,27 @@ export const generateModuleCode = (data: {
     cssStr += ' */';
   }
 
+  let replacementObjStr = '{}';
+  if (data.urls.length) {
+    code += '\n\n// Used URLs\n';
+    const replacements = {} as Record<string, string>;
+    data.urls.forEach(({ url, replacement }, idx) => {
+      const localName = `url_${idx}`;
+      code += `import ${localName} from ${JSON.stringify(url)};\n`;
+      replacements[replacement] = localName;
+    });
+
+    // Unquote the property value - { "replacementName": "identifierName" } -> { "replacementName": identifierName }
+    replacementObjStr = JSON.stringify(replacements).replace(/"(.*)":\s?"(.*)"/g, '"$1": $2');
+  }
+
   code += `
     // Main style injection and its hot reload
     import { hot } from 'reboost/hot';
+    import { replaceReplacements } from '#/css-runtime';
 
     const updateListeners = new Set();
-    const css = ${JSON.stringify(cssStr)};
+    const css = replaceReplacements(${JSON.stringify(cssStr)}, ${replacementObjStr});
     let exportedCSS = css;
     defaultExport.toString = () => exportedCSS;
     
@@ -192,6 +211,13 @@ export const generateModuleCode = (data: {
 }
 
 export const runtimeCode = `
+  export const replaceReplacements = (str, replacements) => {
+    Object.keys(replacements).forEach((toReplace) => {
+      str = str.replace(new RegExp(toReplace, 'g'), replacements[toReplace]);
+    });
+    return str;
+  }
+
   // This function removes the default style injected by the module
   // and handles the style with media
   export const ImportedStyle = (module, media) => {

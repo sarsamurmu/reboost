@@ -7,6 +7,7 @@ import path from 'path';
 import { ReboostPlugin } from '../../index';
 import { merge } from '../../utils';
 import { generateModuleCode, getPlugins, Modes, runtimeCode } from './generator';
+import { testImports, testURLs } from './parsers';
 
 interface ModuleOptions {
   mode: Modes | ((filePath: string) => Modes);
@@ -16,6 +17,7 @@ interface ModuleOptions {
 
 export interface CSSPluginOptions {
   import?: boolean;
+  url?: boolean;
   modules?: boolean | ModuleOptions;
   sourceMap?: boolean;
 }
@@ -31,6 +33,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
   });
   const defaultOptions = (): Required<CSSPluginOptions> => ({
     import: true,
+    url: true,
     modules: defaultModuleOptions(),
     sourceMap: true
   });
@@ -53,8 +56,8 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
       if (data.type === 'css') {
         const { code: css, map } = data;
         const isModule = modsEnabled && modsOptions.test.test(filePath);
-        const hasImports = options.import && /@import/.test(css);
-        // const hasURLs = options.url && /url\(.*?\)/.test(css);
+        const hasImports = options.import && testImports(css);
+        const hasURLs = options.url && testURLs(css);
         const processOptions: ProcessOptions = {
           from: filePath,
           to: filePath,
@@ -64,11 +67,12 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
           }
         };
 
-        if (isModule || hasImports /* || hasURLs */) {
+        if (isModule || hasImports || hasURLs) {
           return new Promise((resolve) => {
             const { plugins, extracted } = getPlugins({
               filePath,
               handleImports: hasImports,
+              handleURLS: hasURLs,
               module: isModule && {
                 mode: typeof modsOptions.mode === 'function'
                   ? (modsOptions.mode(filePath) || (defaultModuleOptions().mode as Modes))
@@ -76,6 +80,27 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 exportGlobals: modsOptions.exportGlobals
               }
             });
+
+            const handleError = (err: Error) => {
+              if (isCssSyntaxError(err)) {
+                let errorMessage = `CSSPlugin: Error while processing "${path.relative(this.config.rootDir, err.file)}"\n`;
+                errorMessage += `${err.reason} on line ${err.line} at column ${err.column}\n\n`;
+
+                errorMessage += codeFrameColumns(err.source, {
+                  start: {
+                    line: err.line,
+                    column: err.column
+                  }
+                }, {
+                  message: err.reason
+                });
+
+                resolve(new Error(errorMessage));
+              } else {
+                console.error(err);
+                resolve();
+              }
+            }
             
             postcss(plugins).process(css, processOptions).then(async (result) => {
               let cssSourceMap;
@@ -99,29 +124,11 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                   config: this.config,
                   sourceMap: cssSourceMap,
                   imports: extracted.imports,
+                  urls: extracted.urls,
                   module: isModule && { icss: extracted.icss }
                 })
               });
-            }, (err) => {
-              if (isCssSyntaxError(err)) {
-                let errorMessage = `CSSPlugin: Error while processing "${path.relative(this.config.rootDir, err.file)}"\n`;
-                errorMessage += `${err.reason} on line ${err.line} at column ${err.column}\n\n`;
-
-                errorMessage += codeFrameColumns(err.source, {
-                  start: {
-                    line: err.line,
-                    column: err.column
-                  }
-                }, {
-                  message: err.reason
-                });
-
-                resolve(new Error(errorMessage));
-              } else {
-                console.error(err);
-                resolve();
-              }
-            });
+            }, handleError).catch(handleError);
           });
         }
 
@@ -136,6 +143,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
               map || new this.MagicString(css).generateMap({ source: filePath })
             ),
             imports: [],
+            urls: [],
             module: false
           })
         }
