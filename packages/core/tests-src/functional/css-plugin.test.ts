@@ -132,6 +132,35 @@ describe('resolves @imports', () => {
 
     await service.stop();
   });
+
+  test('does not resolve remote urls', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': 'import "./index.css"',
+        'index.css': '@import "https://my.site.com/base.css";',
+      },
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      log: false
+    });
+    const page = await newPage();
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      if (request.url().includes('my.site.com')) {
+        return request.respond({ body: 'body { background-color: rgb(255, 0, 0) }' });
+      }
+      request.continue();
+    });
+    await page.goto(`${service.contentServer.local}/main.html`);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(255, 0, 0)');
+
+    await service.stop();
+  });
 });
 
 describe('resolves url() and image-set()', () => {
@@ -347,6 +376,54 @@ describe('resolves url() and image-set()', () => {
           expect(msg.text().match(/"https:\/\/resolved\.url\/1x"/g).length).toBe(1);
           expect(msg.text().match(/"https:\/\/resolved\.url\/2x"/g).length).toBe(1);
           expect(msg.text().match(/url\(https:\/\/resolved\.url\/1x\)/g).length).toBe(1);
+          return true;
+        }
+      }),
+      page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+
+    await service.stop();
+  });
+
+  test('does not resolve remote urls', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import css from "./index.css";
+          console.log(css.toString());
+        `,
+        'index.css': `
+          .sel {
+            prop-one: image-set(
+              "https://my.site.com/image_1x.jpg" 1x,
+              "https://my.site.com/image_2x.jpg" 2x
+            );
+            prop-two: url("https://my.site.com/image_1x.jpg");
+          }
+        `,
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      log: false,
+    });
+    const page = await newPage();
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      if (request.url().includes('my.site.com')) {
+        return request.respond({ body: '' });
+      }
+      request.continue();
+    });
+    await Promise.all([
+      waitForConsole(page, (msg) => {
+        if (msg.location().url.includes('index.js')) {
+          expect(msg.text().match(/"https:\/\/my\.site\.com\/image_1x\.jpg"/g).length).toBe(2);
+          expect(msg.text().match(/"https:\/\/my\.site\.com\/image_2x\.jpg"/g).length).toBe(1);
           return true;
         }
       }),
