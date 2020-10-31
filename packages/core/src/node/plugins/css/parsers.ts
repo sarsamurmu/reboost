@@ -101,11 +101,12 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
     const makeReplacement = (
       decl: Declaration,
       parsedValue: valueParser.ParsedValue,
-      node: valueParser.Node
+      node: valueParser.Node,
+      quoted: boolean
     ) => {
-      const replacement = `__url_replacement_${idx++}__`;
+      const replacement = `__URL_REPLACEMENT_${idx++}__`;
       node.type = 'word';
-      node.value = replacement;
+      node.value = quoted ? `"${replacement}"` : replacement;
       replacements.push([decl, (parsedValue as any).toString()]);
       return replacement;
     }
@@ -125,7 +126,7 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
             if (!isBlankURL(url, result, decl) && shouldHandleURL(url)) {
               urls.push({
                 url,
-                replacement: makeReplacement(decl, parsedValue, getFirstNodeOf(node))
+                replacement: makeReplacement(decl, parsedValue, getFirstNodeOf(node), false)
               });
             }
 
@@ -138,7 +139,7 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
                 if (!isBlankURL(url, result, decl) && shouldHandleURL(url)) {
                   urls.push({
                     url,
-                    replacement: makeReplacement(decl, parsedValue, getFirstNodeOf(nestedNode))
+                    replacement: makeReplacement(decl, parsedValue, getFirstNodeOf(nestedNode), false)
                   });
                 }
               } else if (nestedNode.type === 'string') {
@@ -146,7 +147,7 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
                 if (!isBlankURL(url, result, decl) && shouldHandleURL(url)) {
                   urls.push({
                     url,
-                    replacement: makeReplacement(decl, parsedValue, nestedNode)
+                    replacement: makeReplacement(decl, parsedValue, nestedNode, true)
                   });
                 }
               }
