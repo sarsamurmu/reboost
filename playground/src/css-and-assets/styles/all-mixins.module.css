@@ -1,3 +1,5 @@
 .base {
   margin: 5px;
 }
+
+@value someValue: green;

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca&display=swap');
 
 @value primary-transition: 0.3s;
+@value someValue from './all-mixins.module.css';
 
 body {
   font-family: 'Lexend Deca', sans-serif;
@@ -16,6 +17,7 @@ body {
   border-radius: 10px;
   animation-name: card-animation;
   animation-duration: 2s;
+  custom-prop: someValue;
 }
 
 .card h3 {
