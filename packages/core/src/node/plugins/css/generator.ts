@@ -1,9 +1,5 @@
 import { AcceptedPlugin } from 'postcss';
-import localByDefault from 'postcss-modules-local-by-default';
-import extractImports from 'postcss-modules-extract-imports';
-import moduleValues from 'postcss-modules-values';
-import moduleScope from 'postcss-modules-scope';
-import { extractICSS, ExtractedICSS } from 'icss-utils';
+import { localByDefault, extractImports, moduleValues, moduleScope, extractICSS, ExtractedICSS, Modes } from './modules';
 import { RawSourceMap } from 'source-map';
 
 import path from 'path';
@@ -22,7 +18,7 @@ const getID = (key: string) => {
   return idMap.get(key);
 }
 
-export type Modes = 'local' | 'global' | 'pure';
+export { Modes }
 export const getPlugins = (options: {
   filePath: string;
   handleImports: boolean;
@@ -112,9 +108,13 @@ export const generateModuleCode = (data: {
 
   code += `const defaultExport = ${defaultExportObjStr};\n`;
 
-  let cssStr = `\n/* ${path.relative(data.config.rootDir, data.filePath).replace(/\\/g, '/')} */\n\n`;
+  const preCode = `\n/* ${path.relative(data.config.rootDir, data.filePath).replace(/\\/g, '/')} */\n\n`;
+  let cssStr = preCode;
   cssStr += data.css;
   if (data.sourceMap) {
+    // Fix the source map because we are prepend-ing some codes which are not mapped
+    data.sourceMap.mappings = ';'.repeat(preCode.match(/\n/g).length) + data.sourceMap.mappings;
+
     cssStr += '\n\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,';
     cssStr += Buffer.from(JSON.stringify(data.sourceMap)).toString('base64');
     cssStr += ' */';
@@ -131,7 +131,7 @@ export const generateModuleCode = (data: {
     });
 
     // Unquote the property value - { "replacementName": "identifierName" } -> { "replacementName": identifierName }
-    replacementObjStr = JSON.stringify(replacements).replace(/"(.*)":\s?"(.*)"/g, '"$1": $2');
+    replacementObjStr = JSON.stringify(replacements, null, 2).replace(/"(.*)":\s?"(.*)"/g, '"$1": $2');
   }
 
   code += `
@@ -142,7 +142,7 @@ export const generateModuleCode = (data: {
     const updateListeners = new Set();
     const css = replaceReplacements(${JSON.stringify(cssStr)}, ${replacementObjStr});
     let exportedCSS = css;
-    defaultExport.toString = () => exportedCSS;
+    export const toString = defaultExport.toString = () => exportedCSS;
     
     let style;
     const removeStyle = () => {
