@@ -63,7 +63,7 @@ start({
         ]
       })
     }, {
-      include: '**/src/react-fast-refresh/**',
+      include: '**/src/react/**',
       use: ReactFastRefreshPlugin()
     })
   ],
