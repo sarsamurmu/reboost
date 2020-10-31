@@ -65,7 +65,8 @@ export = ({
 
         if (babelResult.map) {
           babelResult.map.sources = [filePath];
-          babelResult.map.mappings = ';'.repeat(preCode.split('\n').length) + babelResult.map.mappings;
+          // Fix source map because we are prepend-ing some code which are not mapped
+          babelResult.map.mappings = ';'.repeat(preCode.match(/\n/g).length + 1) + babelResult.map.mappings;
         }
 
         return {
