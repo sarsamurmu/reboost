@@ -57,6 +57,15 @@ export const getPlugins = (options: {
   return { plugins, extracted }
 }
 
+const normalizeURL = (url: string) => {
+  if (url.startsWith('~')) {
+    url = url.substring(1);
+  } else if (!url.startsWith('/') && !url.startsWith('./')) {
+    url = './' + url;
+  }
+  return url;
+}
+
 export const generateModuleCode = (data: {
   filePath: string;
   css: string;
@@ -125,6 +134,7 @@ export const generateModuleCode = (data: {
     code += '\n\n// Used URLs\n';
     const replacements = {} as Record<string, string>;
     data.urls.forEach(({ url, replacement }, idx) => {
+      url = normalizeURL(url);
       const localName = `url_${idx}`;
       code += `import ${localName} from ${JSON.stringify(url)};\n`;
       replacements[replacement] = localName;
@@ -180,12 +190,7 @@ export const generateModuleCode = (data: {
     `;
 
     data.imports.forEach(({ url, media }, idx) => {
-      if (url.startsWith('~')) {
-        url = url.substring(1);
-      } else if (!url.startsWith('/') && !url.startsWith('./')) {
-        url = './' + url;
-      }
-
+      url = normalizeURL(url);
       const localName = 'atImport_' + idx;
       code += `import * as ${localName} from ${JSON.stringify(url)};\n`;
       code += `importedStyles.push(ImportedStyle(${localName}, ${JSON.stringify(media)}));\n`;
