@@ -66,6 +66,9 @@ const normalizeURL = (url: string) => {
   return url;
 }
 
+// Checks if a import is from postcss-module-value
+// CSS -> `@value <someValue> from "./file.module.css";`
+const importedValueRE = /i__const_/i;
 export const generateModuleCode = (data: {
   filePath: string;
   css: string;
@@ -77,10 +80,11 @@ export const generateModuleCode = (data: {
 }) => {
   let code = '';
   let defaultExportObjStr = '{}';
+  const replacements = {} as Record<string, string>;
 
   if (data.module) {
     const localNameMap = {} as Record<string, string>;
-    const importedClassMap = {} as Record<string, { from: string; name: string; }>;
+    const importsMap = {} as Record<string, { from: string; name: string; }>;
     const { icssImports, icssExports } = data.module.icss;
 
     Object.keys(icssExports).forEach((key, _, keys) => {
@@ -90,29 +94,34 @@ export const generateModuleCode = (data: {
 
     Object.keys(icssImports).forEach((key, idx) => {
       if (idx === 0) code += '// ICSS imports\n';
-      const localName = localNameMap[key] = 'styles_' + idx;
+      const localName = 'icss_import_' + idx;
+      localNameMap[key] = localName;
       code += `import ${localName} from ${JSON.stringify(key)};\n`;
 
-      Object.keys(icssImports[key]).forEach((className) => {
-        importedClassMap[className] = {
+      Object.keys(icssImports[key]).forEach((importName) => {
+        importsMap[importName] = {
           from: key,
-          name: icssImports[key][className]
+          name: icssImports[key][importName]
+        }
+
+        if (importedValueRE.test(importName)) {
+          replacements[importName] = `${localName}[${JSON.stringify(importsMap[importName].name)}]`;
         }
       });
     });
 
     // Makes string of JS object
     defaultExportObjStr = '{\n' + Object.keys(icssExports).map((key) => {
-      const value = '`' + icssExports[key].split(' ').map((className) => {
-        const classNameData = importedClassMap[className];
-        if (classNameData) {
-          return `\${${localNameMap[classNameData.from]}[${JSON.stringify(classNameData.name)}]}`;
+      const value = '`' + icssExports[key].split(' ').map((token) => {
+        const importData = importsMap[token];
+        if (importData) {
+          return `\${${localNameMap[importData.from]}[${JSON.stringify(importData.name)}]}`;
         }
-        return className;
+        return token;
       }).join(' ') + '`';
 
       return `  ${JSON.stringify(key)}: ${value},`;
-    }).join('\n') + '}';
+    }).join('\n') + '\n}';
   }
 
   code += `const defaultExport = ${defaultExportObjStr};\n`;
@@ -129,20 +138,22 @@ export const generateModuleCode = (data: {
     cssStr += ' */';
   }
 
-  let replacementObjStr = '{}';
   if (data.urls.length) {
     code += '\n\n// Used URLs\n';
-    const replacements = {} as Record<string, string>;
     data.urls.forEach(({ url, replacement }, idx) => {
       url = normalizeURL(url);
       const localName = `url_${idx}`;
       code += `import ${localName} from ${JSON.stringify(url)};\n`;
       replacements[replacement] = localName;
     });
-
-    // Unquote the property value - { "replacementName": "identifierName" } -> { "replacementName": identifierName }
-    replacementObjStr = JSON.stringify(replacements, null, 2).replace(/"(.*)":\s?"(.*)"/g, '"$1": $2');
   }
+
+  // Stringify replacement object with unquoted values
+  // -> { "replacementName": "identifierName" } -> { "replacementName": identifierName }
+  const replacementKeys = Object.keys(replacements);
+  const replacementObjStr = replacementKeys.length ? ('{\n' + replacementKeys.map((key) => (
+    `  ${JSON.stringify(key)}: ${replacements[key]},`
+  )).join('\n') + '\n}') : '{}';
 
   code += `
     // Main style injection and its hot reload
