@@ -12,7 +12,7 @@ import { hasImportsIn, hasURLsIn } from './parsers';
 interface ModuleOptions {
   mode: Modes | ((filePath: string) => Modes);
   exportGlobals: boolean;
-  test: RegExp;
+  test: RegExp | ((filePath: string) => boolean);
 }
 
 export type URLTester = (url: string, filePath: string) => boolean;
@@ -56,7 +56,9 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
     transformIntoJS(data, filePath) {
       if (data.type === 'css') {
         const { code: css, map } = data;
-        const isModule = modsEnabled && modsOptions.test.test(filePath);
+        const isModule = modsEnabled && (
+          typeof modsOptions.test === 'function' ? modsOptions.test(filePath) : modsOptions.test.test(filePath)
+        );
         const hasImports = options.import && hasImportsIn(css);
         const hasURLs = options.url && hasURLsIn(css);
         const processOptions: ProcessOptions = {
