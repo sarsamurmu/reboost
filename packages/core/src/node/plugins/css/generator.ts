@@ -5,6 +5,7 @@ import { RawSourceMap } from 'source-map';
 import path from 'path';
 
 import { ReboostConfig } from '../../index';
+import { URLTester } from './index';
 import { ParsedImport, importParser, ParsedURL, urlParser } from './parsers';
 
 const camelCase = (string: string) => string.replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => (
@@ -21,6 +22,10 @@ const getID = (key: string) => {
 export { Modes }
 export const getPlugins = (options: {
   filePath: string;
+  testers: {
+    import: URLTester;
+    url: URLTester;
+  };
   handleImports: boolean;
   handleURLS: boolean;
   module: false | {
@@ -51,8 +56,16 @@ export const getPlugins = (options: {
     );
   }
 
-  if (options.handleImports) plugins.push(importParser(extracted.imports));
-  if (options.handleURLS) plugins.push(urlParser(extracted.urls));
+  if (options.handleImports) {
+    plugins.push(
+      importParser(extracted.imports, (url) => options.testers.import(url, options.filePath))
+    );
+  }
+  if (options.handleURLS) {
+    plugins.push(
+      urlParser(extracted.urls, (url) => options.testers.url(url, options.filePath))
+    );
+  }
 
   return { plugins, extracted }
 }

@@ -5,9 +5,10 @@
 import { Declaration, Plugin, Result } from 'postcss';
 import valueParser from 'postcss-value-parser';
 
-const shouldHandleURL = (url: string) => {
+export type TesterFn = (url: string) => boolean;
+const shouldHandleURL = (url: string, testerFn: TesterFn) => {
   if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return false;
-  return true;
+  return testerFn(url);
 }
 
 export interface ParsedImport {
@@ -16,9 +17,9 @@ export interface ParsedImport {
 }
 
 const importRE = /@import/i;
-export const testImports = (css: string) => importRE.test(css);
+export const hasImportsIn = (css: string) => importRE.test(css);
 
-export const importParser = (imports: ParsedImport[]): Plugin => ({
+export const importParser = (imports: ParsedImport[], testerFn: TesterFn): Plugin => ({
   postcssPlugin: 'import-parser',
   prepare: (result) => ({
     AtRule: {
@@ -55,7 +56,7 @@ export const importParser = (imports: ParsedImport[]): Plugin => ({
           return result.warn('The import statement imports nothing', { node });
         }
 
-        if (shouldHandleURL(importPath)) {
+        if (shouldHandleURL(importPath, testerFn)) {
           imports.push({
             url: importPath,
             media: valueParser.stringify(mediaNodes).trim().toLowerCase()
@@ -91,9 +92,9 @@ const isBlankURL = (url: string, result: Result, node: Declaration) => {
   return true;
 }
 
-export const testURLs = (css: string) => hasURLOrImageSet.test(css);
+export const hasURLsIn = (css: string) => hasURLOrImageSet.test(css);
 
-export const urlParser = (urls: ParsedURL[]): Plugin => ({
+export const urlParser = (urls: ParsedURL[], testerFn: TesterFn): Plugin => ({
   postcssPlugin: 'url-parser',
   prepare: (result) => {
     const replacements: [declaration: Declaration, replacement: string][] = [];
@@ -123,7 +124,7 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
           if (urlRE.test(node.value)) {
             const url = getURL(node);
 
-            if (!isBlankURL(url, result, decl) && shouldHandleURL(url)) {
+            if (!isBlankURL(url, result, decl) && shouldHandleURL(url, testerFn)) {
               urls.push({
                 url,
                 replacement: makeReplacement(decl, parsedValue, getFirstNodeOf(node), false)
@@ -136,7 +137,7 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
               if (nestedNode.type === 'function' && urlRE.test(nestedNode.value)) {
                 const url = getURL(nestedNode);
 
-                if (!isBlankURL(url, result, decl) && shouldHandleURL(url)) {
+                if (!isBlankURL(url, result, decl) && shouldHandleURL(url, testerFn)) {
                   urls.push({
                     url,
                     replacement: makeReplacement(decl, parsedValue, getFirstNodeOf(nestedNode), false)
@@ -144,7 +145,7 @@ export const urlParser = (urls: ParsedURL[]): Plugin => ({
                 }
               } else if (nestedNode.type === 'string') {
                 const url = nestedNode.value;
-                if (!isBlankURL(url, result, decl) && shouldHandleURL(url)) {
+                if (!isBlankURL(url, result, decl) && shouldHandleURL(url, testerFn)) {
                   urls.push({
                     url,
                     replacement: makeReplacement(decl, parsedValue, nestedNode, true)

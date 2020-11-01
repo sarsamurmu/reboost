@@ -7,7 +7,7 @@ import path from 'path';
 import { ReboostPlugin } from '../../index';
 import { merge } from '../../utils';
 import { generateModuleCode, getPlugins, Modes, runtimeCode } from './generator';
-import { testImports, testURLs } from './parsers';
+import { hasImportsIn, hasURLsIn } from './parsers';
 
 interface ModuleOptions {
   mode: Modes | ((filePath: string) => Modes);
@@ -15,9 +15,10 @@ interface ModuleOptions {
   test: RegExp;
 }
 
+export type URLTester = (url: string, filePath: string) => boolean;
 export interface CSSPluginOptions {
-  import?: boolean;
-  url?: boolean;
+  import?: boolean | URLTester;
+  url?: boolean | URLTester;
   modules?: boolean | ModuleOptions;
   sourceMap?: boolean;
 }
@@ -56,8 +57,8 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
       if (data.type === 'css') {
         const { code: css, map } = data;
         const isModule = modsEnabled && modsOptions.test.test(filePath);
-        const hasImports = options.import && testImports(css);
-        const hasURLs = options.url && testURLs(css);
+        const hasImports = options.import && hasImportsIn(css);
+        const hasURLs = options.url && hasURLsIn(css);
         const processOptions: ProcessOptions = {
           from: filePath,
           to: filePath,
@@ -71,6 +72,10 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
           return new Promise((resolve) => {
             const { plugins, extracted } = getPlugins({
               filePath,
+              testers: {
+                import: typeof options.import === 'function' ? options.import : () => true,
+                url: typeof options.url === 'function' ? options.url : () => true
+              },
               handleImports: hasImports,
               handleURLS: hasURLs,
               module: isModule && {
