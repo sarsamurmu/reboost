@@ -110,17 +110,21 @@ export const generateModuleCode = (data: {
       });
     });
 
-    // Makes string of JS object
+    const valueMap = {} as Record<string, string>;
+    // Stringifies the JS object
     defaultExportObjStr = '{\n' + Object.keys(icssExports).map((key) => {
-      const value = '`' + icssExports[key].split(' ').map((token) => {
-        const importData = importsMap[token];
-        if (importData) {
-          return `\${${localNameMap[importData.from]}[${JSON.stringify(importData.name)}]}`;
-        }
-        return token;
-      }).join(' ') + '`';
+      const value = icssExports[key];
+      if (typeof valueMap[value] === 'undefined') {
+        valueMap[value] = '`' + value.split(' ').map((token) => {
+          const importData = importsMap[token];
+          if (importData) {
+            return `\${${localNameMap[importData.from]}[${JSON.stringify(importData.name)}]}`;
+          }
+          return token;
+        }).join(' ') + '`';
+      }
 
-      return `  ${JSON.stringify(key)}: ${value},`;
+      return `  ${JSON.stringify(key)}: ${valueMap[value]},`;
     }).join('\n') + '\n}';
   }
 
@@ -163,7 +167,8 @@ export const generateModuleCode = (data: {
     const updateListeners = new Set();
     const css = replaceReplacements(${JSON.stringify(cssStr)}, ${replacementObjStr});
     let exportedCSS = css;
-    export const toString = defaultExport.toString = () => exportedCSS;
+    export const toString = () => exportedCSS;
+    Object.defineProperty(defaultExport, 'toString', { value: toString });
     
     let style;
     const removeStyle = () => {
