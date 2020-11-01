@@ -89,7 +89,7 @@ export const generateModuleCode = (data: {
   sourceMap: RawSourceMap;
   imports: ParsedImport[];
   urls: ParsedURL[];
-  module: false | { icss: ExtractedICSS; }
+  module: false | { icss: ExtractedICSS; };
 }) => {
   let code = '';
   let defaultExportObjStr = '{}';
@@ -175,7 +175,7 @@ export const generateModuleCode = (data: {
   code += `
     // Main style injection and its hot reload
     import { hot } from 'reboost/hot';
-    import { replaceReplacements } from '#/css-runtime';
+    import { replaceReplacements, patchObject } from '#/css-runtime';
 
     const updateListeners = new Set();
     const css = replaceReplacements(${JSON.stringify(cssStr)}, ${replacementObjStr});
@@ -195,9 +195,10 @@ export const generateModuleCode = (data: {
       style.textContent = css;
       document.head.appendChild(style);
 
-      updateListeners.add(({ __css }) => {
+      updateListeners.add(({ default: newDefaultExport, __css }) => {
         if (style) style.textContent = __css;
         exportedCSS = __css;
+        patchObject(defaultExport, newDefaultExport);
       });
 
       hot.self.accept((...args) => updateListeners.forEach((cb) => cb(...args)));
@@ -250,6 +251,13 @@ export const runtimeCode = `
       str = str.replace(new RegExp(toReplace, 'g'), replacements[toReplace]);
     });
     return str;
+  }
+
+  export const patchObject = (object, target) => {
+    Object.keys(object).forEach((key) => {
+      if (!(key in target)) delete object[key];
+    });
+    Object.assign(object, target);
   }
 
   // This function removes the default style injected by the module
