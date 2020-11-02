@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 import { start, builtInPlugins } from 'src-node/index';
 
 import { createFixture } from '../helpers/fixture';
@@ -711,6 +713,97 @@ describe('modules', () => {
       page.goto(`${service.contentServer.local}/main.html`)
     ]);
     expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(45, 0, 0)');
+
+    await service.stop();
+  });
+});
+
+describe.only('hot reload', () => {
+  test('regular CSS file', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import css from "./index.css";
+          window.testGetCSS = () => css.toString();
+        `,
+        'index.css': 'body { background-color: rgb(0, 100, 0) }'
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle2' });
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(0, 100, 0)');
+    expect(await page.evaluate(() => (window as any).testGetCSS())).toMatch('rgb(0, 100, 0)');
+
+    await Promise.all([
+      page.waitForResponse((res) => res.url().includes(service.proxyServer)),
+      fs.promises.writeFile(fixture.p('src/index.css'), 'body { background-color: rgb(77, 0, 0) }')
+    ]);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(77, 0, 0)');
+    expect(await page.evaluate(() => (window as any).testGetCSS())).toMatch('rgb(77, 0, 0)');
+
+    await service.stop();
+  });
+
+  test('CSS modules', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import styles from "./index.module.css";
+          window.testGetExports = () => styles;
+          window.testGetCSS = () => styles.toString();
+        `,
+        'index.module.css': `
+          @value exp1: 1;
+          @value exp2: 2;
+          .exp3 { color: rgb(57, 0, 0) }
+        `
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    const getCSS = () => (window as any).testGetCSS();
+    const getExports = () => (window as any).testGetExports();
+    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle2' });
+    const stylesObj = await (await page.evaluateHandle(getExports)).jsonValue() as Record<string, string>;
+    expect(stylesObj).toEqual({
+      exp1: '1',
+      exp2: '2',
+      exp3: expect.any(String)
+    });
+    expect(await page.evaluate(getCSS)).toMatch('rgb(57, 0, 0)');
+
+    await Promise.all([
+      page.waitForResponse((res) => res.url().includes(service.proxyServer)),
+      fs.promises.writeFile(fixture.p('src/index.module.css'), `
+        @value exp1: 10;
+        .exp3 { color: rgb(66, 0, 0) }
+      `)
+    ]);
+    const updatedStylesObj = await (await page.evaluateHandle(getExports)).jsonValue() as Record<string, string>;
+    expect(updatedStylesObj).toEqual({
+      exp1: '10',
+      exp3: expect.any(String)
+    });
+    expect(await page.evaluate(getCSS)).toMatch('rgb(66, 0, 0)');
 
     await service.stop();
   });
