@@ -31,14 +31,14 @@ afterEach(async () => {
 
 export const waitForConsole = (
   page: puppeteer.Page,
-  test: string | ((msg: puppeteer.ConsoleMessage) => boolean),
+  test: string | ((msg: puppeteer.ConsoleMessage) => boolean | Promise<boolean>),
   timeout = 8000
 ) => {
   let reject: (reason: any) => void;
   let resolve: () => void;
-  const listener = (msg: puppeteer.ConsoleMessage) => {
+  const listener = async (msg: puppeteer.ConsoleMessage) => {
     if (
-      typeof test === 'function' ? test(msg) : msg.text() === test
+      typeof test === 'function' ? await test(msg) : msg.text() === test
     ) {
       resolve();
       page.off('console', listener);

@@ -175,6 +175,54 @@ describe('resolves @imports', () => {
 
     await service.stop();
   });
+
+  test('exclude some URLs from resolving', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import css from "./index.css";
+          console.log(css.toString());
+        `,
+        'index.css': `
+          @import "resolve/base.css";
+          @import "no-resolve/base.css";
+        `,
+        'resolve/base.css': 'body { background-color: rgb(40, 0, 0); }'
+      },
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin({
+        import: (url) => url.startsWith('resolve')
+      })]
+    });
+    const page = await newPage();
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      if (request.url().includes('no-resolve')) {
+        return request.respond({ body: '' });
+      }
+      request.continue();
+    });
+    await Promise.all([
+      waitForConsole(page, (msg) => {
+        if (msg.location().url.includes('index.js')) {
+          expect(msg.text().match(/"no-resolve\/base\.css"/)).toHaveLength(1);
+          return true;
+        }
+      }),
+      await page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(40, 0, 0)');
+
+    await service.stop();
+  });
 });
 
 describe('resolves url() and image-set()', () => {
@@ -216,7 +264,7 @@ describe('resolves url() and image-set()', () => {
     await Promise.all([
       waitForConsole(page, (msg) => {
         if (msg.location().url.includes('index.js')) {
-          expect(msg.text().match(/url\(https:\/\/resolved\.url\)/g).length).toBe(2);
+          expect(msg.text().match(/url\(https:\/\/resolved\.url\)/g)).toHaveLength(2);
           return true;
         }
       }),
@@ -273,8 +321,8 @@ describe('resolves url() and image-set()', () => {
       waitForConsole(page, (msg) => {
         if (msg.location().url.includes('index.js')) {
           // Note: image-set's urls are quoted
-          expect(msg.text().match(/"https:\/\/resolved\.url\/1x"/g).length).toBe(2);
-          expect(msg.text().match(/"https:\/\/resolved\.url\/2x"/g).length).toBe(2);
+          expect(msg.text().match(/"https:\/\/resolved\.url\/1x"/g)).toHaveLength(2);
+          expect(msg.text().match(/"https:\/\/resolved\.url\/2x"/g)).toHaveLength(2);
           return true;
         }
       }),
@@ -330,8 +378,8 @@ describe('resolves url() and image-set()', () => {
     await Promise.all([
       waitForConsole(page, (msg) => {
         if (msg.location().url.includes('index.js')) {
-          expect(msg.text().match(/url\(https:\/\/resolved\.url\/1x\)/g).length).toBe(2);
-          expect(msg.text().match(/url\(https:\/\/resolved\.url\/2x\)/g).length).toBe(2);
+          expect(msg.text().match(/url\(https:\/\/resolved\.url\/1x\)/g)).toHaveLength(2);
+          expect(msg.text().match(/url\(https:\/\/resolved\.url\/2x\)/g)).toHaveLength(2);
           return true;
         }
       }),
@@ -391,9 +439,9 @@ describe('resolves url() and image-set()', () => {
     await Promise.all([
       waitForConsole(page, (msg) => {
         if (msg.location().url.includes('index.js')) {
-          expect(msg.text().match(/"https:\/\/resolved\.url\/1x"/g).length).toBe(1);
-          expect(msg.text().match(/"https:\/\/resolved\.url\/2x"/g).length).toBe(1);
-          expect(msg.text().match(/url\(https:\/\/resolved\.url\/1x\)/g).length).toBe(1);
+          expect(msg.text().match(/"https:\/\/resolved\.url\/1x"/g)).toHaveLength(1);
+          expect(msg.text().match(/"https:\/\/resolved\.url\/2x"/g)).toHaveLength(1);
+          expect(msg.text().match(/url\(https:\/\/resolved\.url\/1x\)/g)).toHaveLength(1);
           return true;
         }
       }),
@@ -432,23 +480,237 @@ describe('resolves url() and image-set()', () => {
     });
     const page = await newPage();
 
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-      if (request.url().includes('my.site.com')) {
-        return request.respond({ body: '' });
-      }
-      request.continue();
-    });
     await Promise.all([
       waitForConsole(page, (msg) => {
         if (msg.location().url.includes('index.js')) {
-          expect(msg.text().match(/"https:\/\/my\.site\.com\/image_1x\.jpg"/g).length).toBe(2);
-          expect(msg.text().match(/"https:\/\/my\.site\.com\/image_2x\.jpg"/g).length).toBe(1);
+          expect(msg.text().match(/"https:\/\/my\.site\.com\/image_1x\.jpg"/g)).toHaveLength(2);
+          expect(msg.text().match(/"https:\/\/my\.site\.com\/image_2x\.jpg"/g)).toHaveLength(1);
           return true;
         }
       }),
       page.goto(`${service.contentServer.local}/main.html`)
     ]);
+
+    await service.stop();
+  });
+
+  test('exclude some URLs from resolving', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import css from "./index.css";
+          console.log(css.toString());
+        `,
+        'index.css': `
+          .sel {
+            prop-one: image-set(
+              "resolve/image_1x.jpg" 1x,
+              "resolve/image_2x.jpg" 2x
+            );
+            prop-two: url("no-resolve/image_1x.jpg");
+          }
+        `,
+        'resolve': {
+          'image_1x.jpg': '-> Gets loaded by the mock plugin',
+          'image_2x.jpg': '-> Gets loaded by the mock plugin'
+        }
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin({
+        url: (url) => url.startsWith('resolve')
+      }), {
+        name: 'mock-plugin',
+        load(filePath) {
+          const match = filePath.match(/image_(\d)x.jpg/);
+          if (match) {
+            return {
+              code: `export default "https://resolved.url/${match[1]}x"`,
+              type: 'js'
+            }
+          }
+        }
+      }]
+    });
+    const page = await newPage();
+
+    await Promise.all([
+      waitForConsole(page, (msg) => {
+        if (msg.location().url.includes('index.js')) {
+          expect(msg.text().match(/"https:\/\/resolved\.url\/1x"/g)).toHaveLength(1);
+          expect(msg.text().match(/"https:\/\/resolved\.url\/2x"/g)).toHaveLength(1);
+          expect(msg.text().match(/url\("no-resolve\/image_1x\.jpg"\)/)).toHaveLength(1);
+          return true;
+        }
+      }),
+      page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+
+    await service.stop();
+  });
+});
+
+describe('modules', () => {
+  test('exports classes', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import styles from "./index.module.css";
+          console.log(styles);
+          document.body.className = styles.blueBack;
+        `,
+        'index.module.css': '.blue-back { background-color: rgb(0, 0, 255) }',
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    await Promise.all([
+      waitForConsole(page, async (msg) => {
+        if (msg.location().url.includes('index.js')) {
+          const styleObj = await msg.args()[0].jsonValue() as Record<string, string>;
+          expect(styleObj).toHaveProperty('blue-back');
+          expect(styleObj).toHaveProperty('blueBack');
+          expect(styleObj['blue-back']).toBe(styleObj['blueBack']);
+          return true;
+        }
+      }),
+      page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(0, 0, 255)');
+
+    await service.stop();
+  });
+
+  test('exports values', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import styles from "./index.module.css";
+          console.log(styles);
+          document.body.className = styles.main;
+        `,
+        'index.module.css': `
+          @value primary-color: rgb(0, 78, 0);
+          .main { color: primary-color; }
+        `,
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    await Promise.all([
+      waitForConsole(page, async (msg) => {
+        if (msg.location().url.includes('index.js')) {
+          const styleObj = await msg.args()[0].jsonValue() as Record<string, string>;
+          expect(styleObj).toHaveProperty('primary-color');
+          expect(styleObj).toHaveProperty('primaryColor');
+          expect(styleObj['primary-color']).toBe(styleObj['primaryColor']);
+          expect(styleObj.primaryColor).toBe('rgb(0, 78, 0)');
+          return true;
+        }
+      }),
+      page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(0, 78, 0)');
+
+    await service.stop();
+  });
+
+  test('class name composing', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import styles from "./index.module.css";
+          document.body.className = styles.main;
+        `,
+        'index.module.css': `
+          .main {
+            composes: colored from "./composable.module.css";
+            color: rgb(0, 77, 0);
+          }
+        `,
+        'composable.module.css': '.colored { background-color: rgb(100, 0, 0); }'
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    await page.goto(`${service.contentServer.local}/main.html`);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(100, 0, 0)');
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(0, 77, 0)');
+
+    await service.stop();
+  });
+
+  test('value importing', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': `
+          import styles from "./index.module.css";
+          console.log(styles);
+          document.body.className = styles.main;
+        `,
+        'index.module.css': `
+          @value primary-color as base-color from "./variables.module.css";
+          .main { color: base-color; }
+        `,
+        'variables.module.css': '@value primary-color: rgb(45, 0, 0);'
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    await Promise.all([
+      waitForConsole(page, async (msg) => {
+        if (msg.location().url.includes('index.js')) {
+          const styleObj = await msg.args()[0].jsonValue() as Record<string, string>;
+          expect(styleObj).toHaveProperty('base-color');
+          expect(styleObj['base-color']).toBe('rgb(45, 0, 0)');
+          return true;
+        }
+      }),
+      page.goto(`${service.contentServer.local}/main.html`)
+    ]);
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(45, 0, 0)');
 
     await service.stop();
   });
