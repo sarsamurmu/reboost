@@ -140,6 +140,8 @@ export interface ReboostConfig {
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
+  /** Use plugins included by default */
+  includeDefaultPlugins?: boolean;
   /** Options for logging */
   log?: false | {
     info?: boolean;
@@ -192,6 +194,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   },
   contentServer: undefined,
   entries: null,
+  includeDefaultPlugins: true,
   log: {
     info: true,
     responseTime: false,
@@ -338,13 +341,16 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       it.plugins = flatPlugins;
 
       it.plugins.push(...CorePlugins(it));
-      const pluginNames = it.plugins.map(({ name }) => name);
-
-      if (!pluginNames.includes(esbuildPluginName)) {
-        it.plugins.push(esbuildPlugin());
-      }
-      if (!pluginNames.includes(CSSPluginName)) {
-        it.plugins.unshift(CSSPlugin());
+      
+      if (it.config.includeDefaultPlugins) {
+        const pluginNames = it.plugins.map(({ name }) => name);
+        
+        if (!pluginNames.includes(esbuildPluginName)) {
+          it.plugins.push(esbuildPlugin());
+        }
+        if (!pluginNames.includes(CSSPluginName)) {
+          it.plugins.unshift(CSSPlugin());
+        }
       }
 
       // Cache initialization
