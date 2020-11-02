@@ -31,6 +31,7 @@ export const getPlugins = (options: {
   module: false | {
     mode: Modes;
     exportGlobals: boolean;
+    hasValues: boolean;
   }
 }) => {
   const extracted = {
@@ -41,8 +42,8 @@ export const getPlugins = (options: {
   const plugins: AcceptedPlugin[] = [];
 
   if (options.module) {
+    if (options.module.hasValues) plugins.push(moduleValues());
     plugins.push(
-      moduleValues(),
       localByDefault({ mode: options.module.mode }),
       extractImports(),
       moduleScope({

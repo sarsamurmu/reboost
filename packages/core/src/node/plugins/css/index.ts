@@ -74,17 +74,18 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
           return new Promise((resolve) => {
             const { plugins, extracted } = getPlugins({
               filePath,
+              handleImports: hasImports,
+              handleURLS: hasURLs,
               testers: {
                 import: typeof options.import === 'function' ? options.import : () => true,
                 url: typeof options.url === 'function' ? options.url : () => true
               },
-              handleImports: hasImports,
-              handleURLS: hasURLs,
               module: isModule && {
                 mode: typeof modsOptions.mode === 'function'
                   ? (modsOptions.mode(filePath) || (defaultModuleOptions().mode as Modes))
                   : modsOptions.mode,
-                exportGlobals: modsOptions.exportGlobals
+                exportGlobals: modsOptions.exportGlobals,
+                hasValues: /@value/i.test(css)
               }
             });
 
