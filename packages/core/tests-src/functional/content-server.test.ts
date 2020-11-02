@@ -23,6 +23,7 @@ test('serves directory listing', async () => {
       index: false,
       serveIndex: true
     },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();
@@ -42,6 +43,7 @@ test('serves directory listing', async () => {
       root: './public',
       serveIndex: false
     },
+    includeDefaultPlugins: false,
     log: false
   });
 
@@ -63,6 +65,7 @@ test('loads index file', async () => {
       root: './public',
       index: 'my-index.html'
     },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();
@@ -87,6 +90,7 @@ test('resolves extensions', async () => {
       root: './public',
       extensions: ['.html', '.htm']
     },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();
@@ -114,6 +118,7 @@ describe('supports middleware', () => {
           await next();
         }
       },
+      includeDefaultPlugins: false,
       log: false
     });
     const page = await newPage();
@@ -141,6 +146,7 @@ describe('supports middleware', () => {
           }
         ]
       },
+      includeDefaultPlugins: false,
       log: false
     });
     const page = await newPage();
@@ -169,6 +175,7 @@ test('redirects using proxy', async () => {
         }
       }
     },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();
@@ -200,6 +207,7 @@ test('serves content on basePath', async () => {
       root: './public',
       basePath: '/custom-base'
     },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();
@@ -223,6 +231,7 @@ describe('file watcher', () => {
       contentServer: {
         root: './public'
       },
+      includeDefaultPlugins: false,
       log: false
     });
     const page = await newPage();
@@ -259,6 +268,7 @@ describe('file watcher', () => {
       contentServer: {
         root: './public'
       },
+      includeDefaultPlugins: false,
       log: false
     });
     const page = await newPage();
@@ -300,6 +310,7 @@ describe('file watcher', () => {
       contentServer: {
         root: './public'
       },
+      includeDefaultPlugins: false,
       log: false
     });
     const page = await newPage();

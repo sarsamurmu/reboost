@@ -12,6 +12,7 @@ test('serves script', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();
@@ -36,6 +37,7 @@ test('supports imports', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
+    includeDefaultPlugins: false,
     log: false
   });
   const page = await newPage();

@@ -8,6 +8,7 @@ test('setup hook', async () => {
   const service = await start({
     rootDir: createFixture({}).apply().p('.'),
     entries: [],
+    includeDefaultPlugins: false,
     log: false,
     plugins: [
       { name: '1', setup: mockFn },
@@ -25,6 +26,7 @@ test('stop hook', async () => {
   const service = await start({
     rootDir: createFixture({}).apply().p('.'),
     entries: [],
+    includeDefaultPlugins: false,
     log: false,
     plugins: [
       { name: '1', stop: mockFn },
@@ -57,6 +59,7 @@ test('resolve hook', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
+    includeDefaultPlugins: false,
     log: false,
     plugins: [
       { name: 'my-resolver', resolve: resolveFn },
@@ -98,6 +101,7 @@ test('load hook', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
+    includeDefaultPlugins: false,
     log: false,
     plugins: [
       { name: 'my-loader', load: loadFn },
@@ -154,6 +158,7 @@ describe('transformContent hook', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
       plugins: [
         { name: '1', transformContent: transformFn1 },
@@ -211,6 +216,7 @@ describe('transformContent hook', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
       plugins: [
         { name: '1', transformContent: transformFn1 },
@@ -263,6 +269,7 @@ describe('transformIntoJS hook', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
       plugins: [
         { name: '1', transformIntoJS: transformFn },
@@ -303,6 +310,7 @@ describe('transformIntoJS hook', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
       plugins: [
         { name: '1', transformIntoJS: transformFn },
@@ -361,6 +369,7 @@ describe('transformJSContent hook', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
       plugins: [
         { name: '1', transformJSContent: transformFn1 },
@@ -385,7 +394,7 @@ describe('transformJSContent hook', () => {
       {
         code: 'From transformer 1',
         type: 'js',
-        map: expect.anything()
+        map: undefined
       },
       fixture.p('./src/log.js')
     ]);
@@ -416,6 +425,7 @@ describe('transformJSContent hook', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
       plugins: [
         { name: '1', transformJSContent: transformFn1 },
@@ -468,6 +478,7 @@ test('transformAST hook', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
+    includeDefaultPlugins: false,
     log: false,
     plugins: [
       { name: '1', transformAST: transformFn }
@@ -512,6 +523,7 @@ test('meta object', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
+    includeDefaultPlugins: false,
     log: false,
     plugins: [mockPlugin1, mockPlugin2]
   });

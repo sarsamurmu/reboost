@@ -15,6 +15,7 @@ describe('updates cache', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false
     });
     const page = await newPage();

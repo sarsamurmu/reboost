@@ -1,7 +1,9 @@
-import { start } from 'src-node/index';
+import { start, builtInPlugins } from 'src-node/index';
 
 import { createFixture } from '../helpers/fixture';
 import { newPage, waitForConsole } from '../helpers/browser';
+
+const { CSSPlugin } = builtInPlugins;
 
 test('serves regular CSS file', async () => {
   const fixture = createFixture({
@@ -15,7 +17,9 @@ test('serves regular CSS file', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
-    log: false
+    includeDefaultPlugins: false,
+    log: false,
+    plugins: [CSSPlugin()]
   });
   const page = await newPage();
 
@@ -40,7 +44,9 @@ test('able to get content using .toString() method', async () => {
     rootDir: fixture.p('.'),
     entries: [['./src/index.js', './main.js']],
     contentServer: { root: '.' },
-    log: false
+    includeDefaultPlugins: false,
+    log: false,
+    plugins: [CSSPlugin()]
   });
   const page = await newPage();
 
@@ -72,7 +78,9 @@ describe('resolves @imports', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
-      log: false
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
     });
     const page = await newPage();
 
@@ -97,7 +105,9 @@ describe('resolves @imports', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
-      log: false
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
     });
     const page = await newPage();
 
@@ -123,7 +133,9 @@ describe('resolves @imports', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
-      log: false
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
     });
     const page = await newPage();
 
@@ -145,7 +157,9 @@ describe('resolves @imports', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
-      log: false
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
     });
     const page = await newPage();
 
@@ -185,8 +199,9 @@ describe('resolves url() and image-set()', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
-      plugins: [{
+      plugins: [CSSPlugin(), {
         name: 'mock-plugin',
         load(filePath) {
           if (filePath === fixture.p('src/image.jpg')) return {
@@ -239,8 +254,9 @@ describe('resolves url() and image-set()', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
-      plugins: [{
+      plugins: [CSSPlugin(), {
         name: 'mock-plugin',
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
@@ -296,8 +312,9 @@ describe('resolves url() and image-set()', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
-      plugins: [{
+      plugins: [CSSPlugin(), {
         name: 'mock-plugin',
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
@@ -353,8 +370,9 @@ describe('resolves url() and image-set()', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
-      plugins: [{
+      plugins: [CSSPlugin(), {
         name: 'mock-plugin',
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
@@ -408,7 +426,9 @@ describe('resolves url() and image-set()', () => {
       rootDir: fixture.p('.'),
       entries: [['./src/index.js', './main.js']],
       contentServer: { root: '.' },
+      includeDefaultPlugins: false,
       log: false,
+      plugins: [CSSPlugin()]
     });
     const page = await newPage();
 
