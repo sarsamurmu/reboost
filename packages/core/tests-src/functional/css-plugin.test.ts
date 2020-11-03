@@ -3,7 +3,7 @@ import fs from 'fs';
 import { start, builtInPlugins } from 'src-node/index';
 
 import { createFixture } from '../helpers/fixture';
-import { newPage, waitForConsole } from '../helpers/browser';
+import { newPage, waitForConsole, waitFor } from '../helpers/browser';
 
 const { CSSPlugin } = builtInPlugins;
 
@@ -718,7 +718,7 @@ describe('modules', () => {
   });
 });
 
-describe.only('hot reload', () => {
+describe('hot reload', () => {
   test('regular CSS file', async () => {
     const fixture = createFixture({
       'main.html': '<script type="module" src="./main.js"></script>',
@@ -804,6 +804,69 @@ describe.only('hot reload', () => {
       exp3: expect.any(String)
     });
     expect(await page.evaluate(getCSS)).toMatch('rgb(66, 0, 0)');
+
+    await service.stop();
+  });
+
+  test('@import-ed CSS files', async () => {
+    const fixture = createFixture({
+      'main.html': '<script type="module" src="./main.js"></script>',
+      'src': {
+        'index.js': 'import "./index.css";',
+        'index.css': `
+          @import "imported_1.css" (min-width: 600px);
+          @import "imported_2.css";
+        `,
+        'imported_1.css': 'body { color: rgb(41, 0, 0); }',
+        'imported_2.css': 'body { background-color: rgb(14, 0, 0) }'
+      }
+    }).apply();
+    const service = await start({
+      rootDir: fixture.p('.'),
+      entries: [['./src/index.js', './main.js']],
+      contentServer: { root: '.' },
+      includeDefaultPlugins: false,
+      log: false,
+      plugins: [CSSPlugin()]
+    });
+    const page = await newPage();
+
+    await page.setViewport({ width: 500, height: 100 });
+    await page.goto(`${service.contentServer.local}/main.html`, { waitUntil: 'networkidle2' });
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).not.toBe('rgb(41, 0, 0)');
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(14, 0, 0)');
+    await page.setViewport({ width: 600, height: 100 });
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(41, 0, 0)');
+
+    await page.setViewport({ width: 500, height: 100 });
+    await Promise.all([
+      page.waitForResponse((req) => req.url().includes(service.proxyServer)),
+      fs.promises.writeFile(fixture.p('src/imported_1.css'), 'body { color: rgb(66, 0, 0) }')
+    ]);
+    await waitFor(200);
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).not.toBe('rgb(66, 0, 0)');
+    await page.setViewport({ width: 600, height: 100 });
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(66, 0, 0)');
+
+    await Promise.all([
+      page.waitForResponse((req) => req.url().includes(service.proxyServer)),
+      fs.promises.writeFile(fixture.p('src/imported_2.css'), 'body { background-color: rgb(75, 0, 0) }')
+    ]);
+    await waitFor(200);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(75, 0, 0)');
+
+    await page.setViewport({ width: 90, height: 100 });
+    await Promise.all([
+      page.waitForResponse((req) => req.url().includes(service.proxyServer)),
+      fs.promises.writeFile(fixture.p('src/index.css'), `
+        @import "imported_1.css" (min-width: 100px);
+      `)
+    ]);
+    await waitFor(200);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgb(75, 0, 0)');
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).not.toBe('rgb(66, 0, 0)');
+    await page.setViewport({ width: 100, height: 100 });
+    expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(66, 0, 0)');
 
     await service.stop();
   });

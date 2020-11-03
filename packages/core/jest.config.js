@@ -10,4 +10,5 @@ module.exports = {
   snapshotResolver: '<rootDir>/tests-src/snapshotResolver.js',
   testEnvironment: '<rootDir>/tests-src/testEnvironment.js',
   testTimeout: 15000,
+  slowTestThreshold: 10
 }

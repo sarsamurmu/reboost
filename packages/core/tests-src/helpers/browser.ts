@@ -53,3 +53,5 @@ export const waitForConsole = (
     page.on('console', listener);
   });
 }
+
+export const waitFor = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
