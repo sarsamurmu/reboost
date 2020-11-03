@@ -1,4 +1,5 @@
-@import './importable.css' (min-width: 600px);
+@import './imported_1.css' (min-width: 600px);
+/* @import './imported_2.css'; */
 
 .center {
   text-align: center;
@@ -12,4 +13,13 @@
   text-align: center;
   padding: 100px;
   border-radius: 10px;
+  display: inline-block;
+  margin-right: 40px;
+}
+
+.i-box {
+  display: inline-block;
+  background-color: red;
+  padding: 40px;
+  border-radius: 8px;
 }

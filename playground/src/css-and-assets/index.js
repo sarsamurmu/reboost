@@ -21,5 +21,7 @@ document.body.append(...new DOMParser().parseFromString(/* html */`
     <div class="bg-card">
       A Card
     </div>
+    <div class="i-box bg-1"></div>
+    <div class="i-box bg-2"></div>
   </div>
 `, 'text/html').body.children);
