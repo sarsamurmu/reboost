@@ -179,8 +179,7 @@ export const generateModuleCode = (data: {
     import { replaceReplacements, patchObject } from '#/css-runtime';
 
     const updateListeners = new Set();
-    const css = replaceReplacements(${JSON.stringify(cssStr)}, ${replacementObjStr});
-    let exportedCSS = css;
+    let exportedCSS = replaceReplacements(${JSON.stringify(cssStr)}, ${replacementObjStr});
     export const toString = () => exportedCSS;
     Object.defineProperty(defaultExport, 'toString', { value: toString });
     
@@ -193,12 +192,12 @@ export const generateModuleCode = (data: {
 
     if (!hot.data) {
       style = document.createElement('style');
-      style.textContent = css;
+      style.textContent = exportedCSS;
       document.head.appendChild(style);
 
-      updateListeners.add(({ default: newDefaultExport, __css }) => {
-        if (style) style.textContent = __css;
-        exportedCSS = __css;
+      updateListeners.add(({ default: newDefaultExport, toString }) => {
+        if (style) style.textContent = toString();
+        exportedCSS = toString();
         patchObject(defaultExport, newDefaultExport);
       });
 
@@ -207,7 +206,6 @@ export const generateModuleCode = (data: {
 
     export default defaultExport;
     export {
-      css as __css,
       removeStyle as __removeStyle,
       updateListeners as __updateListeners
     }
@@ -265,14 +263,14 @@ export const runtimeCode = `
   // and handles the style with media
   export const ImportedStyle = (module, media) => {
     let style;
-    const listener = ({ __css }) => (style.textContent = __css);
+    const listener = ({ toString }) => (style.textContent = toString());
 
     return {
       apply() {
         if (style) return;
         module.__removeStyle();
         style = document.createElement('style');
-        style.textContent = module.__css;
+        style.textContent = module.toString();
         if (media) style.media = media;
         document.head.appendChild(style);
         module.__updateListeners.add(listener);
