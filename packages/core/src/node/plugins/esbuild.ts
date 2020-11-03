@@ -113,7 +113,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     async transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
         try {
-          const { js, jsSourceMap, warnings } = await (await loadService()).transform(data.code, {
+          const { code, map, warnings } = await (await loadService()).transform(data.code, {
             sourcemap: 'external',
             sourcefile: path.relative(this.config.rootDir, filePath),
             loader: options.loaders[data.type],
@@ -139,8 +139,8 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
           }
 
           return {
-            code: js,
-            map: JSON.parse(jsSourceMap),
+            code,
+            map: JSON.parse(map),
             type: 'js'
           }
         } catch (e) {
