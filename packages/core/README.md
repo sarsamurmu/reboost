@@ -102,3 +102,7 @@ does that for you - the serving part. So you can develop your app faster.
 
 # License
 Licensed under the [MIT License](/LICENSE).
+
+## Thanks for your support
+This project is nothing without your support. If you like this project then help us by giving
+a star on its GitHub repository 😃

@@ -1,3 +1,13 @@
+## 0.17.0
+- Major rework on CSS plugin
+- Support for resolving imports and URLs in CSS
+- Fix wrong source map in CSS
+- Added method to get CSS content out of CSS files
+- Support for importing values from other CSS files
+- CSS plugin now updates the exported object on hot reload
+- New option [`includeDefaultPlugins`](/docs/configurations.md#includedefaultplugins)
+- Updated dependencies
+
 ## 0.16.2
 - Fixed alias resolving
 - Target Node 10.3.0
