@@ -336,6 +336,12 @@ window.coolLib // Module { add: (...), subtract: (...) }
 ```
 As you expected, exports are available through the `window` object
 
+#### `includeDefaultPlugins`
+Type: `boolean`\
+Default: `true`
+
+Include the default plugins, like [`CSSPlugin`](./built-in-plugins/css.md) and [`esbuildPlugin`](./built-in-plugins/esbuild.md).
+
 #### `log`
 Type: `false | object`
 

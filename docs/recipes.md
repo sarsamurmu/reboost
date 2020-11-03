@@ -158,7 +158,10 @@ import buttons from './buttons.module.css';
 // Here's an example using JSX
 const PrimaryButton = () => (
   <button className={buttons.primary}>CSS module works!</button>
-)
+);
+
+// If you want the CSS content just use the `toString()` method, like so
+const cssContent = buttons.toString();
 ```
 
 ## Sass or SCSS

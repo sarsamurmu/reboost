@@ -67,7 +67,7 @@ const {
 start({
   plugins: [
     UsePlugin({
-      test: /.png$/
+      test: /\.png$/
       use: FilePlugin()
     })
   ]

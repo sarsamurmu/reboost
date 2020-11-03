@@ -26,7 +26,7 @@ const {
 start({
   plugins: [
     UsePlugin({
-      include: /.(png|jpg|jpeg)$/i,
+      include: /\.(png|jpe?g)$/i,
       use: FilePlugin()
     })
   ]
@@ -54,7 +54,7 @@ const {
 start({
   plugins: [
     UsePlugin({
-      include: /.(png|jpg|jpeg)$/i, // We want to load only PNG and JPG as file URLs
+      include: /\.(png|jpe?g|)$/i, // We want to load only PNG and JPG as file URLs
       use: FilePlugin()
     })
   ]
