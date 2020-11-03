@@ -748,6 +748,7 @@ describe('hot reload', () => {
       page.waitForResponse((res) => res.url().includes(service.proxyServer)),
       fs.promises.writeFile(fixture.p('src/index.css'), 'body { background-color: rgb(77, 0, 0) }')
     ]);
+    await waitFor(200);
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(77, 0, 0)');
     expect(await page.evaluate(() => (window as any).testGetCSS())).toMatch('rgb(77, 0, 0)');
 
