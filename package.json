@@ -4,9 +4,8 @@
   "scripts": {
     "clean": "lerna run clean",
     "build": "npm run build:main && npm run build:plugins",
-    "build:main": "lerna run --scope {reboost,@reboost/create-app} build",
-    "build:plugins": "lerna run --parallel --scope @reboost/plugin-* build",
-    "watch": "lerna run --parallel watch",
+    "build:main": "lerna run --concurrency 1 --scope {reboost,@reboost/create-app} build",
+    "build:plugins": "lerna run --concurrency 1 --scope @reboost/plugin-* build",
     "check-updates": "lerna exec --concurrency 1 -- ncu",
     "lint": "eslint \"packages/**/src/**/*.{js,ts}\"",
     "test": "lerna run test:ci"
