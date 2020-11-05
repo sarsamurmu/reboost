@@ -352,7 +352,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
           it.plugins.push(esbuildPlugin());
         }
         if (!pluginNames.includes(CSSPluginName)) {
-          it.plugins.unshift(CSSPlugin());
+          it.plugins.push(CSSPlugin());
         }
       }
 
