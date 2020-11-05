@@ -26,7 +26,8 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
     ctx.type = 'text/javascript';
     ctx.body = `const address = "${instance.proxyAddress}";\n`;
     ctx.body += `const debugMode = ${instance.config.debugMode};\n`;
-    ctx.body += `const mode = "${instance.config.mode}";\n\n`;
+    ctx.body += `const mode = "${instance.config.mode}";\n`;
+    ctx.body += `const hotReload = ${instance.config.hotReload};\n\n`;
     ctx.body += instance.config.debugMode ? loadSetupCode() : setupCode;
   }
 

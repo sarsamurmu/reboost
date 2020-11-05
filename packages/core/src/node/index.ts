@@ -140,6 +140,8 @@ export interface ReboostConfig {
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
+  /** Enable/disable Hot reload */
+  hotReload: boolean;
   /** Use plugins included by default */
   includeDefaultPlugins?: boolean;
   /** Options for logging */
@@ -194,6 +196,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   },
   contentServer: undefined,
   entries: null,
+  hotReload: true,
   includeDefaultPlugins: true,
   log: {
     info: true,

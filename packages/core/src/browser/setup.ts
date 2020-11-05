@@ -4,6 +4,7 @@ import type { Importer } from './importer';
 declare const address: string;
 declare const debugMode: boolean;
 declare const mode: string;
+declare const hotReload: boolean;
 
 type MapValue<T extends Map<any, any>> = ReturnType<T['get']>;
 
@@ -130,6 +131,11 @@ const connectWebsocket = () => {
 
     if (type === 'change') {
       console.log(`[reboost] Changed ${emitterFile}`);
+
+      if (!hotReload) {
+        console.log('[reboost] Hot Reload is disabled. Triggering full reload.');
+        return Reboost.reload();
+      }
 
       const fileLastUpdated = fileLastChangedRecord[emitterFile];
       const now = fileLastChangedRecord[emitterFile] = Date.now();
