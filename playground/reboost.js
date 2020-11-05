@@ -36,6 +36,7 @@ start({
     index: false,
     // basePath: '/custom-path',
   },
+  hotReload: true,
   plugins: [
     UsePlugin({
       include: '**/src/postcss/**',
