@@ -1,0 +1,8 @@
+.main {
+  font-family: sans-serif;
+  font-size: x-large;
+  background-color: rgb(248, 33, 115);
+  color: white;
+  padding: 10px;
+  display: inline-block;
+}

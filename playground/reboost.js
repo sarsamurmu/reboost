@@ -39,6 +39,10 @@ start({
   hotReload: true,
   plugins: [
     UsePlugin({
+      include: '**/*.lit.css',
+      use: require('./lit-css-plugin')()
+    }),
+    UsePlugin({
       include: '**/src/postcss/**',
       use: PostCSSPlugin()
     }),
