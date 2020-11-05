@@ -141,7 +141,7 @@ export interface ReboostConfig {
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
   /** Enable/disable Hot reload */
-  hotReload: boolean;
+  hotReload?: boolean;
   /** Use plugins included by default */
   includeDefaultPlugins?: boolean;
   /** Options for logging */
