@@ -336,6 +336,12 @@ window.coolLib // Module { add: (...), subtract: (...) }
 ```
 As you expected, exports are available through the `window` object
 
+#### `hotReload`
+Type: `boolean`\
+Default: `true`
+
+Enables/disables [Hot Reload API](./hot-reload-api.md).
+
 #### `includeDefaultPlugins`
 Type: `boolean`\
 Default: `true`

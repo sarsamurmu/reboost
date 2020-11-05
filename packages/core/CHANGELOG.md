@@ -1,3 +1,6 @@
+## 0.17.1
+- Add new option `hotReload` to enable/disable hot reload.
+
 ## 0.17.0
 - Major rework on CSS plugin
 - Support for resolving imports and URLs in CSS
