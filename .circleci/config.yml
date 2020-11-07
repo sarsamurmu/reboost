@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  node: circleci/node@2.0.3
-
 commands:
   run_package:
     parameters:
@@ -64,14 +61,14 @@ commands:
 jobs:
   test:
     docker:
-      - image: 'cimg/node:14.9.0'
+      - image: 'cimg/node:15.0-browsers'
     steps:
       - checkout
-      - run:
-          name: Installing Chromium
-          command: |
-            sudo apt-get update
-            sudo apt-get install -yq chromium-browser libxss1
+      # - run:
+      #     name: Installing Chromium
+      #     command: |
+      #       sudo apt-get update
+      #       sudo apt-get install -yq chromium-browser libxss1
       # - run_package:
       #     package: root
       - run_package:
