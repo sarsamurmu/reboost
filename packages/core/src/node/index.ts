@@ -188,7 +188,7 @@ const DEFAULT_PORT = 7456;
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   cacheDir: './.reboost_cache',
-  cacheOnMemory: true,
+  cacheOnMemory: false,
   commonJSInterop: {
     mode: 2,
     include: /node_modules|\.cjs/,
@@ -278,7 +278,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     cache: {} as ReturnType<typeof initCache>,
 
     /** Returns false if no entry found. If it returns false, close the app without further execution */
-    Init(): any {
+    Init: (): any => {
       // Config initialization
       it.config = merge(clone(DefaultConfig as ReboostConfig), initialConfig);
       
@@ -357,17 +357,17 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       }
 
       // Cache initialization
-      it.cache = initCache(it.config, it.plugins);
+      it.cache = initCache(it.config, it.plugins, it.onStop);
     },
 
-    isLogEnabled(type: keyof Exclude<ReboostConfig['log'], boolean>) {
+    isLogEnabled: (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
       // Sorry for the extra negation *_*
       return !(!it.config.log || !it.config.log[type]);
     },
-    log(type: keyof Exclude<ReboostConfig['log'], boolean>, ...toLog: any[]) {
+    log: (type: keyof Exclude<ReboostConfig['log'], boolean>, ...toLog: any[]) => {
       if (it.isLogEnabled(type)) console.log(...toLog);
     },
-    onStop(label: string, cb: () => Promise<any> | any) {
+    onStop: (label: string, cb: () => Promise<any> | any) => {
       onStopCallbacks.push([cb, label]);
     },
   }
@@ -400,22 +400,14 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   // Initialize all properties
   if (it.Init() === false) return false;
 
+  // TODO: Remove it in v1.0
+  const oldCacheFile = path.join(it.config.cacheDir, 'cache_data.json');
+  if (fs.existsSync(oldCacheFile)) rmDir(it.config.cacheDir);
+
   if (it.config.dumpCache) rmDir(it.config.cacheDir);
 
-  let shouldClearCache = true;
-  let clearCacheReason = '';
-  if (isVersionLessThan(it.cache.filesData.version, INCOMPATIBLE_BELOW)) {
-    clearCacheReason = 'Cache version is incompatible';
-  } else if (it.cache.hasPluginsChanged()) {
-    clearCacheReason = 'Plugin change detected';
-  } else if (it.cache.filesData.mode !== it.config.mode) {
-    clearCacheReason = 'Mode change detected';
-  } else {
-    shouldClearCache = false;
-  }
-
-  if (shouldClearCache) {
-    it.log('info', chalk.cyan(`${clearCacheReason}, clearing cached files...`));
+  if (isVersionLessThan(it.cache.version, INCOMPATIBLE_BELOW)) {
+    it.log('info', chalk.cyan('Cache version is incompatible, clearing cached files...'));
     rmDir(it.config.cacheDir);
     it.log('info', chalk.cyan('Clear cache complete'));
   }
@@ -539,4 +531,9 @@ export interface ReboostInstance extends Exclude<PromiseType<ReturnType<typeof c
 export const start = async (config: ReboostConfig = {} as any): Promise<ReboostService> => {
   const instance = await createInstance(config);
   return instance && instance.exports;
+}
+
+if (fs.existsSync(path.join(__dirname, '../../src'))) {
+  // @ts-expect-error We don't need types for this
+  import('source-map-support').then((mod) => mod.install());
 }

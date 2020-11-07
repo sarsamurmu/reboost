@@ -4,101 +4,182 @@ import fs from 'fs';
 import path from 'path';
 
 import { ReboostConfig, ReboostPlugin } from './index';
-import { diff } from './utils';
+import { diff, observable } from './utils';
 
-export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
-  let memoizedFilesData: {
-    version: string;
-    usedPlugins: string;
-    mode: string;
-    files: Record<string, {
-      /** Unique ID of the file */
-      uid: string;
-      /** Hash of the file */
+export interface CacheInfo {
+  /** Hash of the file */
+  hash: string;
+  /** Last modified time of the file */
+  mtime: number;
+  /** Plugins used in the file */
+  plugins: string;
+  /** Mode used in the file */
+  mode: string;
+  /** Dependencies of the file */
+  dependencies?: {
+    [filePath: string]: {
       hash: string;
-      /** Last modified time of the file */
       mtime: number;
-      /** Dependencies of the file */
-      dependencies?: Record<string, {
-        hash: string;
-        mtime: number;
-      }>;
-    }>;
-    dependents: Record<string, string[]>;
+    }
   };
+}
+
+type CacheInfoRecord = { [cacheID: string]: CacheInfo };
+
+export const initCache = (
+  config: ReboostConfig,
+  plugins: ReboostPlugin[],
+  instanceOnStop: (label: string, cb: () => Promise<any> | any) => void
+) => {
+  let unsavedCacheInfos: CacheInfoRecord = {};
+  const noop = () => {/* No Operation */}
 
   const getCurrentVersion = (): string => {
     const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json')).toString());
     return version;
   }
+  
+  const versionFilePath = () => path.join(config.cacheDir, 'version');
+  const cacheIDsFilePath = () => path.join(config.cacheDir, 'cache_id_map.json');
+  const dependentsDataFilePath = () => path.join(config.cacheDir, 'dependents_data.json');
 
-  const getUsedPlugins = () => {
-    return plugins
-      .filter((p) => p && p.name)
-      .map((p) => {
-        let id = p.name;
-        if (typeof p.getId !== 'undefined') {
-          id += '@' + p.getId();
-        }
-        return id;
-      })
-      .join(' && ');
+  const memoized = {
+    cacheVersion: undefined as string,
+    cacheIDs: undefined as Record<string, string>,
+    dependentsData: undefined as Record<string, string[]>
+  }
+  const needsSave = {
+    cacheVersion: false,
+    cacheIDs: false,
+    dependentsData: false,
   }
 
-  const filesDataPath = () => path.join(config.cacheDir, 'cache_data.json');
+  const fsWritePromises = new Set<Promise<any>>();
+  instanceOnStop('Cache file write', () => Promise.all([...fsWritePromises]));
 
   const it = {
     getFilesDir: () => path.join(config.cacheDir, 'files'),
 
-    hasPluginsChanged: () => {
-      const cachePlugins = it.filesData.usedPlugins;
-      const currentPlugins = getUsedPlugins();
-      return cachePlugins !== currentPlugins;
+    cacheFilePath: (cacheID: string) => path.join(it.getFilesDir(), cacheID + (config.debugMode ? '.js' : '')),
+    sourceMapPath: (cacheID: string) => path.join(it.getFilesDir(), cacheID + (config.debugMode ? '.js' : '') + '.map'),
+    cacheInfoFilePath: (cacheID: string) => path.join(it.getFilesDir(), cacheID + '.json'),
+
+    getCurrentPlugins: () => {
+      return plugins
+        .filter((p) => p && p.name)
+        .map((p) => {
+          let id = p.name;
+          if (typeof p.getId !== 'undefined') {
+            id += '@' + p.getId();
+          }
+          return id;
+        })
+        .join(' && ');
     },
 
-    get filesData() {
-      const filePath = filesDataPath();
-      if (!memoizedFilesData) {
-        if (fs.existsSync(filePath)) {
-          memoizedFilesData = JSON.parse(fs.readFileSync(filePath).toString());
-        } else {
-          memoizedFilesData = {
-            version: getCurrentVersion(),
-            usedPlugins: getUsedPlugins(),
-            mode: config.mode,
-            files: {},
-            dependents: {}
-          };
-        }
+    get version(): string {
+      if (!memoized.cacheVersion) {
+        memoized.cacheVersion = fs.existsSync(versionFilePath())
+          ? fs.readFileSync(versionFilePath()).toString()
+          : getCurrentVersion();
+        needsSave.cacheVersion = true;
       }
-      return memoizedFilesData;
+      return memoized.cacheVersion;
     },
+    get cacheIDs(): { [filePath: string]: string } {
+      if (!memoized.cacheIDs) {
+        const cacheIDs = fs.existsSync(cacheIDsFilePath())
+          ? JSON.parse(fs.readFileSync(cacheIDsFilePath()).toString())
+          : {};
+        memoized.cacheIDs = observable(cacheIDs, () => {
+          needsSave.cacheIDs = true;
+        });
+      }
+      return memoized.cacheIDs;
+    },
+    get dependentsData(): { [filePath: string]: string[] } {
+      if (!memoized.dependentsData) {
+        const dependentsData = fs.existsSync(dependentsDataFilePath())
+          ? JSON.parse(fs.readFileSync(dependentsDataFilePath()).toString())
+          : {};
+        memoized.dependentsData = observable(dependentsData, () => {
+          needsSave.dependentsData = true;
+        });
+      }
+      return memoized.dependentsData;
+    },
+
+    cacheInfo: new Proxy({} as CacheInfoRecord, {
+      get: (cacheInfos, cacheID: string) => {
+        if (!cacheInfos[cacheID]) {
+          const cacheInfo: CacheInfo = JSON.parse(
+            fs.readFileSync(it.cacheInfoFilePath(cacheID)).toString()
+          );
+          cacheInfos[cacheID] = observable(cacheInfo, () => {
+            unsavedCacheInfos[cacheID] = cacheInfo;
+          });
+        }
+
+        return cacheInfos[cacheID];
+      },
+      set: (cacheInfos, cacheID: string, cacheInfo: CacheInfo) => {
+        if (typeof cacheInfo === 'undefined') {
+          cacheInfos[cacheID] = undefined;
+          return true;
+        }
+        cacheInfos[cacheID] = observable(cacheInfo, () => {
+          unsavedCacheInfos[cacheID] = cacheInfo;
+        });
+        unsavedCacheInfos[cacheID] = cacheInfo;
+        return true;
+      }
+    }),
 
     saveData: () => {
-      if (!memoizedFilesData) return;
+      const promises: Promise<void>[] = [];
+      const stringify = (json: Record<any, any>) => JSON.stringify(json, null, config.debugMode ? 2 : 0);
 
-      fs.writeFile(
-        filesDataPath(),
-        JSON.stringify(memoizedFilesData, null, config.debugMode ? 2 : 0),
-        () => 0
-      );
+      if (needsSave.cacheVersion) {
+        promises.push(fs.promises.writeFile(versionFilePath(), it.version));
+        needsSave.cacheVersion = false;
+      }
+      if (needsSave.cacheIDs) {
+        promises.push(fs.promises.writeFile(cacheIDsFilePath(), stringify(it.cacheIDs)));
+        needsSave.cacheIDs = false;
+      }
+      if (needsSave.dependentsData) {
+        promises.push(fs.promises.writeFile(dependentsDataFilePath(), stringify(it.dependentsData)));
+        needsSave.dependentsData = false;
+      }
+
+      Object.keys(unsavedCacheInfos).forEach((cacheID) => {
+        promises.push(fs.promises.writeFile(
+          it.cacheInfoFilePath(cacheID),
+          stringify(unsavedCacheInfos[cacheID])
+        ));
+      });
+      unsavedCacheInfos = {};
+
+      const allPromise = Promise.all(promises);
+      fsWritePromises.add(allPromise);
+      allPromise.then(() => fsWritePromises.delete(allPromise));
     },
 
     removeFile: (file: string) => {
-      const filesData = it.filesData.files;
-      const fileData = filesData[file];
-      if (fileData) {
-        filesData[file] = undefined;
-        const absoluteFilePath = path.join(it.getFilesDir(), fileData.uid);
-        fs.unlinkSync(absoluteFilePath);
-        if (fs.existsSync(absoluteFilePath + '.map')) {
-          fs.unlinkSync(absoluteFilePath + '.map');
+      const cacheID = it.cacheIDs[file];
+      if (cacheID) {
+        it.cacheIDs[file] = undefined;
+        it.cacheInfo[cacheID] = undefined;
+        fs.unlink(it.cacheFilePath(cacheID), noop);
+        fs.unlink(it.cacheInfoFilePath(cacheID), noop);
+        if (fs.existsSync(it.sourceMapPath(cacheID))) {
+          fs.unlink(it.sourceMapPath(cacheID), noop);
         }
       }
     },
 
     removeDependents: (dependency: string) => {
-      const dependentsData = it.filesData.dependents;
+      const dependentsData = it.dependentsData;
       const dependents = dependentsData[dependency];
       if (dependents) {
         dependentsData[dependency] = undefined;
@@ -108,12 +189,12 @@ export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
 
     verifyFiles: () => {
       if (fs.existsSync(it.getFilesDir())) {
-        const files = Object.keys(it.filesData.files);
+        const files = Object.keys(it.cacheIDs);
         files.forEach((file) => {
           if (!fs.existsSync(file)) it.removeFile(file);
         });
 
-        const dependencies = Object.keys(it.filesData.dependents);
+        const dependencies = Object.keys(it.dependentsData);
         dependencies.forEach((dependency) => {
           if (!fs.existsSync(dependency)) it.removeDependents(dependency);
         });
@@ -123,7 +204,7 @@ export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
     },
 
     hasDependenciesChanged: async (file: string) => {
-      const deps = it.filesData.files[file].dependencies;
+      const deps = it.cacheInfo[it.cacheIDs[file]].dependencies;
       if (!deps) return false;
       for (const dependency in deps) {
         try {
@@ -148,8 +229,8 @@ export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
       dependencies: string[],
       firstTime = false
     ): Promise<void> => {
-      const dependentsData = it.filesData.dependents;
-      const fileData = it.filesData.files[filePath];
+      const dependentsData = it.dependentsData;
+      const cacheInfo = it.cacheInfo[it.cacheIDs[filePath]];
       let added: string[];
       let removed: string[];
 
@@ -157,7 +238,7 @@ export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
         added = dependencies;
         removed = [];
       } else {
-        const prevDeps = Object.keys(fileData.dependencies || {});
+        const prevDeps = Object.keys(cacheInfo.dependencies || {});
         ({ added, removed } = diff(prevDeps, dependencies));
       }
 
@@ -176,23 +257,24 @@ export const initCache = (config: ReboostConfig, plugins: ReboostPlugin[]) => {
         }
       });
 
-      if (dependencies.length === 0) return fileData.dependencies = undefined;
+      if (dependencies.length === 0) return cacheInfo.dependencies = undefined;
 
-      const depsData = {} as (typeof it.filesData)['files'][string]['dependencies'];
-      const promises: Promise<void>[] = [];
+      const depsData = {} as CacheInfo['dependencies'];
 
-      dependencies.forEach((dependency) => {
-        promises.push((async () => {
-          depsData[dependency] = {
-            hash: await getHash(dependency),
-            mtime: Math.floor(fs.statSync(dependency).mtimeMs)
-          };
-        })());
-      });
+      await Promise.all(dependencies.map((dependency) => (
+        (async () => {
+          if (fs.existsSync(dependency)) {
+            depsData[dependency] = {
+              hash: await getHash(dependency),
+              mtime: Math.floor(fs.statSync(dependency).mtimeMs)
+            }
+          } else {
+            depsData[dependency] = {} as any;
+          }
+        })()
+      )));
 
-      await Promise.all(promises);
-
-      fileData.dependencies = depsData;
+      cacheInfo.dependencies = depsData;
     }
   }
 

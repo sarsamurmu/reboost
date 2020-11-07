@@ -6,8 +6,6 @@ import path from 'path';
 import http from 'http';
 import os from 'os';
 
-import { ReboostConfig } from './index';
-
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
 } : T;
@@ -70,6 +68,23 @@ export const deepFreeze = (obj: any) => {
     }
   }
   return Object.freeze(obj);
+}
+
+export const observable = <T extends Record<string, any>>(object: T, onChange: () => void): T => {
+  const handler: ProxyHandler<any> = {
+    set: (target, key, value, receiver) => {
+      if (typeof value === 'object') value = observable(value, onChange);
+      const result = Reflect.set(target, key, value, receiver);
+      onChange();
+      return result;
+    }
+  }
+  Object.keys(object).forEach((key) => {
+    if (typeof object[key] === 'object') {
+      (object as any)[key] = observable(object[key], onChange);
+    }
+  });
+  return new Proxy(object, handler);
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types

@@ -4,16 +4,17 @@ import chalk from 'chalk';
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
-import { ensureDir, uniqueID, toPosix, getReadableHRTime } from './utils';
+import { ensureDir, toPosix, getReadableHRTime, uniqueID } from './utils';
 import { createTransformer } from './transformer';
 import { createWatcher } from './watcher';
 import { ReboostInstance } from './index';
 
 const sourceMapCommentRE = /^[ \t]*\/\/#\s*sourceMappingURL=.+(?![\s\S]*\/\/#\s*sourceMappingURL=.+)/m;
-const fixSourceMap = (code: string, cacheFilePath: string) => {
+const fixSourceMap = (code: string, sourceMapPath: string) => {
   // Remove other source maps
-  return `${code.replace(sourceMapCommentRE, '')}\n//# sourceMappingURL=/raw?q=${encodeURIComponent(cacheFilePath)}.map`;
+  return `${code.replace(sourceMapCommentRE, '')}\n//# sourceMappingURL=/raw?q=${encodeURIComponent(sourceMapPath)}`;
 }
 
 export const createFileHandler = (instance: ReboostInstance) => {
@@ -21,21 +22,38 @@ export const createFileHandler = (instance: ReboostInstance) => {
   let filesDir: string;
   let transformer: ReturnType<typeof createTransformer>;
   let watcher: ReturnType<typeof createWatcher>;
+  let currentPlugins: string;
+  let currentMode: string;
   const { config, cache } = instance;
   const memoizedFiles = new Map<string, string>();
   const noop = () => {/* No Operation */};
 
-  const getETag = (filePath: string) => {
-    let eTag: string = '' + Math.floor(fs.statSync(filePath).mtimeMs);
+  const eTagBase = `
+    mtime: "@mtime"
+    mode: "@mode"
+    plugins: "@plugins"
+    dependentsMtime: "@dependentsMtime"
+  `.split('\n').map((s) => s.trim()).join('\n').trim();
 
-    const deps = instance.cache.filesData.files[filePath].dependencies;
+  const getETag = (filePath: string) => {
+    const mtime = Math.floor(fs.statSync(filePath).mtimeMs) + '';
+    let dependentsMtime = '';
+
+    const deps = cache.cacheInfo[cache.cacheIDs[filePath]].dependencies;
     if (deps) {
-      Object.keys(deps).sort().forEach((dependency) => {
+      dependentsMtime = Object.keys(deps).sort().map((dependency) => {
         try {
-          eTag += Math.floor(fs.statSync(dependency).mtimeMs);
-        } catch (e) {/* Do nothing */}
-      });
+          return Math.floor(fs.statSync(dependency).mtimeMs);
+        } catch (e) { return '' }
+      }).join('-');
     }
+
+    const eTagStr = eTagBase
+      .replace('@mtime', mtime)
+      .replace('@mode', currentMode)
+      .replace('@plugins', currentPlugins)
+      .replace('@dependentsMtime', dependentsMtime);
+    const eTag = crypto.createHash('md5').update(eTagStr).digest('hex');
 
     return eTag;
   }
@@ -45,6 +63,8 @@ export const createFileHandler = (instance: ReboostInstance) => {
       filesDir = cache.getFilesDir();
       transformer = createTransformer(instance);
       watcher = createWatcher(instance);
+      currentPlugins = cache.getCurrentPlugins();
+      currentMode = instance.config.mode;
 
       ensureDir(config.cacheDir);
       ensureDir(filesDir);
@@ -64,8 +84,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
       const mtime = Math.floor(fs.statSync(filePath).mtimeMs);
 
       const makeNewCache = async () => {
-        const uid = uniqueID();
-        const outputFilePath = path.join(filesDir, uid);
+        const cacheID = (config.debugMode ? path.basename(filePath) + '-' : '') + uniqueID(16);
         const {
           code,
           map,
@@ -75,16 +94,19 @@ export const createFileHandler = (instance: ReboostInstance) => {
         transformedCode = code;
 
         if (map) {
-          transformedCode = fixSourceMap(transformedCode, outputFilePath);
-          fs.writeFile(`${outputFilePath}.map`, map, noop);
+          const sourceMapPath = cache.sourceMapPath(cacheID);
+          transformedCode = fixSourceMap(transformedCode, sourceMapPath);
+          fs.writeFile(sourceMapPath, map, noop);
         }
 
         if (!error) {
-          fs.writeFile(outputFilePath, transformedCode, noop);
-          cache.filesData.files[filePath] = {
-            uid,
+          fs.writeFile(cache.cacheFilePath(cacheID), transformedCode, noop);
+          cache.cacheIDs[filePath] = cacheID;
+          cache.cacheInfo[cacheID] = {
             hash: await getHash(filePath),
-            mtime
+            mtime,
+            plugins: currentPlugins,
+            mode: currentMode
           };
           await cache.updateDependencies(filePath, dependencies, true);
           cache.saveData();
@@ -95,17 +117,20 @@ export const createFileHandler = (instance: ReboostInstance) => {
         watcher.setDependencies(filePath, dependencies);
       }
 
-      if (cache.filesData.files[filePath]) {
-        const fileData = cache.filesData.files[filePath];
-        const outputFilePath = path.join(filesDir, fileData.uid);
+      if (cache.cacheIDs[filePath]) {
+        const cacheID = cache.cacheIDs[filePath];
+        const cacheInfo = cache.cacheInfo[cacheID];
+        const cacheFilePath = cache.cacheFilePath(cacheID);
         let hash: string;
 
         try {
           if (
+            cacheInfo.mode !== currentMode ||
+            cacheInfo.plugins !== currentPlugins ||
             await cache.hasDependenciesChanged(filePath) ||
             (
-              (fileData.mtime !== mtime) &&
-              (fileData.hash !== (hash = await getHash(filePath)))
+              (cacheInfo.mtime !== mtime) &&
+              (cacheInfo.hash !== (hash = await getHash(filePath)))
             )
           ) {
             const {
@@ -117,14 +142,17 @@ export const createFileHandler = (instance: ReboostInstance) => {
             transformedCode = code;
 
             if (map) {
-              transformedCode = fixSourceMap(transformedCode, outputFilePath);
-              fs.writeFile(`${outputFilePath}.map`, map, noop);
+              const sourceMapPath = cache.sourceMapPath(cacheID);
+              transformedCode = fixSourceMap(transformedCode, sourceMapPath);
+              fs.writeFile(sourceMapPath, map, noop);
             }
 
             if (!error) {
-              fs.writeFile(outputFilePath, transformedCode, noop);
-              fileData.hash = hash;
-              fileData.mtime = mtime;
+              fs.writeFile(cacheFilePath, transformedCode, noop);
+              cacheInfo.hash = hash;
+              cacheInfo.mtime = mtime;
+              cacheInfo.plugins = currentPlugins;
+              cacheInfo.mode = currentMode;
               await cache.updateDependencies(filePath, dependencies);
               cache.saveData();
               if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
@@ -136,24 +164,23 @@ export const createFileHandler = (instance: ReboostInstance) => {
             if (ctx.get('If-None-Match') === getETag(filePath)) {
               ctx.status = 304;
             } else {
-              transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(outputFilePath).toString();
+              transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(cacheFilePath).toString();
 
-              if (fileData.mtime !== mtime) {
-                fileData.mtime = mtime;
+              if (cacheInfo.mtime !== mtime) {
+                cacheInfo.mtime = mtime;
                 cache.saveData();
               }
 
               if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);
             }
             
-            watcher.setDependencies(filePath, Object.keys(fileData.dependencies || {}));
+            watcher.setDependencies(filePath, Object.keys(cacheInfo.dependencies || {}));
           }
         } catch (e) {
           if (e.message.includes('ENOENT')) {
             await makeNewCache();
-          } else {
-            console.error(e);
           }
+          console.error(e);
         }
       } else {
         await makeNewCache();
@@ -173,7 +200,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
       instance.log(
         'responseTime',
         chalk.cyan(`Response time - ${toPosix(path.relative(config.rootDir, filePath))}:`),
-        chalk.white(getReadableHRTime(endTime))
+        getReadableHRTime(endTime)
       );
     }
   }
