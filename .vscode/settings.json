@@ -1,3 +1,6 @@
 {
-  "npm.exclude": "{**/playground,**/plugin-template,**/create-app/templates/**}"
+  "npm.exclude": "{**/playground,**/plugin-template,**/create-app/templates/**}",
+  "cSpell.words": [
+    "etag"
+  ]
 }
