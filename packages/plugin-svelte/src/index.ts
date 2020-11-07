@@ -16,7 +16,7 @@ export = (options: Options = {}): ReboostPlugin => {
   let svelteConfig = {} as Record<string, any>;
 
   return {
-    name: 'core-svelte-plugin',
+    name: 'svelte-plugin',
     async transformContent(data, filePath) {
       if (data.type === 'svelte') {
         if (!sveltePath) sveltePath = this.resolve(__filename, 'svelte/compiler.js');

@@ -14,7 +14,7 @@ export = (options: Options = {}): ReboostPlugin => {
   let sass: typeof Sass;
 
   return {
-    name: 'core-sass-plugin',
+    name: 'sass-plugin',
     transformContent(data, filePath) {
       if (!includePathsNormalized) {
         sassOptions.includePaths = (sassOptions.includePaths || []).map((includePath) => {
