@@ -7,12 +7,16 @@ export const newPage = async (autoClose = true) => {
   const page = await __BROWSER__.newPage();
   page
     .on('pageerror', ({ message }) => console.log('PAGE ERROR', message))
-    .on('requestfailed', (request) => console.log([
-      'REQUEST FAIL',
-      `TEST NAME: ${expect.getState().currentTestName}`,
-      `URL: ${request.url()}`,
-      `ERROR MESSAGE: ${request.failure().errorText}`
-    ].join('\n')));
+    .on('requestfailed', (request) => {
+      if (request.url().includes('importer')) return;
+
+      console.log([
+        'REQUEST FAIL',
+        `TEST NAME: ${expect.getState().currentTestName}`,
+        `URL: ${request.url()}`,
+        `ERROR MESSAGE: ${request.failure().errorText}`
+      ].join('\n'));
+    });
 
   if (autoClose) autoClosePages.push(page);
   return page;

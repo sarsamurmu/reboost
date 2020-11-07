@@ -133,6 +133,48 @@ test('deeply freezes an object', () => {
   expect(() => obj.prop2.arr.push(0)).toThrowError(cant.add);
 });
 
+test('creates observable', () => {
+  const mock = jest.fn();
+  const obj = utils.observable({
+    prop: 0,
+    nested: {
+      prop: 0,
+      nested: {
+        prop: 0,
+        nested: {
+          prop: 0,
+        }
+      }
+    }
+  }, mock);
+
+  obj.prop = 1;
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+  obj.nested.prop = 1;
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+  obj.nested.nested.prop = 1;
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+  obj.nested.nested.nested.prop = 1;
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+
+  obj.nested.nested = {
+    prop: 2,
+    nested: { prop: 2 }
+  };
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+  obj.nested.nested.prop = 1;
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+  obj.nested.nested.nested.prop = 1;
+  expect(mock).toBeCalledTimes(1);
+  mock.mockReset();
+});
+
 test('binds a function', () => {
   const bound = utils.bind(function (this: { val: number }) {
     return this.val;
