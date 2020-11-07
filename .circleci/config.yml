@@ -57,6 +57,13 @@ commands:
                 working_directory: ./packages/<< parameters.package >>
                 command: |
                   npm run test:ci --if-present
+  install_chromium:
+    steps:
+      - run:
+          name: Installing Chromium
+          command: |
+            sudo apt-get update
+            sudo apt-get install -yq chromium-browser libxss1
 
 jobs:
   test:
@@ -64,11 +71,7 @@ jobs:
       - image: 'cimg/node:15.0-browsers'
     steps:
       - checkout
-      # - run:
-      #     name: Installing Chromium
-      #     command: |
-      #       sudo apt-get update
-      #       sudo apt-get install -yq chromium-browser libxss1
+      # - install_chromium
       # - run_package:
       #     package: root
       - run_package:
