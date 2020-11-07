@@ -20,7 +20,7 @@ Directory to use for storing cached files.
 
 #### `cacheOnMemory`
 Type: `boolean`\
-Default: `true`
+Default: `false`
 
 Enables file caching on memory. Improves response speed as it reads
 cached files from memory instead of the file system. May cause problems
