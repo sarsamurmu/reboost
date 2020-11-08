@@ -6,17 +6,25 @@ const reboostPackageVersions = JSON.parse(
 );
 
 export const versions: Record<string, string> = {
-  reboost: reboostPackageVersions['core'],
-  litElement: '2.4.0',
-  electron: '10.1.2',
-  preact: '10.4.8',
-  reboostPluginSvelte: reboostPackageVersions['plugin-svelte'],
-  svelte: '3.25.1',
-  react: '16.13.1',
-  reactDom: '16.13.1',
-  reboostPluginReactRefresh: reboostPackageVersions['plugin-react-refresh'],
-  vue: '3.0.0',
-  reboostPluginVue: reboostPackageVersions['plugin-vue'],
+  'reboost': reboostPackageVersions['core'],
+  
+  'lit-element': '2.4.0',
+
+  'electron': '10.1.5',
+
+  'preact': '10.5.5',
+
+  'svelte': '3.29.4',
+  'reboost-plugin-svelte': reboostPackageVersions['plugin-svelte'],
+
+  'react': '17.0.1',
+  'react-dom': '17.0.1',
+  '@types/react': '16.9.56',
+  '@types/react-dom': '16.9.9',
+  'reboost-plugin-react-refresh': reboostPackageVersions['plugin-react-refresh'],
+
+  'vue': '3.0.0',
+  'reboost-plugin-vue': reboostPackageVersions['plugin-vue'],
 };
 
-for (const key in versions) versions[key] = '^' + versions[key];
+Object.keys(versions).forEach((key) => versions[key] = '^' + versions[key]);

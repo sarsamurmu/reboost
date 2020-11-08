@@ -14,7 +14,17 @@ export = (plop: NodePlopAPI) => {
 
   plop.load('plop-pack-npm-install', undefined, undefined);
 
-  const prompts = [
+  interface Answers {
+    name: string;
+    template: string;
+    root: string;
+    installDeps: boolean;
+  }
+
+  const prompts: {
+    name: keyof Answers;
+    [key: string]: any;
+  }[] = [
     {
       type: 'input',
       name: 'name',
@@ -45,13 +55,13 @@ export = (plop: NodePlopAPI) => {
   plop.setGenerator('default', {
     description: '',
     prompts,
-    actions: (answers) => {
+    actions: (answers: Answers) => {
       const actions: any[] = [
         {
           type: 'addMany',
-          destination: path.join(process.cwd(), '{{ root }}'),
-          base: '../templates/{{ template }}',
-          templateFiles: '../templates/{{ template }}/**/*',
+          destination: path.join(process.cwd(), answers.root),
+          base: `../templates/${answers.template}`,
+          templateFiles: `../templates/${answers.template}/**/*`,
           data: {
             versions,
             appName: answers.name

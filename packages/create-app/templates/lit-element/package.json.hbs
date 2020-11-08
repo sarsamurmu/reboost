@@ -2,16 +2,16 @@
   "name": "{{ lowerCase (dashCase appName) }}",
   "version": "0.0.1",
   "description": "",
-  "main": "lib/index.js",
   "scripts": {
-    "dev": "node reboost",
-    "start": "electron ."
+    "dev": "node reboost"
   },
   "license": "MIT",
+  {{#with versions}}
   "devDependencies": {
-    "reboost": "{{ versions.reboost }}"
+    "reboost": "{{ reboost }}"
   },
   "dependencies": {
-    "electron": "{{ versions.electron }}"
+    "lit-element": "{{ [lit-element] }}"
   }
+  {{/with}}
 }

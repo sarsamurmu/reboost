@@ -6,11 +6,14 @@
     "dev": "node reboost"
   },
   "license": "MIT",
+  {{#with versions}}
   "devDependencies": {
-    "reboost": "{{ versions.reboost }}",
-    "@reboost/plugin-svelte": "{{ versions.reboostPluginSvelte }}"
+    "reboost": "{{ reboost }}",
+    "@reboost/plugin-react-refresh": "{{ [reboost-plugin-react-refresh] }}"
   },
   "dependencies": {
-    "svelte": "{{ versions.svelte }}"
+    "react": "{{ react }}",
+    "react-dom": "{{ [react-dom] }}"
   }
+  {{/with}}
 }

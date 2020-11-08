@@ -6,11 +6,13 @@
     "dev": "node reboost"
   },
   "license": "MIT",
+  {{#with versions}}
   "devDependencies": {
-    "reboost": "{{ versions.reboost }}",
-    "@reboost/plugin-vue": "{{ versions.reboostPluginVue }}"
+    "reboost": "{{ reboost }}",
+    "@reboost/plugin-svelte": "{{ [reboost-plugin-svelte] }}"
   },
   "dependencies": {
-    "vue": "{{ versions.vue }}"
+    "svelte": "{{ svelte }}"
   }
+  {{/with}}
 }

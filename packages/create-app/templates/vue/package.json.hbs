@@ -6,12 +6,13 @@
     "dev": "node reboost"
   },
   "license": "MIT",
+  {{#with versions}}
   "devDependencies": {
-    "reboost": "{{ versions.reboost }}",
-    "@reboost/plugin-react-refresh": "{{ versions.reboostPluginReactRefresh }}"
+    "reboost": "{{ reboost }}",
+    "@reboost/plugin-vue": "{{ [reboost-plugin-vue] }}"
   },
   "dependencies": {
-    "react": "{{ versions.react }}",
-    "react-dom": "{{ versions.reactDom }}"
+    "vue": "{{ vue }}"
   }
+  {{/with}}
 }
