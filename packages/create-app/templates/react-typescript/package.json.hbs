@@ -1,0 +1,21 @@
+{
+  "name": "{{ lowerCase (dashCase appName) }}",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "dev": "node reboost"
+  },
+  "license": "MIT",
+  {{#with versions}}
+  "devDependencies": {
+    "reboost": "{{ reboost }}",
+    "@reboost/plugin-react-refresh": "{{ [reboost-plugin-react-refresh] }}",
+    "@types/react": "{{ [@types/react] }}",
+    "@types/react-dom": "{{ [@types/react-dom] }}"
+  },
+  "dependencies": {
+    "react": "{{ react }}",
+    "react-dom": "{{ [react-dom] }}"
+  }
+  {{/with}}
+}
