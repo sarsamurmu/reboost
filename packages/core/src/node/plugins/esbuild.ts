@@ -27,15 +27,13 @@ export interface esbuildPluginOptions {
    * Minify code
    * @default true
    */
-  minify?: boolean;
-  /**
-   * Only minifies syntax
-   * @default true
-   */
-  minifySyntax?: boolean;
+  minify?: boolean | {
+    syntax: boolean;
+    whitespace: boolean;
+  };
   /**
    * Define values of variables
-   * @default { 'process.env.NODE_ENV': '"development"' }
+   * @example { 'process.env.NODE_ENV': '"development"' }
    */
   define?: Record<string, string>;
   /** Pre-started service to use with esbuild */
@@ -61,12 +59,12 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     },
     target: 'es2020',
     minify: true,
-    minifySyntax: true,
     define: undefined,
     service: undefined,
   };
   let compatibleTypes: string[];
   let esbuildService: esbuild.Service;
+  let minifyOptions: Exclude<esbuildPluginOptions['minify'], boolean>;
   const loadService = async () => {
     if (!esbuildService) {
       if (options.service) {
@@ -84,9 +82,15 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       loadService();
 
       defaultOptions.minify = !config.debugMode;
-      defaultOptions.minifySyntax = !config.debugMode;
       options = merge(defaultOptions, options);
       compatibleTypes = Object.keys(options.loaders);
+      const minifyOption = (key: keyof typeof minifyOptions) => (
+        typeof options.minify === 'object' ? options.minify[key] : options.minify
+      );
+      minifyOptions = {
+        syntax: minifyOption('syntax'),
+        whitespace: minifyOption('whitespace')
+      }
 
       // TODO: Remove in v1.0
       const aOpts = options as esbuildPluginOptions & { jsxFactory: string; jsxFragment: string; };
@@ -120,8 +124,9 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
             jsxFactory: options.jsx.factory,
             jsxFragment: options.jsx.fragment,
             target: options.target,
-            minify: options.minify,
-            minifySyntax: options.minifySyntax,
+            minifyIdentifiers: false,
+            minifySyntax: minifyOptions.syntax,
+            minifyWhitespace: minifyOptions.whitespace,
             define: options.define
           });
 
