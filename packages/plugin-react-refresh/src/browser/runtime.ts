@@ -1,12 +1,10 @@
-/* eslint-disable */
-// @ts-ignore
+// @ts-expect-error No need of declarations
 import RefreshRuntime from 'react-refresh/runtime';
 
 RefreshRuntime.injectIntoGlobalHook(window);
 
-const aWindow = window as any;
-aWindow.$RefreshReg$ = () => {};
-aWindow.$RefreshSig$ = () => (type: any) => type;
+(window as any).$RefreshReg$ = () => {/* Nothing */};
+(window as any).$RefreshSig$ = () => (type: any) => type;
 
 // Modified from -
 // https://github.com/facebook/metro/blob/febdba2383113c88296c61e28e4ef6a7f4939fda/packages/metro/src/lib/polyfills/require.js#L748-L774
@@ -30,3 +28,7 @@ export const isReactRefreshBoundary = (moduleExports: Record<string, any>) => {
 
   return hasExports && areAllExportsComponents;
 }
+
+export const createSignatureFunction = RefreshRuntime.createSignatureFunctionForTransform;
+export const register = RefreshRuntime.register;
+export const performReactRefresh = RefreshRuntime.performReactRefresh;
