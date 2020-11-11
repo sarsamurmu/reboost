@@ -20,10 +20,10 @@ test('generates unique ID', () => {
   expect(utils.uniqueID(300)).toHaveLength(300);
 });
 
-test('checks if a data type is object', () => {
-  expect(utils.isObject({})).toBe(true);
-  expect(utils.isObject(null)).toBe(false);
-  expect(utils.isObject(new (class {}))).toBe(false);
+test('checks if a data type is plain object', () => {
+  expect(utils.isPlainObject({})).toBe(true);
+  expect(utils.isPlainObject(null)).toBe(false);
+  expect(utils.isPlainObject(new (class {}))).toBe(false);
 });
 
 test('merges two objects', () => {
@@ -173,6 +173,93 @@ test('creates observable', () => {
   obj.nested.nested.nested.prop = 1;
   expect(mock).toBeCalledTimes(1);
   mock.mockReset();
+});
+
+test('get property paths from an object', () => {
+  expect(utils.objectPaths({ a: 0 })).toEqual(expect.arrayContaining(['a']));
+  expect(utils.objectPaths({
+    1: {
+      a: 0,
+      b: 0,
+    },
+    2: {
+      e: 0,
+      f: 0,
+    }
+  })).toEqual(expect.arrayContaining(['1.a', '1.b', '2.e', '2.f']));
+});
+
+test('serializes an object', () => {
+  expect(utils.serializeObject({
+    c: 0,
+    a: 1,
+    b: 7,
+    d: 4,
+    nest: {
+      f: 1,
+      e: 2,
+      nest: {
+        j: 4,
+        i: 6
+      }
+    }
+  })).toBe(JSON.stringify([
+    ['a', 1],
+    ['b', 7],
+    ['c', 0],
+    ['d', 4],
+    ['nest', [
+      ['e', 2],
+      ['f', 1],
+      ['nest', [
+        ['i', 6],
+        ['j', 4]
+      ]]
+    ]]
+  ]));
+
+  const objectToSerialize = {
+    a: 1,
+    b: 2,
+    c: 3,
+    nest: {
+      e: 1,
+      f: 2,
+      g: 3,
+      nest: {
+        i: 1,
+        j: 2,
+        k: 3
+      }
+    }
+  };
+  const serializedObject = JSON.stringify([
+    ['b', 2],
+    ['c', 3],
+    ['nest', [
+      ['e', 1],
+      ['g', 3],
+      ['nest', [
+        ['i', 1],
+        ['j', 2]
+      ]]
+    ]]
+  ]);
+
+  expect(utils.serializeObject(objectToSerialize, [
+    'a',
+    'nest.f',
+    'nest.nest.k'
+  ])).toBe(serializedObject);
+  expect(utils.serializeObject(objectToSerialize, {
+    a: {},
+    nest: {
+      f: {},
+      nest: {
+        k: {}
+      }
+    }
+  })).toBe(serializedObject);
 });
 
 test('binds a function', () => {
