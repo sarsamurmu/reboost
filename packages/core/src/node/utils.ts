@@ -20,11 +20,11 @@ export const toPosix = (pathString: string) => pathString.replace(/\\/g, '/');
 
 export const uniqueID = (length = 32) => Array(length).fill(0).map(() => (Math.random() * 16 | 0).toString(16)).join('');
 
-export const isObject = (data: any) => !!data && data.constructor === Object;
+export const isPlainObject = (data: any) => !!data && data.constructor === Object;
 
 export const merge = <T extends Record<string, any>>(source: T, target: Record<string, any>) => {
   for (const key in target) {
-    if (isObject(source[key]) && isObject(target[key])) {
+    if (isPlainObject(source[key]) && isPlainObject(target[key])) {
       merge(source[key], target[key]);
     } else {
       (source as any)[key] = target[key];
@@ -36,7 +36,7 @@ export const merge = <T extends Record<string, any>>(source: T, target: Record<s
 export const clone = <T = any>(object: T): T => {
   const cloned = Array.isArray(object) ? [] : {} as any;
   for (const key in object) {
-    if (isObject(object[key]) || Array.isArray(object[key])) {
+    if (isPlainObject(object[key]) || Array.isArray(object[key])) {
       cloned[key] = clone(object[key]);
       continue;
     }
@@ -63,7 +63,7 @@ export const rmDir = (dirPath: string) => {
 
 export const deepFreeze = (obj: any) => {
   for (const key in obj) {
-    if (isObject(obj[key]) || Array.isArray(obj[key])) {
+    if (isPlainObject(obj[key]) || Array.isArray(obj[key])) {
       deepFreeze(obj[key]);
     }
   }
@@ -85,6 +85,57 @@ export const observable = <T extends Record<string, any>>(object: T, onChange: (
     }
   });
   return new Proxy(object, handler);
+}
+
+export const objectPaths = (object: Record<string, any>, pPath?: string) => {
+  const paths: string[] = [];
+  Object.keys(object).forEach((key) => {
+    const currentPath = (pPath ? pPath + '.' : '') + key;
+    if (typeof object[key] === 'object') {
+      const nestedPaths = objectPaths(object[key], currentPath);
+      if (nestedPaths.length) return paths.push(...nestedPaths);
+    }
+    paths.push(currentPath);
+  });
+  return paths;
+}
+
+type ExcludePathObject = {
+  [key: string]: ExcludePathObject;
+}
+
+export const serializeObject = (
+  object: Record<string, any>,
+  excludePaths?: string[] | ExcludePathObject,
+  stringify = true,
+  pPath?: string,
+) => {
+  if (excludePaths && pPath !== '') {
+    if (!Array.isArray(excludePaths)) {
+      excludePaths = objectPaths(excludePaths);
+    }
+  }
+  const mapper = (key: string | number) => {
+    const currentPath = (pPath ? pPath + '.' : '') + key;
+    if (excludePaths && (excludePaths as any).includes(currentPath)) return;
+    let value = object[key];
+    if (value && typeof value === 'object') {
+      value = isPlainObject(value) || Array.isArray(value)
+        ? serializeObject(value, excludePaths, false, currentPath)
+        : value.toString
+          ? value.toString()
+          : '';
+    }
+    return [key, value];
+  }
+
+  const serialized = (
+    Array.isArray(object)
+      ? object.map((_, i) => mapper(i))
+      : Object.keys(object).sort().map(mapper)
+  ).filter((a) => a);
+
+  return stringify ? JSON.stringify(serialized) : serialized;
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
