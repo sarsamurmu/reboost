@@ -9,30 +9,35 @@ import { merge } from '../../utils';
 import { generateModuleCode, getPlugins, Modes, runtimeCode } from './generator';
 import { hasImportsIn, hasURLsIn } from './parsers';
 
-interface ModuleOptions {
-  mode: Modes | ((filePath: string) => Modes);
-  exportGlobals: boolean;
-  test: RegExp | ((filePath: string) => boolean);
-}
-
 export type URLTester = (url: string, filePath: string) => boolean;
-export interface CSSPluginOptions {
-  import?: boolean | URLTester;
-  url?: boolean | URLTester;
-  modules?: boolean | ModuleOptions;
-  sourceMap?: boolean;
+
+declare namespace CSSPlugin {
+  export { URLTester }
+
+  export interface ModuleOptions {
+    mode: Modes | ((filePath: string) => Modes);
+    exportGlobals: boolean;
+    test: RegExp | ((filePath: string) => boolean);
+  }
+
+  export interface Options {
+    import?: boolean | URLTester;
+    url?: boolean | URLTester;
+    modules?: boolean | ModuleOptions;
+    sourceMap?: boolean;
+  }
 }
 
 const isCssSyntaxError = (e: Error): e is CssSyntaxError => e.name === 'CssSyntaxError';
 
-export const PluginName = 'core-css-plugin';
-export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
-  const defaultModuleOptions = (): Required<ModuleOptions> => ({
+const PluginName = 'core-css-plugin';
+function CSSPlugin(options: CSSPlugin.Options = {}): ReboostPlugin {
+  const defaultModuleOptions = (): Required<CSSPlugin.ModuleOptions> => ({
     mode: 'local',
     exportGlobals: false,
     test: /\.module\./i
   });
-  const defaultOptions = (): Required<CSSPluginOptions> => ({
+  const defaultOptions = (): Required<CSSPlugin.Options> => ({
     import: true,
     url: true,
     modules: defaultModuleOptions(),
@@ -40,7 +45,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
   });
   options = merge(defaultOptions(), options);
   const modsEnabled = options.modules !== false;
-  const moduleOptions: ModuleOptions = (typeof options.modules === 'object' ? options.modules : defaultModuleOptions());
+  const moduleOptions: CSSPlugin.ModuleOptions = (typeof options.modules === 'object' ? options.modules : defaultModuleOptions());
 
   return {
     name: PluginName,
@@ -161,3 +166,5 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
     }
   }
 }
+
+export { CSSPlugin, PluginName }

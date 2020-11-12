@@ -4,12 +4,9 @@ export { FilePlugin } from './file';
 export { ReplacePlugin } from './replace';
 export { UsePlugin } from './use';
 
-import { CSSPluginOptions } from './css/index';
-import { esbuildPluginOptions } from './esbuild';
-import { UsePluginOptions } from './use';
-
+// TODO: Remove it in v1.0
 export interface PluginOptions {
-  CSS: CSSPluginOptions;
-  esbuild: esbuildPluginOptions;
-  Use: UsePluginOptions;
+  CSS: import('./css').CSSPlugin.Options;
+  esbuild: import('./esbuild').esbuildPlugin.Options;
+  Use: import('./use').UsePlugin.Options;
 }

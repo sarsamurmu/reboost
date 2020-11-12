@@ -4,13 +4,15 @@ import chalk from 'chalk';
 import { ReboostPlugin } from '../index';
 import { bind } from '../utils';
 
-export interface UsePluginOptions {
-  include: Matcher;
-  exclude?: Matcher;
-  use: ReboostPlugin | ReboostPlugin[] | ReboostPlugin[][];
+declare namespace UsePlugin {
+  export interface Options {
+    include: Matcher;
+    exclude?: Matcher;
+    use: ReboostPlugin | ReboostPlugin[] | ReboostPlugin[][];
+  }
 }
 
-const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, 'getId'>> => {
+const createPlugin = (options: UsePlugin.Options): Required<Omit<ReboostPlugin, 'getId'>> => {
   // TODO: Remove `options.test` in v1.0
   const aOpt = options as any;
   if (aOpt.test) {
@@ -104,6 +106,8 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
   }
 }
 
-export const UsePlugin = (...options: UsePluginOptions[]): ReboostPlugin[] => (
-  options.map(createPlugin)
-)
+function UsePlugin(...options: UsePlugin.Options[]): ReboostPlugin[] {
+  return options.map(createPlugin)
+}
+
+export { UsePlugin }

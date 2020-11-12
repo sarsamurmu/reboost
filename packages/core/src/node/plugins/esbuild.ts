@@ -5,44 +5,46 @@ import path from 'path';
 import { ReboostPlugin } from '../index';
 import { merge } from '../utils';
 
-export interface esbuildPluginOptions {
-  /** Loaders to use for file types */
-  loaders?: Record<string, esbuild.Loader>;
-  /** Options for JSX */
-  jsx?: {
+declare namespace esbuildPlugin {
+  export interface Options {
+    /** Loaders to use for file types */
+    loaders?: Record<string, esbuild.Loader>;
+    /** Options for JSX */
+    jsx?: {
+      /**
+       * Factory function to use for creating elements
+       * @default React.createElement
+       */
+      factory?: string;
+      /**
+       * Component to use as the fragment component
+       * @default React.Fragment
+       */
+      fragment?: string;
+    }
+    /** ECMAScript version to target */
+    target?: 'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020';
     /**
-     * Factory function to use for creating elements
-     * @default React.createElement
+     * Minify code
+     * @default true
      */
-    factory?: string;
+    minify?: boolean | {
+      syntax: boolean;
+      whitespace: boolean;
+    };
     /**
-     * Component to use as the fragment component
-     * @default React.Fragment
+     * Define values of variables
+     * @example { 'process.env.NODE_ENV': '"development"' }
      */
-    fragment?: string;
+    define?: Record<string, string>;
+    /** Pre-started service to use with esbuild */
+    service?: esbuild.Service;
   }
-  /** ECMAScript version to target */
-  target?: 'esnext' | 'es6' | 'es2015' | 'es2016' | 'es2017' | 'es2018' | 'es2019' | 'es2020';
-  /**
-   * Minify code
-   * @default true
-   */
-  minify?: boolean | {
-    syntax: boolean;
-    whitespace: boolean;
-  };
-  /**
-   * Define values of variables
-   * @example { 'process.env.NODE_ENV': '"development"' }
-   */
-  define?: Record<string, string>;
-  /** Pre-started service to use with esbuild */
-  service?: esbuild.Service;
 }
 
-export const PluginName = 'core-esbuild-plugin';
-export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin => {
-  const defaultOptions: Required<esbuildPluginOptions> = {
+const PluginName = 'core-esbuild-plugin';
+function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
+  const defaultOptions: Required<esbuildPlugin.Options> = {
     loaders: {
       js: 'ts',
       jsx: 'tsx',
@@ -64,7 +66,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
   };
   let compatibleTypes: string[];
   let esbuildService: esbuild.Service;
-  let minifyOptions: Exclude<esbuildPluginOptions['minify'], boolean>;
+  let minifyOptions: Exclude<esbuildPlugin.Options['minify'], boolean>;
   const loadService = async () => {
     if (!esbuildService) {
       if (options.service) {
@@ -93,7 +95,7 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
       }
 
       // TODO: Remove in v1.0
-      const aOpts = options as esbuildPluginOptions & { jsxFactory: string; jsxFragment: string; };
+      const aOpts = options as esbuildPlugin.Options & { jsxFactory: string; jsxFragment: string; };
       const showWarning = (oldOpt: string, newOpt: string) => {
         if (!config.log) return;
         let message = `esbuildPlugin: options.${oldOpt} is deprecated and will be removed in next major release. `;
@@ -162,3 +164,5 @@ export const esbuildPlugin = (options: esbuildPluginOptions = {}): ReboostPlugin
     }
   }
 }
+
+export { esbuildPlugin, PluginName }
