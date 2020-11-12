@@ -1,4 +1,4 @@
-import SvelteCompiler from 'svelte/compiler';
+import type SvelteCompiler from 'svelte/compiler';
 
 import fs from 'fs';
 import path from 'path';
@@ -13,7 +13,7 @@ declare namespace SveltePlugin {
 }
 
 function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
-  let sveltePath: string;
+  let compiler: typeof SvelteCompiler;
   let configFile: string;
   let svelteConfig = {} as Record<string, any>;
 
@@ -21,12 +21,15 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
     name: 'svelte-plugin',
     async transformContent(data, filePath) {
       if (data.type === 'svelte') {
-        if (!sveltePath) sveltePath = this.resolve(__filename, 'svelte/compiler.js');
-
-        if (!sveltePath) {
-          console.log(this.chalk.red('You need to install "svelte" package in order to use SveltePlugin.'));
-          console.log(this.chalk.red('Please run "npm i svelte" to install svelte.'));
-          return;
+        if (!compiler) {
+          const sveltePath = this.resolve(__filename, 'svelte/compiler.js');
+          if (sveltePath) {
+            compiler = require(sveltePath);
+          } else {
+            console.log(this.chalk.red('You need to install "svelte" package in order to use SveltePlugin.'));
+            console.log(this.chalk.red('Please run "npm i svelte" to install svelte.'));
+            return;
+          }
         }
 
         if (!configFile) {
@@ -37,13 +40,10 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
           }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const Compiler: typeof SvelteCompiler = require(sveltePath);
-
         const {
           code: processedCode,
           dependencies
-        } = await Compiler.preprocess(
+        } = await compiler.preprocess(
           data.code,
           options.preprocess || svelteConfig.preprocess || {},
           {
@@ -60,7 +60,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         let {
           js: { code, map },
           warnings
-        } = Compiler.compile(processedCode, {
+        } = compiler.compile(processedCode, {
           dev: true,
           ...svelteConfig,
           filename: filePath,
