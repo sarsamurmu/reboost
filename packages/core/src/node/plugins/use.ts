@@ -7,7 +7,7 @@ import { bind } from '../utils';
 export interface UsePluginOptions {
   include: Matcher;
   exclude?: Matcher;
-  use: ReboostPlugin | ReboostPlugin[];
+  use: ReboostPlugin | ReboostPlugin[] | ReboostPlugin[][];
 }
 
 const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, 'getId'>> => {
@@ -16,7 +16,7 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
   if (aOpt.test) {
     if (!options.include) options.include = aOpt.test;
     let message = 'UsePlugin: options.test is deprecated and will be removed in next major release. ';
-    message += 'Use options.include instead.'
+    message += 'Use options.include instead.';
     console.log(chalk.yellow(message));
   }
 
@@ -24,11 +24,18 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
     anymatch(options.include, string) &&
     (options.exclude ? !anymatch(options.exclude, string) : true)
   );
-  const def = (a: any) => !!a;
-  const plugins = Array.isArray(options.use) ? options.use : [options.use];
+  const plugins: ReboostPlugin[] = [];
   const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => (
-    plugins.map((plugin) => plugin[hookName]).filter(def)
-  )
+    plugins.map((plugin) => plugin[hookName]).filter((hook) => typeof hook === 'function')
+  );
+
+  if (Array.isArray(options.use)) {
+    options.use.forEach((plugin: ReboostPlugin | ReboostPlugin[]) => {
+      plugins.push(...(Array.isArray(plugin) ? plugin : [plugin]))
+    });
+  } else {
+    plugins.push(options.use);
+  }
 
   const setupHooks = getHooks('setup');
   const stopHooks = getHooks('stop');
@@ -54,8 +61,6 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
           if (result) return result;
         }
       }
-
-      return null;
     },
     async load(filePath) {
       if (test(filePath)) {
@@ -64,8 +69,6 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
           if (result) return result;
         }
       }
-
-      return null;
     },
     async transformContent(data, filePath) {
       if (test(filePath)) {
@@ -74,8 +77,6 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
           if (result) return result;
         }
       }
-
-      return null;
     },
     async transformIntoJS(data, filePath) {
       if (test(filePath)) {
@@ -84,8 +85,6 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
           if (result) return result;
         }
       }
-
-      return null;
     },
     async transformJSContent(data, filePath) {
       if (test(filePath)) {
@@ -94,8 +93,6 @@ const createPlugin = (options: UsePluginOptions): Required<Omit<ReboostPlugin, '
           if (result) return result;
         }
       }
-
-      return null;
     },
     async transformAST(ast, babel, filePath) {
       if (test(filePath)) {
