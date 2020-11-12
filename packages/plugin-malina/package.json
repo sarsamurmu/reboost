@@ -1,0 +1,35 @@
+{
+  "name": "@reboost/plugin-malina",
+  "version": "0.17.2",
+  "description": "Malina.js plugin for Reboost",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../rmDist",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "keywords": [
+    "reboost",
+    "plugin",
+    "malina"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarsamurmu/reboost.git",
+    "directory": "packages/plugin-malina"
+  },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-malina",
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "malinajs": "^0.5.24"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.5"
+  }
+}

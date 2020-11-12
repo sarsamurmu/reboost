@@ -13,6 +13,7 @@ const SassPlugin = require('@reboost/plugin-sass');
 const SveltePlugin = require('@reboost/plugin-svelte');
 const VuePlugin = require('@reboost/plugin-vue');
 const PostCSSPlugin = require('@reboost/plugin-postcss');
+const MalinaPlugin = require('@reboost/plugin-malina');
 
 console.time();
 start({
@@ -22,6 +23,7 @@ start({
     ['./src/css-and-assets/index.js', './public/dist/css-and-assets.js'],
     ['./src/hot-reload-test/index.js', './public/dist/hot-reload-test.js'],
     ['./src/lit-element/index.js', './public/dist/lit-element.js'],
+    ['./src/malina/index.js', './public/dist/malina.js'],
     ['./src/postcss/index.js', './public/dist/postcss.js'],
     ['./src/react/index.jsx', './public/dist/react.js'],
     ['./src/sass/index.js', './public/dist/sass.js'],
@@ -58,6 +60,7 @@ start({
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
     }),
+    MalinaPlugin(),
     SveltePlugin(),
     VuePlugin(),
     UsePlugin({
