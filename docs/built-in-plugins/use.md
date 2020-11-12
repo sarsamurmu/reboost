@@ -73,3 +73,29 @@ start({
   ]
 })
 ```
+
+You can use multiple plugins -
+```js
+UsePlugin({
+  test: '**/some-glob/*',
+  use: [
+    Plugin1(),
+    Plugin2(),
+    // and more
+  ]
+})
+```
+
+Also, you can pass multiple rules/options, like so
+```js
+UsePlugin(
+  {
+    test: '**/some-glob/*',
+    use: Plugin1()
+  },
+  {
+    test: '**/another-glob/*',
+    use: Plugin2()
+  }
+)
+```
