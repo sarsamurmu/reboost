@@ -1,3 +1,4 @@
+// @ts-check
 const fs = require('fs');
 const path = require('path');
 
@@ -26,7 +27,7 @@ module.exports = (
         templateFiles: './plugin-template/**/*',
         globOptions: { dot: true },
         data: {
-          version: JSON.parse(fs.readFileSync(path.join(__dirname, './lerna.json'))).version
+          version: JSON.parse(fs.readFileSync(path.join(__dirname, './lerna.json')).toString()).version
         }
       }
     ]

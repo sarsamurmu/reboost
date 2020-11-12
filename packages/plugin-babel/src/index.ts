@@ -4,7 +4,11 @@ import path from 'path';
 
 import { ReboostPlugin } from 'reboost';
 
-export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
+declare namespace BabelPlugin {
+  export type Options = Babel.TransformOptions;
+}
+
+function BabelPlugin(options: BabelPlugin.Options = {}): ReboostPlugin {
   let babel: typeof Babel;
   const compatibleTypes = ['js', 'jsx', 'ts', 'tsx', 'es', 'es6', 'mjs', 'cjs'];
 
@@ -14,7 +18,7 @@ export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
       const babelPath = resolve(__filename, '@babel/core', {
         mainFields: ['main']
       });
-      
+
       if (babelPath) {
         babel = require(babelPath);
 
@@ -56,3 +60,5 @@ export = (options: Babel.TransformOptions = {}): ReboostPlugin => {
     }
   }
 }
+
+export = BabelPlugin;

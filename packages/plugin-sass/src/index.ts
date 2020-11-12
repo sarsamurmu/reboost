@@ -4,11 +4,13 @@ import path from 'path';
 
 import { ReboostPlugin } from 'reboost';
 
-interface Options {
-  sassOptions?: Sass.SyncOptions;
+declare namespace SassPlugin {
+  export interface Options {
+    sassOptions?: Sass.SyncOptions;
+  }
 }
 
-export = (options: Options = {}): ReboostPlugin => {
+function SassPlugin(options: SassPlugin.Options = {}): ReboostPlugin {
   const sassOptions = Object.assign({}, options.sassOptions);
   let includePathsNormalized = false;
   let sass: typeof Sass;
@@ -117,3 +119,5 @@ export = (options: Options = {}): ReboostPlugin => {
     }
   }
 }
+
+export = SassPlugin;

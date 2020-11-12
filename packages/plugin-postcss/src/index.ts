@@ -27,14 +27,16 @@ const makeError = (error: Error, config: ReboostConfig) => {
   }
 }
 
-interface Options {
-  /** PostCSS config context */
-  ctx?: Record<string, any>;
-  /** PostCSS config directory */
-  path?: string;
+declare namespace PostCSSPlugin {
+  export interface Options {
+    /** PostCSS config context */
+    ctx?: Record<string, any>;
+    /** PostCSS config directory */
+    path?: string;
+  }
 }
 
-export = (options: Options = {}): ReboostPlugin => {
+function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
   type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
 
@@ -186,3 +188,5 @@ export = (options: Options = {}): ReboostPlugin => {
     }
   }
 }
+
+export = PostCSSPlugin;

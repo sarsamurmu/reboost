@@ -4,18 +4,20 @@ import path from 'path';
 
 import { ReboostPlugin } from 'reboost';
 
-interface Options {
-  excludeNodeModules?: boolean;
+declare namespace ReactRefreshPlugin {
+  export interface Options {
+    excludeNodeModules?: boolean;
+  }
 }
 
-export = ({ excludeNodeModules = true }: Options = {}): ReboostPlugin => {
+function ReactRefreshPlugin({ excludeNodeModules = true }: ReactRefreshPlugin.Options = {}): ReboostPlugin {
   let reactRefreshPath: string;
 
   return {
     name: 'react-refresh-plugin',
     async transformJSContent({ code }, filePath) {
       if (excludeNodeModules && /node_modules/.test(filePath)) return;
-      
+
       try {
         const preCode = /* js */`
           import * as __Runtime from ${JSON.stringify(path.join(__dirname, '../browser/runtime.js'))};
@@ -78,3 +80,5 @@ export = ({ excludeNodeModules = true }: Options = {}): ReboostPlugin => {
     }
   }
 }
+
+export = ReactRefreshPlugin;

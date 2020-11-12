@@ -5,11 +5,13 @@ import path from 'path';
 
 import { ReboostPlugin, RawSourceMap } from 'reboost';
 
-interface Options {
-  compiler?: any;
+declare namespace VuePlugin {
+  export interface Options {
+    compiler?: any;
+  }
 }
 
-export = (options: Options = {}): ReboostPlugin => {
+function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
   let compiler = Compiler;
 
   if (options.compiler) compiler = options.compiler;
@@ -88,3 +90,5 @@ export = (options: Options = {}): ReboostPlugin => {
     }
   }
 }
+
+export = VuePlugin;

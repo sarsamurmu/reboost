@@ -29,7 +29,8 @@ const defaultTSOptions = {
       named: 'never',
       asyncArrow: 'always'
     }],
-    '@typescript-eslint/explicit-module-boundary-types': 'off'
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }]
   }
 }
 

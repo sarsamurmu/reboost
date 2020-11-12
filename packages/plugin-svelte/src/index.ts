@@ -5,12 +5,14 @@ import path from 'path';
 
 import { ReboostPlugin } from 'reboost';
 
-interface Options {
-  configFile?: string;
-  preprocess?: any;
+declare namespace SveltePlugin {
+  export interface Options {
+    configFile?: string;
+    preprocess?: any;
+  }
 }
 
-export = (options: Options = {}): ReboostPlugin => {
+function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
   let sveltePath: string;
   let configFile: string;
   let svelteConfig = {} as Record<string, any>;
@@ -109,3 +111,5 @@ export = (options: Options = {}): ReboostPlugin => {
     }
   }
 }
+
+export = SveltePlugin;
