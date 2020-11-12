@@ -40,7 +40,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
   });
   options = merge(defaultOptions(), options);
   const modsEnabled = options.modules !== false;
-  const modsOptions: ModuleOptions = (typeof options.modules === 'object' ? options.modules : defaultModuleOptions());
+  const moduleOptions: ModuleOptions = (typeof options.modules === 'object' ? options.modules : defaultModuleOptions());
 
   return {
     name: PluginName,
@@ -57,7 +57,7 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
       if (data.type === 'css') {
         const { code: css, map } = data;
         const isModule = modsEnabled && (
-          typeof modsOptions.test === 'function' ? modsOptions.test(filePath) : modsOptions.test.test(filePath)
+          typeof moduleOptions.test === 'function' ? moduleOptions.test(filePath) : moduleOptions.test.test(filePath)
         );
         const hasImports = options.import && hasImportsIn(css);
         const hasURLs = options.url && hasURLsIn(css);
@@ -81,10 +81,10 @@ export const CSSPlugin = (options: CSSPluginOptions = {}): ReboostPlugin => {
                 url: typeof options.url === 'function' ? options.url : () => true
               },
               module: isModule && {
-                mode: typeof modsOptions.mode === 'function'
-                  ? (modsOptions.mode(filePath) || (defaultModuleOptions().mode as Modes))
-                  : modsOptions.mode,
-                exportGlobals: modsOptions.exportGlobals,
+                mode: typeof moduleOptions.mode === 'function'
+                  ? (moduleOptions.mode(filePath) || (defaultModuleOptions().mode as Modes))
+                  : moduleOptions.mode,
+                exportGlobals: moduleOptions.exportGlobals,
                 hasValues: /@value/i.test(css)
               }
             });
