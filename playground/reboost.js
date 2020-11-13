@@ -13,7 +13,7 @@ const SassPlugin = require('@reboost/plugin-sass');
 const SveltePlugin = require('@reboost/plugin-svelte');
 const VuePlugin = require('@reboost/plugin-vue');
 const PostCSSPlugin = require('@reboost/plugin-postcss');
-const MalinaPlugin = require('@reboost/plugin-malina');
+const MalinaJSPlugin = require('@reboost/plugin-malinajs');
 
 console.time();
 start({
@@ -60,7 +60,7 @@ start({
     ReplacePlugin({
       ADJECTIVE: JSON.stringify('cool')
     }),
-    MalinaPlugin(),
+    MalinaJSPlugin(),
     SveltePlugin(),
     VuePlugin(),
     UsePlugin({

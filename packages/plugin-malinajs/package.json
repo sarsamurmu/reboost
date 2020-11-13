@@ -1,5 +1,5 @@
 {
-  "name": "@reboost/plugin-malina",
+  "name": "@reboost/plugin-malinajs",
   "version": "0.17.2",
   "description": "Malina.js plugin for Reboost",
   "main": "./dist/index.js",
@@ -17,14 +17,14 @@
   "keywords": [
     "reboost",
     "plugin",
-    "malina"
+    "malinajs"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/sarsamurmu/reboost.git",
-    "directory": "packages/plugin-malina"
+    "directory": "packages/plugin-malinajs"
   },
-  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-malina",
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-malinajs",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {

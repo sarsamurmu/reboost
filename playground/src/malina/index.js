@@ -1,3 +1,3 @@
-import App from './App.ma';
+import App from './App.xht';
 
 App(document.body);

@@ -8,7 +8,7 @@
     "@babel/core": "^7.12.3",
     "@babel/plugin-proposal-pipeline-operator": "^7.12.1",
     "@reboost/plugin-babel": "file:../packages/plugin-babel",
-    "@reboost/plugin-malina": "^0.17.2",
+    "@reboost/plugin-malinajs": "file:../packages/plugin-malinajs",
     "@reboost/plugin-postcss": "file:../packages/plugin-postcss",
     "@reboost/plugin-react-refresh": "file:../packages/plugin-react-refresh",
     "@reboost/plugin-sass": "file:../packages/plugin-sass",
