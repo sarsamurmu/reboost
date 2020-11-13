@@ -36,12 +36,16 @@ start({
 ```
 Now it will transform all stylesheets with your PostCSS plugins.
 
+## Config file
+This plugin uses [`postcss-load-config`](https://github.com/postcss/postcss-load-config) to load PostCSS
+configurations. Please read their [readme](https://github.com/postcss/postcss-load-config/blob/master/README.md)
+to understand how configuration files are loaded.
+
 ## Options
 #### `ctx`
 Type: `object`
 
-Like webpack's [`postcss-loader`](https://www.npmjs.com/package/postcss-loader#context-ctx), this plugin
-also exposes context `ctx` to the config file, so that your config file can be dynamic.
+This plugin exposes context `ctx` to the config file, so that your config file can be dynamic.
 Like so
 
 `postcss.config.js`
@@ -83,7 +87,12 @@ module.exports = ({ file, options, env }) => {
 #### `path`
 Type: `string`
 
-The path to search for `postcss.config.js` file. Using this option you can specify
+The path to search for any of the configuration files. Configurations can be loaded from
+- [`package.json`](https://github.com/postcss/postcss-load-config/blob/master/README.md#packagejson)
+- [`.postcssrc`](https://github.com/postcss/postcss-load-config/blob/master/README.md#postcssrc)
+- [`.postcssrc.js` or `postcss.config.js`](https://github.com/postcss/postcss-load-config/blob/master/README.md#postcssrcjs-or-postcssconfigjs)
+
+Using this option you can specify
 another directory that should be searched for the config file, like when you store
-your config files in different directories. Works same as [`postcss-loader`](https://www.npmjs.com/package/postcss-loader#path)'s
-`path` option. The value should be a path to a directory, not a path to a file.
+your config files in different directories.
+**The value should be a path to a DIRECTORY (where the config file is stored), not a path to a FILE**.
