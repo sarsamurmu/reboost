@@ -57,6 +57,7 @@ export interface PluginContext {
   mergeSourceMaps: typeof mergeSourceMaps;
   meta: Record<string, any>;
   resolve: PublicResolveFn;
+  rootRelative: (filePath: string) => string;
 }
 
 export interface ReboostPlugin {

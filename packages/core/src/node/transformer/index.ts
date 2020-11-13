@@ -58,7 +58,8 @@ const getPluginContext = (
   },
   MagicString,
   mergeSourceMaps,
-  resolve: (...args) => resolve(instance, ...args)
+  resolve: (...args) => resolve(instance, ...args),
+  rootRelative: (filePath) => path.relative(instance.config.rootDir, filePath)
 });
 
 const getErrorObj = (msg: string, dependencies: string[]) => ({
