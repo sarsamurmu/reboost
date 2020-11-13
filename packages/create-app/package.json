@@ -8,7 +8,8 @@
   },
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
-    "clean": "node ../../rmDist",
+    "clean": "node ../../prepare rm-dist",
+    "version": "node ../../prepare update-changelog",
     "build": "node buildVersions && tsc -p build.tsconfig.json",
     "watch": "tsc -p build.tsconfig.json -w"
   },

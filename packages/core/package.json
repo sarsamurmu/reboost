@@ -9,7 +9,8 @@
   },
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
-    "clean": "node ../../rmDist",
+    "clean": "node ../../prepare rm-dist",
+    "version": "node ../../prepare update-changelog",
     "build": "concurrently -r \"npm:build:browser\" \"npm:build:node\"",
     "build:browser": "tsc -p ./src/browser",
     "build:node": "tsc -p ./src/node",

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build",
-    "clean": "node ../../rmDist",
+    "clean": "node ../../prepare rm-dist",
+    "version": "node ../../prepare update-changelog",
     "build": "tsc -p browser.tsconfig.json && tsc -p node.tsconfig.json",
     "watch": "concurrently \"tsc -p browser.tsconfig.json -w\" \"tsc -p node.tsconfig.json -w\""
   },
