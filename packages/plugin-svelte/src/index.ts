@@ -1,5 +1,3 @@
-import type SvelteCompiler from 'svelte/compiler';
-
 import fs from 'fs';
 import path from 'path';
 
@@ -13,7 +11,7 @@ declare namespace SveltePlugin {
 }
 
 function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
-  let compiler: typeof SvelteCompiler;
+  let compiler: typeof import('svelte/compiler');
   let configFile: string;
   let svelteConfig = {} as Record<string, any>;
 
@@ -69,7 +67,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         /* eslint-enable */
 
         warnings.forEach((warning) => {
-          console.log(this.chalk.yellow(`Svelte: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n${warning.toString()}\n`));
+          console.log(this.chalk.yellow(`SveltePlugin: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n${warning.toString()}\n`));
         });
 
         // Replace the source map for CSS
@@ -78,24 +76,20 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         if (match) {
           let replacePromise: Promise<any>;
 
-          code.replace(
-            regex,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            ((match: any, p1: string, offset: any, string: any) => {
-              replacePromise = (async () => {
-                const sourceMap = JSON.parse(Buffer.from(p1, 'base64').toString());
+          code.replace(regex, ((_: any, p1: string) => {
+            replacePromise = (async () => {
+              const sourceMap = JSON.parse(Buffer.from(p1, 'base64').toString());
 
-                sourceMap.sources = sourceMap.sources.map((sourcePath: string) => {
-                  return sourcePath === path.basename(filePath) ? filePath : sourcePath;
-                });
+              sourceMap.sources = sourceMap.sources.map((sourcePath: string) => {
+                return sourcePath === path.basename(filePath) ? filePath : sourcePath;
+              });
 
-                const mergedMap = data.map ? await this.mergeSourceMaps(data.map, sourceMap) : sourceMap;
-                const compatibleMap = this.getCompatibleSourceMap(mergedMap);
-                const sourceMapStr = Buffer.from(JSON.stringify(compatibleMap)).toString('base64');
-                return `/*# sourceMappingURL=data:application/json;charset=utf-8;base64,${sourceMapStr} */`;
-              })();
-            }) as any
-          );
+              const mergedMap = data.map ? await this.mergeSourceMaps(data.map, sourceMap) : sourceMap;
+              const compatibleMap = this.getCompatibleSourceMap(mergedMap);
+              const sourceMapStr = Buffer.from(JSON.stringify(compatibleMap)).toString('base64');
+              return `/*# sourceMappingURL=data:application/json;charset=utf-8;base64,${sourceMapStr} */`;
+            })();
+          }) as any);
 
           code = code.replace(regex, await replacePromise);
         }
