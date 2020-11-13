@@ -28,7 +28,7 @@ function MalinaJSPlugin(options: MalinaJSPlugin.Options = {}): ReboostPlugin {
   }
 
   return {
-    name: 'malina-plugin',
+    name: 'malinajs-plugin',
     transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
         if (!compiler) {

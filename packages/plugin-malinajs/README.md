@@ -37,5 +37,11 @@ start({
 import Component from './file.xht';
 ```
 
+## Options
+#### `compilerOptions`
+Type: `object`
+
+Options to use when compiling components. Please refer to [official docs](https://malinajs.github.io/docs/#compile-options) for available options.
+
 # License
 Licensed under the [MIT License](/LICENSE).
