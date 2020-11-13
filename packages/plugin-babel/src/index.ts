@@ -1,7 +1,5 @@
 import type Babel from '@babel/core';
 
-import path from 'path';
-
 import { ReboostPlugin } from 'reboost';
 
 declare namespace BabelPlugin {
@@ -49,7 +47,7 @@ function BabelPlugin(options: BabelPlugin.Options = {}): ReboostPlugin {
             map
           }
         } catch (e) {
-          let message = `BabelPlugin: Error while transforming "${path.relative(this.config.rootDir, filePath)}"\n`;
+          let message = `BabelPlugin: Error while transforming "${this.rootRelative(filePath)}"\n`;
           message += e.message.replace(/^unknown: /, '');
 
           return new Error(message);

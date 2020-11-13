@@ -96,7 +96,7 @@ function CSSPlugin(options: CSSPlugin.Options = {}): ReboostPlugin {
 
             const handleError = (err: Error) => {
               if (isCssSyntaxError(err)) {
-                let errorMessage = `CSSPlugin: Error while processing "${path.relative(this.config.rootDir, err.file)}"\n`;
+                let errorMessage = `CSSPlugin: Error while processing "${this.rootRelative(err.file)}"\n`;
                 errorMessage += `${err.reason} on line ${err.line} at column ${err.column}\n\n`;
 
                 errorMessage += codeFrameColumns(err.source, {

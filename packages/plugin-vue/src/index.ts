@@ -1,8 +1,6 @@
 import * as Compiler from '@vue/compiler-sfc';
 import hashSum from 'hash-sum';
 
-import path from 'path';
-
 import { ReboostPlugin, RawSourceMap } from 'reboost';
 
 declare namespace VuePlugin {
@@ -24,7 +22,7 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           sourceMap: true,
           filename: filePath
         });
-        const id = hashSum(path.relative(this.config.rootDir, filePath));
+        const id = hashSum(this.rootRelative(filePath));
 
         let preCode = 'const __modExp = {}';
         const postCode = `

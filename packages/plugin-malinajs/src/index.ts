@@ -1,8 +1,6 @@
 // @ts-expect-error No declarations available, it's not really necessary
 import * as malina from 'malinajs';
 
-import path from 'path';
-
 import { ReboostPlugin } from 'reboost';
 
 declare namespace MalinaJSPlugin {
@@ -49,7 +47,7 @@ function MalinaJSPlugin(options: MalinaJSPlugin.Options = {}): ReboostPlugin {
           const code = malina.compile(data.code, options.compilerOptions);
 
           warningsStack.pop().forEach(({ message }) => {
-            console.log(this.chalk.yellow(`MalinaJSPlugin: Warning ${path.relative(this.config.rootDir, filePath)}\n\n${message}`));
+            console.log(this.chalk.yellow(`MalinaJSPlugin: Warning "${this.rootRelative(filePath)}"\n\n${message}`));
           });
 
           return {
@@ -59,7 +57,7 @@ function MalinaJSPlugin(options: MalinaJSPlugin.Options = {}): ReboostPlugin {
           }
         } catch (e) {
           if (e.details) {
-            let message = `MalinaJSPlugin: Error while compiling ${path.relative(this.config.rootDir, filePath)}\n\n`;
+            let message = `MalinaJSPlugin: Error while compiling "${this.rootRelative(filePath)}"\n\n`;
             message += e.message + '\n\n';
             message += `Details: ${e.details}`;
             return new Error(message);

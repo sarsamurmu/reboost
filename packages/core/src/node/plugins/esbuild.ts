@@ -1,7 +1,5 @@
 import * as esbuild from 'esbuild';
 
-import path from 'path';
-
 import { ReboostPlugin } from '../index';
 import { merge } from '../utils';
 
@@ -121,7 +119,7 @@ function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
         try {
           const { code, map, warnings } = await (await loadService()).transform(data.code, {
             sourcemap: 'external',
-            sourcefile: path.relative(this.config.rootDir, filePath),
+            sourcefile: this.rootRelative(filePath),
             loader: options.loaders[data.type],
             jsxFactory: options.jsx.factory,
             jsxFragment: options.jsx.fragment,

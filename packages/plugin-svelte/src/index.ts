@@ -67,7 +67,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         /* eslint-enable */
 
         warnings.forEach((warning) => {
-          console.log(this.chalk.yellow(`SveltePlugin: Warning "${path.relative(this.config.rootDir, filePath)}"\n\n${warning.toString()}\n`));
+          console.log(this.chalk.yellow(`SveltePlugin: Warning "${this.rootRelative(filePath)}"\n\n${warning.toString()}\n`));
         });
 
         // Replace the source map for CSS
