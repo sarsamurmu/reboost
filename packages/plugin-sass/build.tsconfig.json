@@ -1,10 +1,7 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../../plugins.tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

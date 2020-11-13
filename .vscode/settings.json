@@ -4,5 +4,14 @@
     "etag",
     "malina",
     "malinajs"
+  ],
+  "files.associations": {
+    "*.tsconfig.json": "jsonc"
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["*.tsconfig.json"],
+      "url": "https://json.schemastore.org/tsconfig"
+    }
   ]
 }
