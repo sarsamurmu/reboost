@@ -12,8 +12,9 @@ for (const name in versions) {
         distTag: 'latest'
       }
     ).then((update) => {
-      if (update) console.log(
-        `Update available for dependency ${JSON.stringify(name)} - ${versions[name]} -> ${update.latest}`
+      console.log(update
+        ? `Update available for dependency ${JSON.stringify(name)} - ${versions[name]} -> ${update.latest}`
+        : `No update available for dependency ${JSON.stringify(name)}`
       );
     }).catch((e) => console.log(`Failed for ${name}`, e));
   }

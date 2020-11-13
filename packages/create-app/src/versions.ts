@@ -15,7 +15,7 @@ export const versions: Record<string, string> = {
   'malinajs': '0.6.4',
   'reboost-plugin-malinajs': reboostPackageVersions['plugin-malinajs'],
 
-  'preact': '10.5.5',
+  'preact': '10.5.7',
 
   'react': '17.0.1',
   'react-dom': '17.0.1',
@@ -23,7 +23,7 @@ export const versions: Record<string, string> = {
   '@types/react-dom': '16.9.9',
   'reboost-plugin-react-refresh': reboostPackageVersions['plugin-react-refresh'],
 
-  'svelte': '3.29.4',
+  'svelte': '3.29.7',
   'reboost-plugin-svelte': reboostPackageVersions['plugin-svelte'],
 
   'vue': '3.0.0',
