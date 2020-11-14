@@ -16,7 +16,7 @@ import path from 'path';
 import net from 'net';
 
 import { createContentServer } from './content-server';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, getExternalHost, PromiseType } from './utils';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, getExternalHost, PromiseType, serializeObject, md5 } from './utils';
 import { initCache } from './cache';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
@@ -62,7 +62,12 @@ export interface PluginContext {
 
 export interface ReboostPlugin {
   name: string;
-  getId?: () => string | number;
+  getCacheKey?: (
+    utils: {
+      serializeObject: typeof serializeObject,
+      md5: typeof md5;
+    }
+  ) => string;
   setup?: (
     data: {
       config: ReboostConfig;

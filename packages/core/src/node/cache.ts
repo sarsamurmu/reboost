@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { ReboostConfig, ReboostPlugin } from './index';
-import { diff, observable } from './utils';
+import { diff, observable, serializeObject, md5 } from './utils';
 
 export interface CacheInfo {
   /** Hash of the file */
@@ -69,8 +69,8 @@ export const initCache = (
         .filter((p) => p && p.name)
         .map((p) => {
           let id = p.name;
-          if (typeof p.getId !== 'undefined') {
-            id += '@' + p.getId();
+          if (typeof p.getCacheKey === 'function') {
+            id += '@' + p.getCacheKey({ serializeObject, md5 });
           }
           return id;
         })

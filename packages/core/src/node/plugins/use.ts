@@ -12,7 +12,7 @@ declare namespace UsePlugin {
   }
 }
 
-const createPlugin = (options: UsePlugin.Options): Required<Omit<ReboostPlugin, 'getId'>> => {
+const createPlugin = (options: UsePlugin.Options): Required<Omit<ReboostPlugin, 'getCacheKey'>> => {
   // TODO: Remove `options.test` in v1.0
   const aOpt = options as any;
   if (aOpt.test) {
