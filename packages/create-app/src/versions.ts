@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const reboostPackageVersions = JSON.parse(
+const reboostPackageVersions: Record<string, string> = JSON.parse(
   fs.readFileSync(path.join(__dirname, './package-versions.json')).toString()
 );
 
@@ -22,6 +22,11 @@ export const versions: Record<string, string> = {
   '@types/react': '16.9.56',
   '@types/react-dom': '16.9.9',
   'reboost-plugin-react-refresh': reboostPackageVersions['plugin-react-refresh'],
+
+  'solid-js': '0.22.0',
+  '@babel/core': '7.12.3',
+  'babel-preset-solid': '0.20.1',
+  'reboost-plugin-babel': reboostPackageVersions['plugin-babel'],
 
   'svelte': '3.29.7',
   'reboost-plugin-svelte': reboostPackageVersions['plugin-svelte'],

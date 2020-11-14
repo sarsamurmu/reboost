@@ -1,0 +1,20 @@
+{
+  "name": "{{ lowerCase (dashCase appName) }}",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "dev": "node reboost"
+  },
+  "license": "MIT",
+  {{#with versions}}
+  "devDependencies": {
+    "reboost": "{{ reboost }}",
+    "@reboost/plugin-babel": "{{ [reboost-plugin-babel] }}"
+  },
+  "dependencies": {
+    "@babel/core": "{{ [@babel/core] }}",
+    "babel-preset-solid": "{{ [babel-preset-solid] }}",
+    "solid-js": "{{ [solid-js] }}"
+  }
+  {{/with}}
+}
