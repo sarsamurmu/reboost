@@ -218,6 +218,13 @@ test('serializes an object', () => {
     ]]
   ]));
 
+  expect(utils.serializeObject({
+    1: /myRegExp/i
+  })).toBe('[["1","/myRegExp/i"]]');
+  expect(utils.serializeObject({
+    1: eval('() => { return true }') // Using eval to prevent TypeScript from formatting the code
+  })).toBe('[["1","() => { return true }"]]');
+
   const objectToSerialize = {
     a: 1,
     b: 2,

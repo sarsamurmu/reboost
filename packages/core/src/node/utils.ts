@@ -125,6 +125,8 @@ export const serializeObject = (
         : value.toString
           ? value.toString()
           : '';
+    } else if (typeof value === 'function') {
+      value = (value as (() => 0)).toString();
     }
     return [key, value];
   }
