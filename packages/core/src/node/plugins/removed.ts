@@ -34,13 +34,13 @@ const { start, builtInPlugins: { ${name} } } = require('reboost');
 }
 
 // TODO: Remove these on v1.0
-export const BabelPlugin = () => movedToDifferentPackage('BabelPlugin', 'babel');
-export const PostCSSPlugin = () => movedToDifferentPackage('PostCSSPlugin', 'postcss');
-export const SassPlugin = () => movedToDifferentPackage('SassPlugin', 'sass');
-export const SveltePlugin = () => movedToDifferentPackage('SveltePlugin', 'svelte');
+export const BabelPlugin = (() => movedToDifferentPackage('BabelPlugin', 'babel')) as never;
+export const PostCSSPlugin = (() => movedToDifferentPackage('PostCSSPlugin', 'postcss')) as never;
+export const SassPlugin = (() => movedToDifferentPackage('SassPlugin', 'sass')) as never;
+export const SveltePlugin = (() => movedToDifferentPackage('SveltePlugin', 'svelte')) as never;
 
-export const CSSPlugin = () => movedToBuiltIn('CSSPlugin');
-export const esbuildPlugin = () => movedToBuiltIn('esbuildPlugin');
-export const FilePlugin = () => movedToBuiltIn('FilePlugin');
-export const ReplacePlugin = () => movedToBuiltIn('ReplacePlugin');
-export const UsePlugin = () => movedToBuiltIn('UsePlugin');
+export const CSSPlugin = (() => movedToBuiltIn('CSSPlugin')) as never;
+export const esbuildPlugin = (() => movedToBuiltIn('esbuildPlugin')) as never;
+export const FilePlugin = (() => movedToBuiltIn('FilePlugin')) as never;
+export const ReplacePlugin = (() => movedToBuiltIn('ReplacePlugin')) as never;
+export const UsePlugin = (() => movedToBuiltIn('UsePlugin')) as never;
