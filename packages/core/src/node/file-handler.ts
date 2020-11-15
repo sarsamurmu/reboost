@@ -23,14 +23,12 @@ export const createFileHandler = (instance: ReboostInstance) => {
   let transformer: ReturnType<typeof createTransformer>;
   let watcher: ReturnType<typeof createWatcher>;
   let currentPlugins: string;
-  let currentMode: string;
   const { config, cache } = instance;
   const memoizedFiles = new Map<string, string>();
   const noop = () => {/* No Operation */};
 
   const eTagBase = `
     mtime: "@mtime"
-    mode: "@mode"
     plugins: "@plugins"
     dependentsMtime: "@dependentsMtime"
   `.split('\n').map((s) => s.trim()).join('\n').trim();
@@ -50,7 +48,6 @@ export const createFileHandler = (instance: ReboostInstance) => {
 
     const eTagStr = eTagBase
       .replace('@mtime', mtime)
-      .replace('@mode', currentMode)
       .replace('@plugins', currentPlugins)
       .replace('@dependentsMtime', dependentsMtime);
     const eTag = crypto.createHash('md5').update(eTagStr).digest('hex');
@@ -64,7 +61,6 @@ export const createFileHandler = (instance: ReboostInstance) => {
       transformer = createTransformer(instance);
       watcher = createWatcher(instance);
       currentPlugins = cache.getCurrentPlugins();
-      currentMode = instance.config.mode;
 
       ensureDir(config.cacheDir);
       ensureDir(filesDir);
@@ -105,8 +101,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
           cache.cacheInfo[cacheID] = {
             hash: await getHash(filePath),
             mtime,
-            plugins: currentPlugins,
-            mode: currentMode
+            plugins: currentPlugins
           };
           await cache.updateDependencies(filePath, dependencies, true);
           cache.saveData();
@@ -125,7 +120,6 @@ export const createFileHandler = (instance: ReboostInstance) => {
 
         try {
           if (
-            cacheInfo.mode !== currentMode ||
             cacheInfo.plugins !== currentPlugins ||
             await cache.hasDependenciesChanged(filePath) ||
             (
@@ -152,7 +146,6 @@ export const createFileHandler = (instance: ReboostInstance) => {
               cacheInfo.hash = hash;
               cacheInfo.mtime = mtime;
               cacheInfo.plugins = currentPlugins;
-              cacheInfo.mode = currentMode;
               await cache.updateDependencies(filePath, dependencies);
               cache.saveData();
               if (config.cacheOnMemory) memoizedFiles.set(filePath, transformedCode);

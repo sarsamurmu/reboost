@@ -16,8 +16,6 @@ export interface CacheInfo {
   mtime: number;
   /** Plugins used in the file */
   plugins: string;
-  /** Mode used in the file */
-  mode: string;
   /** Dependencies of the file */
   dependencies?: {
     [filePath: string]: {
