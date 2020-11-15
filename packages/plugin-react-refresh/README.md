@@ -54,7 +54,7 @@ start({
   plugins: [
     // Other plugins
     UsePlugin({
-      test: /\.[jt]sx?$/, // Selects only the files with .js, .ts, .jsx or .tsx extension
+      include: /\.[jt]sx?$/, // Selects only the files with .js, .ts, .jsx or .tsx extension
       use: ReactRefreshPlugin()
     })
   ]
