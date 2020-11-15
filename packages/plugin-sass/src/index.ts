@@ -1,8 +1,9 @@
 import type Sass from 'node-sass';
 
+import fs from 'fs';
 import path from 'path';
 
-import { ReboostPlugin } from 'reboost';
+import { PluginContext, ReboostPlugin } from 'reboost';
 
 declare namespace SassPlugin {
   export interface Options {
@@ -12,41 +13,51 @@ declare namespace SassPlugin {
 
 function SassPlugin(options: SassPlugin.Options = {}): ReboostPlugin {
   const sassOptions = Object.assign({}, options.sassOptions);
-  let includePathsNormalized = false;
   let sass: typeof Sass;
+  let sassVersion: string;
+
+  const loadSass = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
+    if (!sass) {
+      try {
+        // Note: Prefer `node-sass` over `sass`
+        try {
+          sass = require(resolve(__filename, 'node-sass', { mainFields: ['main'] }));
+          sassVersion = JSON.parse(
+            fs.readFileSync(resolve(__filename, 'node-sass/package.json')).toString()
+          ).version;
+        } catch (e) {
+          sass = require(resolve(__filename, 'sass', { mainFields: ['main'] }));
+          sassVersion = JSON.parse(
+            fs.readFileSync(resolve(__filename, 'sass/package.json')).toString()
+          ).version;
+        }
+      } catch (e) {
+        if (/resolve/i.test(e.message)) {
+          console.log(chalk.red(
+            'You need to install "node-sass" package in order to use SassPlugin.\n' +
+            'Please run "npm i node-sass" to install node-sass.'
+          ));
+        } else {
+          console.error(e);
+        }
+      }
+    }
+    return true;
+  }
 
   return {
     name: 'sass-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject(options) + `@v${sassVersion}`,
+    setup({ config, chalk, resolve }) {
+      sassOptions.includePaths = (sassOptions.includePaths || []).map((includePath) => {
+        return path.isAbsolute(includePath) ? includePath : path.join(config.rootDir, includePath);
+      });
+
+      loadSass(resolve, chalk);
+    },
     transformContent(data, filePath) {
-      if (!includePathsNormalized) {
-        sassOptions.includePaths = (sassOptions.includePaths || []).map((includePath) => {
-          return path.isAbsolute(includePath) ? includePath : path.join(this.config.rootDir, includePath);
-        });
-        includePathsNormalized = true;
-      }
-
       if (['sass', 'scss'].includes(data.type)) {
-        // Prefer `node-sass` over `sass`
-        if (!sass) {
-          const nodeSassPath = this.resolve(__filename, 'node-sass', {
-            mainFields: ['main']
-          });
-
-          if (nodeSassPath) {
-            sass = require(nodeSassPath);
-          } else {
-            const sassPath = this.resolve(__filename, 'sass', {
-              mainFields: ['main']
-            });
-            if (sassPath) sass = require(sassPath);
-          }
-        }
-
-        if (!sass) {
-          console.log(this.chalk.red('You need to install "node-sass" package in order to use SassPlugin.'));
-          console.log(this.chalk.red('Please run "npm i node-sass" to install node-sass.'));
-          return;
-        }
+        if (!loadSass(this.resolve, this.chalk)) return;
 
         return new Promise((resolve) => {
           type OptT = Sass.SyncOptions;
