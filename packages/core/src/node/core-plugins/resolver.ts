@@ -37,6 +37,7 @@ export const ResolverPlugin = (instance: ReboostInstance): ReboostPlugin => {
 
   return {
     name: 'core-resolver-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject(instance.config.resolve),
     resolve(importedPath, importer) {
       if (importedPath.startsWith('/')) return importedPath;
 

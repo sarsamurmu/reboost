@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 import os from 'os';
-import crypto from 'crypto';
 
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
@@ -138,10 +137,8 @@ export const serializeObject = (
       : Object.keys(object).sort().map(mapper)
   ).filter((a) => a);
 
-  return stringify ? JSON.stringify(serialized) : serialized;
+  return (stringify ? JSON.stringify(serialized) : serialized) as string;
 }
-
-export const md5 = (source: string) => crypto.createHash('md5').update(source).digest('hex');
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const bind = <T extends Function>(func: T, bindTo: ThisParameterType<T>): OmitThisParameter<T> => func.bind(bindTo);

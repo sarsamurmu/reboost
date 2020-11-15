@@ -3,6 +3,7 @@ import { ReboostPlugin } from '../index';
 export const ReplacePlugin = (replacements: Record<string, string>): ReboostPlugin => {
   return {
     name: 'core-replace-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject(replacements),
     transformContent({ code: sourceCode }) {
       if (Object.keys(replacements).some((string) => sourceCode.indexOf(string) !== -1)) {
         const magicString = new this.MagicString(sourceCode);

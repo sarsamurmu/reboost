@@ -2,6 +2,7 @@ import { ReboostPlugin } from '../index';
 
 export const JSONPlugin = (): ReboostPlugin => ({
   name: 'core-json-plugin',
+  getCacheKey: () => 1,
   transformIntoJS(data, filePath) {
     if (data.type === 'json') {
       const jsonString = data.code;

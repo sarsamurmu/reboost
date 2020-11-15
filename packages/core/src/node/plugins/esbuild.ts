@@ -78,6 +78,7 @@ function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
 
   return {
     name: PluginName,
+    getCacheKey: ({ serializeObject }) => serializeObject(options),
     setup({ config, chalk }) {
       loadService();
 

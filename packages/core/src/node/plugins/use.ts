@@ -1,5 +1,7 @@
 import anymatch, { Matcher } from 'anymatch';
 import chalk from 'chalk';
+// @ts-expect-error No need to install declaration file
+import hashSum from 'hash-sum';
 
 import { ReboostPlugin } from '../index';
 import { bind } from '../utils';
@@ -12,7 +14,7 @@ declare namespace UsePlugin {
   }
 }
 
-const createPlugin = (options: UsePlugin.Options): Required<Omit<ReboostPlugin, 'getCacheKey'>> => {
+const createPlugin = (options: UsePlugin.Options): Required<ReboostPlugin> => {
   // TODO: Remove `options.test` in v1.0
   const aOpt = options as any;
   if (aOpt.test) {
@@ -27,8 +29,8 @@ const createPlugin = (options: UsePlugin.Options): Required<Omit<ReboostPlugin, 
     (options.exclude ? !anymatch(options.exclude, string) : true)
   );
   const plugins: ReboostPlugin[] = [];
-  const getHooks = <T extends keyof ReboostPlugin>(hookName: T): ReboostPlugin[T][] => (
-    plugins.map((plugin) => plugin[hookName]).filter((hook) => typeof hook === 'function')
+  const getProperties = <T extends keyof ReboostPlugin>(hookName: T, filterFn = true): ReboostPlugin[T][] => (
+    plugins.map((plugin) => plugin[hookName]).filter(filterFn ? ((hook) => typeof hook === 'function') : () => true)
   );
 
   if (Array.isArray(options.use)) {
@@ -39,17 +41,23 @@ const createPlugin = (options: UsePlugin.Options): Required<Omit<ReboostPlugin, 
     plugins.push(options.use);
   }
 
-  const setupHooks = getHooks('setup');
-  const stopHooks = getHooks('stop');
-  const resolveHooks = getHooks('resolve');
-  const loadHooks = getHooks('load');
-  const transformContentHooks = getHooks('transformContent');
-  const transformIntoJSHooks = getHooks('transformIntoJS');
-  const transformJSContent = getHooks('transformJSContent');
-  const transformASTHooks = getHooks('transformAST');
+  const names = getProperties('name', false);
+  const cacheKeyGetterHooks = getProperties('getCacheKey');
+  const setupHooks = getProperties('setup');
+  const stopHooks = getProperties('stop');
+  const resolveHooks = getProperties('resolve');
+  const loadHooks = getProperties('load');
+  const transformContentHooks = getProperties('transformContent');
+  const transformIntoJSHooks = getProperties('transformIntoJS');
+  const transformJSContent = getProperties('transformJSContent');
+  const transformASTHooks = getProperties('transformAST');
 
   return {
     name: 'core-use-plugin',
+    getCacheKey(utils) {
+      const cacheKeys = cacheKeyGetterHooks.map((getCacheKey) => getCacheKey(utils));
+      return hashSum(names.join('') + '@' + cacheKeys.join(''));
+    },
     async setup(data) {
       for (const hook of setupHooks) await hook(data);
     },

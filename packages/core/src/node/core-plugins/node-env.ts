@@ -56,6 +56,7 @@ export const runTransformation = (ast: t.Node, mode: string) => {
 
 export const NodeEnvPlugin = (instance: ReboostInstance): ReboostPlugin => ({
   name: 'core-node-env-plugin',
+  getCacheKey: () => instance.config.mode,
   transformAST(ast) {
     runTransformation(ast, instance.config.mode);
   }

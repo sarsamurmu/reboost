@@ -1,10 +1,13 @@
 import getHash from 'md5-file';
+import chalk from 'chalk';
+// @ts-expect-error No need to install declaration
+import hashSum from 'hash-sum';
 
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostConfig, ReboostPlugin } from './index';
-import { diff, observable, serializeObject, md5 } from './utils';
+import { ReboostConfig, ReboostPlugin, InstanceStopFn, LogFn } from './index';
+import { diff, observable, serializeObject } from './utils';
 
 export interface CacheInfo {
   /** Hash of the file */
@@ -29,7 +32,8 @@ type CacheInfoRecord = { [cacheID: string]: CacheInfo };
 export const initCache = (
   config: ReboostConfig,
   plugins: ReboostPlugin[],
-  instanceOnStop: (label: string, cb: () => Promise<any> | any) => void
+  instanceOnStop: InstanceStopFn,
+  log: LogFn
 ) => {
   let unsavedCacheInfos: CacheInfoRecord = {};
   const noop = () => {/* No Operation */}
@@ -39,6 +43,14 @@ export const initCache = (
     return version;
   }
   
+  const tryReturn = <T = any>(cb: () => T, fallback: T) => {
+    try {
+      return cb()
+    } catch (e) {
+      return fallback
+    }
+  }
+
   const versionFilePath = () => path.join(config.cacheDir, 'version');
   const cacheIDsFilePath = () => path.join(config.cacheDir, 'cache_id_map.json');
   const dependentsDataFilePath = () => path.join(config.cacheDir, 'dependents_data.json');
@@ -70,7 +82,10 @@ export const initCache = (
         .map((p) => {
           let id = p.name;
           if (typeof p.getCacheKey === 'function') {
-            id += '@' + p.getCacheKey({ serializeObject, md5 });
+            const cacheKey = p.getCacheKey({ serializeObject }) + '';
+            id += '@' + (cacheKey.length > 6 ? hashSum(cacheKey) : cacheKey);
+          } else {
+            log('info', chalk.yellow(`Required hook "getCacheKey" is not implemented in ${p.name}`))
           }
           return id;
         })
@@ -89,7 +104,7 @@ export const initCache = (
     get cacheIDs(): { [filePath: string]: string } {
       if (!memoized.cacheIDs) {
         const cacheIDs = fs.existsSync(cacheIDsFilePath())
-          ? JSON.parse(fs.readFileSync(cacheIDsFilePath()).toString())
+          ? tryReturn(() => JSON.parse(fs.readFileSync(cacheIDsFilePath()).toString()), {})
           : {};
         memoized.cacheIDs = observable(cacheIDs, () => {
           needsSave.cacheIDs = true;

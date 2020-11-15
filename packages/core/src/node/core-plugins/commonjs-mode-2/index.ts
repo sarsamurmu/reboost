@@ -14,6 +14,10 @@ export const CommonJSMode2Plugin = (instance: ReboostInstance): ReboostPlugin =>
 
   return {
     name: 'core-commonjs-mode-2-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject({
+      include: instance.config.commonJSInterop.include,
+      exclude: instance.config.commonJSInterop.exclude
+    }),
     transformAST(ast, _, filePath) {
       if (test(filePath)) {
         transformCommonJSToES6(ast, uniqueID(6));

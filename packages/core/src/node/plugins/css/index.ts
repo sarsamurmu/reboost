@@ -49,6 +49,7 @@ function CSSPlugin(options: CSSPlugin.Options = {}): ReboostPlugin {
 
   return {
     name: PluginName,
+    getCacheKey: ({ serializeObject }) => serializeObject(options),
     setup({ proxyServer }) {
       // eslint-disable-next-line @typescript-eslint/require-await
       proxyServer.use(async (ctx) => {

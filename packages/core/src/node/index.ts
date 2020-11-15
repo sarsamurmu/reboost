@@ -16,7 +16,7 @@ import path from 'path';
 import net from 'net';
 
 import { createContentServer } from './content-server';
-import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, getExternalHost, PromiseType, serializeObject, md5 } from './utils';
+import { merge, ensureDir, rmDir, deepFreeze, clone, DeepFrozen, DeepRequire, mergeSourceMaps, isVersionLessThan, getExternalHost, PromiseType, serializeObject } from './utils';
 import { initCache } from './cache';
 import { CorePlugins } from './core-plugins';
 import { esbuildPlugin, PluginName as esbuildPluginName } from './plugins/esbuild';
@@ -62,12 +62,11 @@ export interface PluginContext {
 
 export interface ReboostPlugin {
   name: string;
-  getCacheKey?: (
+  getCacheKey: (
     utils: {
       serializeObject: typeof serializeObject,
-      md5: typeof md5;
     }
-  ) => string;
+  ) => string | number;
   setup?: (
     data: {
       config: ReboostConfig;
@@ -274,6 +273,9 @@ export interface ReboostService {
   }
 }
 
+export type InstanceStopFn = (label: string, cb: () => Promise<any> | any) => void;
+export type LogFn = (type: keyof Exclude<ReboostConfig['log'], boolean>, ...toLog: any[]) => void;
+
 const createInstance = async (initialConfig: ReboostConfig) => {
   const onStopCallbacks: [() => Promise<void> | void, string][] = [];
   const it = {
@@ -363,19 +365,19 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       }
 
       // Cache initialization
-      it.cache = initCache(it.config, it.plugins, it.onStop);
+      it.cache = initCache(it.config, it.plugins, it.onStop, it.log);
     },
 
     isLogEnabled: (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
       // Sorry for the extra negation *_*
       return !(!it.config.log || !it.config.log[type]);
     },
-    log: (type: keyof Exclude<ReboostConfig['log'], boolean>, ...toLog: any[]) => {
+    log: ((type, ...toLog) => {
       if (it.isLogEnabled(type)) console.log(...toLog);
-    },
-    onStop: (label: string, cb: () => Promise<any> | any) => {
+    }) as LogFn,
+    onStop: ((label, cb) => {
       onStopCallbacks.push([cb, label]);
-    },
+    }) as InstanceStopFn,
   }
 
   const startServer = (name: string, server: Koa, port: number, host = 'localhost') => new Promise((doneStart) => {
@@ -532,7 +534,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
 
 // It shows full structure of the type in VSCode's popup if `type` is used instead of `interface`
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ReboostInstance extends Exclude<PromiseType<ReturnType<typeof createInstance>>, false> { }
+export interface ReboostInstance extends Exclude<PromiseType<ReturnType<typeof createInstance>>, false> {}
 
 export const start = async (config: ReboostConfig = {} as any): Promise<ReboostService> => {
   const instance = await createInstance(config);
