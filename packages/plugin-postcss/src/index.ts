@@ -39,6 +39,8 @@ declare namespace PostCSSPlugin {
 function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
   type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
+  let postcss: typeof PostCSS;
+  let postcssVersion: string;
 
   let optionsCheckPassed = false;
   const checkOptions = (config: ReboostConfig, onError: (error: Error) => void) => {
@@ -64,34 +66,38 @@ function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
     }
   }
 
-  const loadPostCSS = (() => {
-    let postcss: typeof PostCSS;
-    return (ctx: PluginContext) => {
-      if (!postcss) {
-        const postcssPath = ctx.resolve(__filename, 'postcss', {
-          mainFields: ['main']
-        });
-
-        if (postcssPath) {
-          postcss = require(postcssPath);
-        } else {
-          console.log(ctx.chalk.red(
+  const loadPostCSS = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
+    if (!postcss) {
+      try {
+        postcss = require(resolve(__filename, 'postcss', { mainFields: ['main'] }));
+        postcssVersion = JSON.parse(
+          fs.readFileSync(resolve(__filename, 'postcss/package.json')).toString()
+        ).version;
+      } catch (e) {
+        if (/resolve/i.test(e.message)) {
+          console.log(chalk.red(
             'You need to install "postcss" package in order to use PostCSSPlugin.\n' +
             'Please run "npm i postcss" to install PostCSS.'
           ));
+        } else {
+          console.error(e);
         }
       }
-      return postcss;
     }
-  })();
+    return true;
+  }
 
   return {
     name: 'postcss-plugin',
-    setup({ config, chalk }) {
-      checkOptions(config, (err) => config.log && chalk.red(err.message));
+    getCacheKey: ({ serializeObject }) => serializeObject(options) + `@v${postcssVersion}`,
+    setup({ config, chalk, resolve }) {
+      checkOptions(config, (err) => config.log && console.log(chalk.red(err.message)));
+      loadPostCSS(resolve, chalk);
     },
     transformContent(data, filePath) {
       if (data.type === 'css') {
+        if (!loadPostCSS(this.resolve, this.chalk)) return;
+
         return new Promise((resolve) => {
           checkOptions(this.config, (err) => resolve(err));
 
@@ -99,7 +105,7 @@ function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
             const onError = (err: any) => resolve(makeError(err, this.config));
             type OptT = ProcessOptions;
 
-            loadPostCSS(this)(plugins)
+            postcss(plugins)
               .process(data.code, Object.assign<OptT, OptT, OptT>(
                 {},
                 options,
