@@ -1,6 +1,6 @@
 import type Babel from '@babel/core';
 
-import { ReboostPlugin } from 'reboost';
+import { PluginContext, ReboostPlugin } from 'reboost';
 
 declare namespace BabelPlugin {
   export type Options = Babel.TransformOptions;
@@ -10,15 +10,10 @@ function BabelPlugin(options: BabelPlugin.Options = {}): ReboostPlugin {
   let babel: typeof Babel;
   const compatibleTypes = ['js', 'jsx', 'ts', 'tsx', 'es', 'es6', 'mjs', 'cjs'];
 
-  return {
-    name: 'babel-plugin',
-    setup({ resolve, chalk }) {
-      const babelPath = resolve(__filename, '@babel/core', {
-        mainFields: ['main']
-      });
-
-      if (babelPath) {
-        babel = require(babelPath);
+  const loadBabel = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
+    if (!babel) {
+      try {
+        babel = require(resolve(__filename, '@babel/core', { mainFields: ['main'] }));
 
         options = Object.assign<any, any, Babel.TransformOptions>({}, options, {
           ast: false,
@@ -28,13 +23,28 @@ function BabelPlugin(options: BabelPlugin.Options = {}): ReboostPlugin {
 
         // Warm up babel
         babel.transformAsync('', options);
-      } else {
-        console.log(chalk.red('You need to install "@babel/core" package in order to use BabelPlugin.'));
-        console.log(chalk.red('Please run "npm i @babel/core" to install Babel.'));
+      } catch (e) {
+        if (/resolve/i.test(e.message)) {
+          console.log(chalk.red(
+            'You need to install "@babel/core" package in order to use BabelPlugin.\n' +
+            'Please run "npm i @babel/core" to install Babel.'
+          ));
+        } else {
+          console.error(e);
+        }
       }
+    }
+    return true;
+  }
+
+  return {
+    name: 'babel-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject(options) + `@v${babel && babel.version}`,
+    setup({ resolve, chalk }) {
+      loadBabel(resolve, chalk);
     },
     async transformContent(data, filePath) {
-      if (!babel) return;
+      if (!loadBabel(this.resolve, this.chalk)) return;
 
       if (compatibleTypes.includes(data.type)) {
         try {
