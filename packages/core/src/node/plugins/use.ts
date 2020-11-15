@@ -24,22 +24,14 @@ const createPlugin = (options: UsePlugin.Options): Required<ReboostPlugin> => {
     console.log(chalk.yellow(message));
   }
 
+  const plugins = Array.isArray(options.use) ? ([] as ReboostPlugin[]).concat(...options.use) : [options.use];
+  const getProperties = <T extends keyof ReboostPlugin>(hookName: T, filterFn = true): ReboostPlugin[T][] => (
+    plugins.map((plugin) => plugin[hookName]).filter(filterFn ? ((hook) => typeof hook === 'function') : () => true)
+  );
   const test = (string: string) => (
     anymatch(options.include, string) &&
     (options.exclude ? !anymatch(options.exclude, string) : true)
   );
-  const plugins: ReboostPlugin[] = [];
-  const getProperties = <T extends keyof ReboostPlugin>(hookName: T, filterFn = true): ReboostPlugin[T][] => (
-    plugins.map((plugin) => plugin[hookName]).filter(filterFn ? ((hook) => typeof hook === 'function') : () => true)
-  );
-
-  if (Array.isArray(options.use)) {
-    options.use.forEach((plugin: ReboostPlugin | ReboostPlugin[]) => {
-      plugins.push(...(Array.isArray(plugin) ? plugin : [plugin]))
-    });
-  } else {
-    plugins.push(options.use);
-  }
 
   const names = getProperties('name', false);
   const cacheKeyGetterHooks = getProperties('getCacheKey');
