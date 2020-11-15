@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostPlugin } from 'reboost';
+import { PluginContext, ReboostPlugin } from 'reboost';
 
 declare namespace SveltePlugin {
   export interface Options {
@@ -12,32 +12,44 @@ declare namespace SveltePlugin {
 
 function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
   let compiler: typeof import('svelte/compiler');
-  let configFile: string;
+  let compilerVersion: string;
   let svelteConfig = {} as Record<string, any>;
+
+  const loadSvelte = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
+    if (!compiler) {
+      try {
+        compiler = require(resolve(__filename, 'svelte/compiler.js'));
+        compilerVersion = JSON.parse(
+          fs.readFileSync(resolve(__filename, 'svelte/package.json')).toString()
+        ).version;
+      } catch (e) {
+        if (/resolve/i.test(e.message)) {
+          console.log(chalk.red(
+            'You need to install "svelte" package in order to use SveltePlugin.\n' +
+            'Please run "npm i svelte" to install svelte.'
+          ));
+        } else {
+          console.error(e);
+        }
+      }
+    }
+    return true;
+  }
 
   return {
     name: 'svelte-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject({ options, svelteConfig }) + `@v${compilerVersion}`,
+    setup({ config, chalk, resolve }) {
+      let configFile = options.configFile || './svelte.config.js';
+      if (!path.isAbsolute(configFile)) configFile = path.join(config.rootDir, configFile);
+      if (fs.existsSync(configFile)) {
+        svelteConfig = require(configFile);
+      }
+
+      loadSvelte(resolve, chalk);
+    },
     async transformContent(data, filePath) {
       if (data.type === 'svelte') {
-        if (!compiler) {
-          const sveltePath = this.resolve(__filename, 'svelte/compiler.js');
-          if (sveltePath) {
-            compiler = require(sveltePath);
-          } else {
-            console.log(this.chalk.red('You need to install "svelte" package in order to use SveltePlugin.'));
-            console.log(this.chalk.red('Please run "npm i svelte" to install svelte.'));
-            return;
-          }
-        }
-
-        if (!configFile) {
-          configFile = options.configFile || './svelte.config.js';
-          if (!path.isAbsolute(configFile)) configFile = path.join(this.config.rootDir, configFile);
-          if (fs.existsSync(configFile)) {
-            svelteConfig = require(configFile);
-          }
-        }
-
         const {
           code: processedCode,
           dependencies
