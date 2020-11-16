@@ -51,6 +51,17 @@ const createPlugin = (options: UsePlugin.Options): Required<ReboostPlugin> => {
       return hashSum(names.join('') + '@' + cacheKeys.join(''));
     },
     async setup(data) {
+      const normalizedRootDir = data.config.rootDir.replace(/[\\/]*$/, '/').replace(/\\/g, '/');
+      const regex = /^(!?)(?:\.\/)(.*)/;
+      const replacement = '$1' + normalizedRootDir + '$2';
+      const normalizeGlob = (glob: string) => glob.replace(regex, replacement);
+      const fixIfGlob = (item: any) => typeof item === 'string' ? normalizeGlob(item) : item;
+
+      (['include', 'exclude'] as const).forEach((key) => {
+        const value = options[key];
+        options[key] = Array.isArray(value) ? value.map(fixIfGlob) : fixIfGlob(value);
+      });
+
       for (const hook of setupHooks) await hook(data);
     },
     async stop() {
