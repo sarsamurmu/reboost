@@ -273,7 +273,6 @@ export interface ReboostService {
   }
 }
 
-export type InstanceStopFn = (label: string, cb: () => Promise<any> | any) => void;
 export type LogFn = (type: keyof Exclude<ReboostConfig['log'], boolean>, ...toLog: any[]) => void;
 
 const createInstance = async (initialConfig: ReboostConfig) => {
@@ -361,7 +360,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       }
 
       // Cache initialization
-      it.cache = initCache(it.config, it.plugins, it.onStop, it.log);
+      it.cache = initCache(it.config, it.plugins, it.log);
     },
 
     isLogEnabled: (type: keyof Exclude<ReboostConfig['log'], boolean>) => {
@@ -371,9 +370,9 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     log: ((type, ...toLog) => {
       if (it.isLogEnabled(type)) console.log(...toLog);
     }) as LogFn,
-    onStop: ((label, cb) => {
+    onStop: (label: string, cb: () => Promise<any> | any) => {
       onStopCallbacks.push([cb, label]);
-    }) as InstanceStopFn,
+    },
   }
 
   const startServer = (name: string, server: Koa, port: number, host = 'localhost') => new Promise((doneStart) => {

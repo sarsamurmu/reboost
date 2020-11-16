@@ -96,7 +96,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
         }
 
         if (!error) {
-          fs.writeFile(cache.cacheFilePath(cacheID), transformedCode, noop);
+          fs.writeFileSync(cache.cacheFilePath(cacheID), transformedCode);
           cache.cacheIDs[filePath] = cacheID;
           cache.cacheInfo[cacheID] = {
             hash: await getHash(filePath),
@@ -142,7 +142,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
             }
 
             if (!error) {
-              fs.writeFile(cacheFilePath, transformedCode, noop);
+              fs.writeFileSync(cacheFilePath, transformedCode);
               cacheInfo.hash = hash;
               cacheInfo.mtime = mtime;
               cacheInfo.plugins = currentPlugins;

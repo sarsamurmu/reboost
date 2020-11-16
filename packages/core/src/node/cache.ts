@@ -6,7 +6,7 @@ import hashSum from 'hash-sum';
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostConfig, ReboostPlugin, InstanceStopFn, LogFn } from './index';
+import { ReboostConfig, ReboostPlugin, LogFn } from './index';
 import { diff, observable, serializeObject } from './utils';
 
 export interface CacheInfo {
@@ -30,7 +30,6 @@ type CacheInfoRecord = { [cacheID: string]: CacheInfo };
 export const initCache = (
   config: ReboostConfig,
   plugins: ReboostPlugin[],
-  instanceOnStop: InstanceStopFn,
   log: LogFn
 ) => {
   let unsavedCacheInfos: CacheInfoRecord = {};
@@ -39,14 +38,6 @@ export const initCache = (
   const getCurrentVersion = (): string => {
     const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json')).toString());
     return version;
-  }
-  
-  const tryReturn = <T = any>(cb: () => T, fallback: T) => {
-    try {
-      return cb()
-    } catch (e) {
-      return fallback
-    }
   }
 
   const versionFilePath = () => path.join(config.cacheDir, 'version');
@@ -63,9 +54,6 @@ export const initCache = (
     cacheIDs: false,
     dependentsData: false,
   }
-
-  const fsWritePromises = new Set<Promise<any>>();
-  instanceOnStop('Cache file write', () => Promise.all([...fsWritePromises]));
 
   const it = {
     getFilesDir: () => path.join(config.cacheDir, 'files'),
@@ -102,7 +90,7 @@ export const initCache = (
     get cacheIDs(): { [filePath: string]: string } {
       if (!memoized.cacheIDs) {
         const cacheIDs = fs.existsSync(cacheIDsFilePath())
-          ? tryReturn(() => JSON.parse(fs.readFileSync(cacheIDsFilePath()).toString()), {})
+          ? JSON.parse(fs.readFileSync(cacheIDsFilePath()).toString())
           : {};
         memoized.cacheIDs = observable(cacheIDs, () => {
           needsSave.cacheIDs = true;
@@ -149,33 +137,28 @@ export const initCache = (
     }),
 
     saveData: () => {
-      const promises: Promise<void>[] = [];
       const stringify = (json: Record<any, any>) => JSON.stringify(json, null, config.debugMode ? 2 : 0);
 
       if (needsSave.cacheVersion) {
-        promises.push(fs.promises.writeFile(versionFilePath(), it.version));
+        fs.writeFileSync(versionFilePath(), it.version);
         needsSave.cacheVersion = false;
       }
       if (needsSave.cacheIDs) {
-        promises.push(fs.promises.writeFile(cacheIDsFilePath(), stringify(it.cacheIDs)));
+        fs.writeFileSync(cacheIDsFilePath(), stringify(it.cacheIDs));
         needsSave.cacheIDs = false;
       }
       if (needsSave.dependentsData) {
-        promises.push(fs.promises.writeFile(dependentsDataFilePath(), stringify(it.dependentsData)));
+        fs.writeFileSync(dependentsDataFilePath(), stringify(it.dependentsData));
         needsSave.dependentsData = false;
       }
 
       Object.keys(unsavedCacheInfos).forEach((cacheID) => {
-        promises.push(fs.promises.writeFile(
+        fs.writeFileSync(
           it.cacheInfoFilePath(cacheID),
           stringify(unsavedCacheInfos[cacheID])
-        ));
+        );
       });
       unsavedCacheInfos = {};
-
-      const allPromise = Promise.all(promises);
-      fsWritePromises.add(allPromise);
-      allPromise.then(() => fsWritePromises.delete(allPromise));
     },
 
     removeFile: (file: string) => {
