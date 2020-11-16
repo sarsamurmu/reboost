@@ -23,6 +23,7 @@
 <style>
   svg {
     width: 100%;
+    max-width: 500px;
     height: 100%;
   }
 
@@ -60,7 +61,7 @@
 </style>
 
 {#if visible}
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103 124">
+  <svg class="centered" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103 124">
     <g out:fade="{{duration: 200}}" opacity=0.2>
       <path
         in:expand="{{duration: 400, delay: 1000, easing: quintOut}}"

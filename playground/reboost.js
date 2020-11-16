@@ -41,11 +41,11 @@ start({
   hotReload: true,
   plugins: [
     UsePlugin({
-      include: '**/*.lit.css',
+      include: './**/*.lit.css',
       use: require('./lit-css-plugin')()
     }),
     UsePlugin({
-      include: '**/src/postcss/**',
+      include: './src/postcss/**',
       use: PostCSSPlugin()
     }),
     UsePlugin({
@@ -64,14 +64,14 @@ start({
     SveltePlugin(),
     VuePlugin(),
     UsePlugin({
-      include: '**/src/babel/**',
+      include: './src/babel/**',
       use: BabelPlugin({
         plugins: [
           ['@babel/plugin-proposal-pipeline-operator', { proposal: 'smart' }]
         ]
       })
     }, {
-      include: '**/src/react/**',
+      include: './src/react/**',
       use: ReactFastRefreshPlugin()
     })
   ],
