@@ -78,12 +78,14 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
         }
 
         let preCode = 'const __modExp = {}';
+        let scriptMap: RawSourceMap;
 
         if (descriptor.script || descriptor.scriptSetup) {
           try {
             const script = compiler.compileScript(descriptor);
 
             preCode = compiler.rewriteDefault(script.content, '__modExp');
+            scriptMap = script.map as any;
 
             if (script.lang === 'ts') {
               // TODO: Use <PluginContext>.runTransformation() when available to transform into JS
@@ -202,7 +204,7 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
 
         return {
           code: `${preCode};${template.code};${postCode};`,
-          map: descriptor.script && descriptor.script.map as any,
+          map: scriptMap,
           type: 'js',
         }
       }
