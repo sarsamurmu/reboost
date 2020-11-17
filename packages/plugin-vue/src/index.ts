@@ -1,5 +1,6 @@
 import * as Compiler from '@vue/compiler-sfc';
 import hashSum from 'hash-sum';
+import { codeFrameColumns } from '@babel/code-frame';
 
 import fs from 'fs';
 import path from 'path';
@@ -51,10 +52,30 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
     ).version,
     async transformContent(data, filePath) {
       if (data.type === 'vue') {
-        const { descriptor } = compiler.parse(data.code, {
+        const { descriptor, errors } = compiler.parse(data.code, {
           sourceMap: true,
           filename: filePath
         });
+
+        if (errors) {
+          return new Error(
+            errors.map((error: Compiler.CompilerError) => {
+              let msg = `VuePlugin: Error when parsing "${this.rootRelative(filePath)}"\n`;
+              msg += `${error.message} on line ${error.loc.start.line} at column ${error.loc.start.column}\n\n`;
+
+              msg += codeFrameColumns(data.code, {
+                start: error.loc.start,
+                end: error.loc.end
+              }, {
+                message: error.message,
+                highlightCode: true,
+              });
+
+              return msg;
+            }).join('\n\n')
+          );
+        }
+
         const id = hashSum(this.rootRelative(filePath));
 
         let preCode = 'const __modExp = {}';
