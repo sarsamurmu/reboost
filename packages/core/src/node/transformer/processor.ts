@@ -123,9 +123,7 @@ export const createProcessor = (instance: ReboostInstance) => {
     if (transformContentError) return transformContentError;
 
     try {
-      ast = parse(code, {
-        sourceType: 'module'
-      });
+      ast = parse(code, { sourceType: 'module' });
     } catch (e) /* istanbul ignore next */ {
       let message = '';
       let consoleMessage = '';

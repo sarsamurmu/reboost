@@ -257,8 +257,8 @@ export const initCache = (
 
       const depsData = {} as CacheInfo['dependencies'];
 
-      await Promise.all(dependencies.map((dependency) => (
-        (async () => {
+      await Promise.all(
+        dependencies.map(async (dependency) => {
           if (fs.existsSync(dependency)) {
             depsData[dependency] = {
               hash: await getHash(dependency),
@@ -267,8 +267,8 @@ export const initCache = (
           } else {
             depsData[dependency] = {} as any;
           }
-        })()
-      )));
+        })
+      );
 
       cacheInfo.dependencies = depsData;
     }
