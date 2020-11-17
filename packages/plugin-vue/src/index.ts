@@ -56,8 +56,9 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           sourceMap: true,
           filename: filePath
         });
+        const id = hashSum(this.rootRelative(filePath));
 
-        if (errors) {
+        if (errors.length) {
           return new Error(
             errors.map((error: Compiler.CompilerError) => {
               let msg = `VuePlugin: Error when parsing "${this.rootRelative(filePath)}"\n`;
@@ -76,12 +77,22 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           );
         }
 
-        const id = hashSum(this.rootRelative(filePath));
-
         let preCode = 'const __modExp = {}';
 
-        if (descriptor.script) {
-          preCode = descriptor.script.content.replace('export default', 'const __modExp =');
+        if (descriptor.script || descriptor.scriptSetup) {
+          try {
+            const script = compiler.compileScript(descriptor);
+
+            preCode = compiler.rewriteDefault(script.content, '__modExp');
+
+            if (script.lang === 'ts') {
+              // TODO: Use <PluginContext>.runTransformation() when available to transform into JS
+            }
+          } catch (e) {
+            let msg = `VuePlugin: Error when compiling <script setup> in "${this.rootRelative(filePath)}"\n`;
+            msg += e.message;
+            return new Error(msg);
+          }
         }
 
         let cssStr = '';
