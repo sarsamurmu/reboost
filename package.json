@@ -6,15 +6,17 @@
     "build": "npm run build:main && npm run build:plugins",
     "build:main": "lerna run --concurrency 1 --scope {reboost,@reboost/create-app} build",
     "build:plugins": "lerna run --concurrency 1 --scope @reboost/plugin-* build",
+    "bootstrap": "lerna bootstrap",
     "check-updates": "lerna exec --concurrency 1 -- ncu",
     "lint": "eslint \"packages/**/src/**/*.{js,ts}\"",
     "test": "lerna run test:ci"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.6.1",
-    "@typescript-eslint/parser": "^4.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.13.0",
     "lerna": "^3.22.1",
+    "npm-check-updates": "^10.2.1",
     "plop": "^2.7.4",
     "typescript": "^4.0.5"
   }

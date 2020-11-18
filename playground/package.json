@@ -21,7 +21,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "reboost": "file:../packages/core",
-    "svelte": "^3.29.4",
+    "svelte": "^3.29.7",
     "vue": "^3.0.0"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",

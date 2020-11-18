@@ -28,7 +28,7 @@
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "malinajs": "^0.5.24"
+    "malinajs": "^0.6.4"
   },
   "devDependencies": {
     "typescript": "^4.0.5"

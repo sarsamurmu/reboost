@@ -18,7 +18,9 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
   const loadSvelte = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
     if (!compiler) {
       try {
-        compiler = require(resolve(__filename, 'svelte/compiler.js'));
+        compiler = require(resolve(__filename, 'svelte/compiler', {
+          conditionNames: ['require']
+        }));
         compilerVersion = JSON.parse(
           fs.readFileSync(resolve(__filename, 'svelte/package.json')).toString()
         ).version;
