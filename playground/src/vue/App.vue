@@ -17,6 +17,12 @@
   }
 </style>
 
+<style scoped>
+  .msg {
+    font-size: 1.1rem;
+  }
+</style>
+
 <script>
   export default {
     data() {
