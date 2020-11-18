@@ -253,6 +253,7 @@ describe('resolves url() and image-set()', () => {
       log: false,
       plugins: [CSSPlugin(), {
         name: 'mock-plugin',
+        getCacheKey: () => 0,
         load(filePath) {
           if (filePath === fixture.p('src/image.jpg')) return {
             code: 'export default "https://resolved.url"',
@@ -308,6 +309,7 @@ describe('resolves url() and image-set()', () => {
       log: false,
       plugins: [CSSPlugin(), {
         name: 'mock-plugin',
+        getCacheKey: () => 0,
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
           if (match) return {
@@ -366,6 +368,7 @@ describe('resolves url() and image-set()', () => {
       log: false,
       plugins: [CSSPlugin(), {
         name: 'mock-plugin',
+        getCacheKey: () => 0,
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
           if (match) return {
@@ -424,6 +427,7 @@ describe('resolves url() and image-set()', () => {
       log: false,
       plugins: [CSSPlugin(), {
         name: 'mock-plugin',
+        getCacheKey: () => 0,
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
           if (match) {
@@ -529,6 +533,7 @@ describe('resolves url() and image-set()', () => {
         url: (url) => url.startsWith('resolve')
       }), {
         name: 'mock-plugin',
+        getCacheKey: () => 0,
         load(filePath) {
           const match = filePath.match(/image_(\d)x.jpg/);
           if (match) {

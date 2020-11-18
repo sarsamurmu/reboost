@@ -11,8 +11,8 @@ test('setup hook', async () => {
     includeDefaultPlugins: false,
     log: false,
     plugins: [
-      { name: '1', setup: mockFn },
-      { name: '2', setup: mockFn }
+      { name: '1', getCacheKey: () => 0, setup: mockFn },
+      { name: '2', getCacheKey: () => 0, setup: mockFn }
     ]
   });
 
@@ -29,8 +29,8 @@ test('stop hook', async () => {
     includeDefaultPlugins: false,
     log: false,
     plugins: [
-      { name: '1', stop: mockFn },
-      { name: '2', stop: mockFn }
+      { name: '1', getCacheKey: () => 0, stop: mockFn },
+      { name: '2', getCacheKey: () => 0, stop: mockFn }
     ]
   });
 
@@ -62,8 +62,8 @@ test('resolve hook', async () => {
     includeDefaultPlugins: false,
     log: false,
     plugins: [
-      { name: 'my-resolver', resolve: resolveFn },
-      { name: 'mocked', resolve: mockFn2 }
+      { name: 'my-resolver', getCacheKey: () => 0, resolve: resolveFn },
+      { name: 'mocked', getCacheKey: () => 0, resolve: mockFn2 }
     ]
   });
   const page = await newPage();
@@ -104,8 +104,8 @@ test('load hook', async () => {
     includeDefaultPlugins: false,
     log: false,
     plugins: [
-      { name: 'my-loader', load: loadFn },
-      { name: 'mocked', load: mockFn2 }
+      { name: 'my-loader', getCacheKey: () => 0, load: loadFn },
+      { name: 'mocked', getCacheKey: () => 0, load: mockFn2 }
     ]
   });
   const page = await newPage();
@@ -161,8 +161,8 @@ describe('transformContent hook', () => {
       includeDefaultPlugins: false,
       log: false,
       plugins: [
-        { name: '1', transformContent: transformFn1 },
-        { name: '2', transformContent: transformFn2 }
+        { name: '1', getCacheKey: () => 0, transformContent: transformFn1 },
+        { name: '2', getCacheKey: () => 0, transformContent: transformFn2 }
       ]
     });
     const page = await newPage();
@@ -219,8 +219,8 @@ describe('transformContent hook', () => {
       includeDefaultPlugins: false,
       log: false,
       plugins: [
-        { name: '1', transformContent: transformFn1 },
-        { name: '2', transformContent: transformFn2 }
+        { name: '1', getCacheKey: () => 0, transformContent: transformFn1 },
+        { name: '2', getCacheKey: () => 0, transformContent: transformFn2 }
       ]
     });
     const page = await newPage();
@@ -272,8 +272,8 @@ describe('transformIntoJS hook', () => {
       includeDefaultPlugins: false,
       log: false,
       plugins: [
-        { name: '1', transformIntoJS: transformFn },
-        { name: '2', transformIntoJS: mockFn2 }
+        { name: '1', getCacheKey: () => 0, transformIntoJS: transformFn },
+        { name: '2', getCacheKey: () => 0, transformIntoJS: mockFn2 }
       ]
     });
     const page = await newPage();
@@ -313,8 +313,8 @@ describe('transformIntoJS hook', () => {
       includeDefaultPlugins: false,
       log: false,
       plugins: [
-        { name: '1', transformIntoJS: transformFn },
-        { name: '2', transformIntoJS: mockFn2 }
+        { name: '1', getCacheKey: () => 0, transformIntoJS: transformFn },
+        { name: '2', getCacheKey: () => 0, transformIntoJS: mockFn2 }
       ]
     });
     const page = await newPage();
@@ -372,8 +372,8 @@ describe('transformJSContent hook', () => {
       includeDefaultPlugins: false,
       log: false,
       plugins: [
-        { name: '1', transformJSContent: transformFn1 },
-        { name: '2', transformJSContent: transformFn2 }
+        { name: '1', getCacheKey: () => 0, transformJSContent: transformFn1 },
+        { name: '2', getCacheKey: () => 0, transformJSContent: transformFn2 }
       ]
     });
     const page = await newPage();
@@ -428,8 +428,8 @@ describe('transformJSContent hook', () => {
       includeDefaultPlugins: false,
       log: false,
       plugins: [
-        { name: '1', transformJSContent: transformFn1 },
-        { name: '2', transformJSContent: transformFn2 }
+        { name: '1', getCacheKey: () => 0, transformJSContent: transformFn1 },
+        { name: '2', getCacheKey: () => 0, transformJSContent: transformFn2 }
       ]
     });
     const page = await newPage();
@@ -481,7 +481,7 @@ test('transformAST hook', async () => {
     includeDefaultPlugins: false,
     log: false,
     plugins: [
-      { name: '1', transformAST: transformFn }
+      { name: '1', getCacheKey: () => 0, transformAST: transformFn }
     ]
   });
   const page = await newPage();
@@ -506,6 +506,7 @@ test('meta object', async () => {
   const metaKey = 'meta-key';
   const mockPlugin1 = {
     name: 'plugin-1',
+    getCacheKey: () => 0,
     load: jest.fn<ReturnType<LoadFnT>, Parameters<LoadFnT>>(function (this: ThisParameterType<LoadFnT>) {
       expect(this.meta[metaKey]).toBeUndefined();
       this.meta[metaKey] = 'from plugin-1';
@@ -514,6 +515,7 @@ test('meta object', async () => {
   }
   const mockPlugin2 = {
     name: 'plugin-2',
+    getCacheKey: () => 0,
     load: jest.fn<ReturnType<LoadFnT>, Parameters<LoadFnT>>(function (this: ThisParameterType<LoadFnT>) {
       expect(this.meta[metaKey]).toBe('from plugin-1');
       return null;
