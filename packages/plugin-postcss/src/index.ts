@@ -1,6 +1,6 @@
-import loadConfig from 'postcss-load-config';
 import type { default as PostCSS, ProcessOptions, CssSyntaxError } from 'postcss';
 import { codeFrameColumns } from '@babel/code-frame';
+import { loadConfig, LoadConfigResult } from './load-config';
 
 import fs from 'fs';
 import path from 'path';
@@ -37,7 +37,6 @@ declare namespace PostCSSPlugin {
 }
 
 function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
-  type LoadConfigResult = Parameters<Parameters<ReturnType<typeof loadConfig>['then']>[0]>[0];
   const cacheMap = new Map<string, LoadConfigResult>();
   let postcss: typeof PostCSS;
   let postcssVersion: string;
