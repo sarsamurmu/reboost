@@ -1,6 +1,8 @@
 import * as Compiler from '@vue/compiler-sfc';
 import hashSum from 'hash-sum';
 import { codeFrameColumns } from '@babel/code-frame';
+import combineSourceMap from 'combine-source-map';
+import convertSourceMap from 'convert-source-map';
 
 import fs from 'fs';
 import path from 'path';
@@ -43,8 +45,6 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
 
   if (options.compiler) compiler = options.compiler;
 
-  // TODO: Fix issue with multiple source map when multiple style blocks are used
-
   return {
     name: 'vue-plugin',
     getCacheKey: () => JSON.parse(
@@ -58,7 +58,7 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
         });
         const id = hashSum(this.rootRelative(filePath));
 
-        if (errors.length) {
+        if (errors && errors.length) {
           return new Error(
             errors.map((error: Compiler.CompilerError) => {
               let msg = `VuePlugin: Error when parsing "${this.rootRelative(filePath)}"\n`;
@@ -97,8 +97,7 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           }
         }
 
-        let cssStr = '';
-        let cssMap: RawSourceMap;
+        const cssData: [css: string, map: RawSourceMap][] = [];
         let hasScopedCSS = false;
 
         await Promise.all(
@@ -123,13 +122,12 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
             });
 
             if (result.map) {
-              result.map.sources.forEach((source, idx) => {
-                if (source === path.basename(filePath)) result.map.sources[idx] = filePath;
+              result.map.sources.forEach((source, idx, sources) => {
+                if (source === path.basename(filePath)) sources[idx] = filePath;
               });
             }
 
-            cssStr += result.code;
-            cssMap = await this.mergeSourceMaps(styleBlock.map as any, result.map as any)
+            cssData.push([result.code, await this.mergeSourceMaps(styleBlock.map as any, result.map as any)]);
           })
         );
 
@@ -142,9 +140,31 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           preprocessLang: descriptor.template.lang
         });
 
-        cssStr += '\n\n' + this.getSourceMapComment(
-          this.getCompatibleSourceMap(cssMap)
-        );
+        let cssStr = '';
+        let cssMap: RawSourceMap;
+        if (cssData.length) {
+          if (cssData.length === 1) {
+            [cssStr, cssMap] = cssData[0];
+          } else {
+            const combiner = combineSourceMap.create();
+            let offsetLine = 0;
+            cssData.forEach(([css, map]) => {
+              cssStr += css;
+              combiner.addFile({
+                sourceFile: path.basename(filePath),
+                source: css + '\n' + convertSourceMap.fromObject(map).toComment({ multiline: true })
+              }, { line: offsetLine });
+              offsetLine += css.match(/\n/g).length;
+            });
+            cssMap = convertSourceMap.fromBase64(combiner.base64()).toObject();
+          }
+        }
+
+        if (cssMap) {
+          cssStr += '\n\n' + this.getSourceMapComment(
+            this.getCompatibleSourceMap(cssMap)
+          );
+        }
 
         const postCode = `
           __modExp.render = render;
