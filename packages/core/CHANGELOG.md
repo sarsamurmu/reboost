@@ -1,4 +1,4 @@
-## next
+## 0.18.0
 - Updated file caching algorithm with better cache invalidation
 - Updated dependencies
 - Added `react-typescript` template

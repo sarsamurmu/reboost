@@ -1,4 +1,4 @@
-## next
+## 0.18.0
 - New templates
   - `malinajs`
   - `react-typescript`
