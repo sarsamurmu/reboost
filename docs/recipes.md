@@ -15,6 +15,7 @@ Available recipes -
 - [React](#react)
 - [React with Fast Refresh](#react-with-fast-refresh)
 - [Sass or SCSS](#sass-or-scss)
+- [Solid](#solid)
 - [Svelte](#svelte)
 - [TSX](#tsx)
 - [TypeScript](#typescript)
@@ -259,6 +260,36 @@ start({
 After that, you can import Sass/SCSS files in your script files
 ```js
 import './styles.scss';
+```
+
+## Solid
+Using Solid with Reboost is pretty easy. Adjust your configuration to match this
+```js
+// NOTE: You have to install these additional npm packages
+// - @reboost/plugin-babel
+// - babel-preset-solid
+
+const { start, builtInPlugins: { UsePlugin } } = require('reboost');
+const BabelPlugin = require('@reboost/plugin-babel');
+
+start({
+  entries: [
+    ['./src/index.jsx', './public/dist/index.js']
+  ],
+  contentServer: {
+    root: './public',
+    open: true
+  },
+  plugins: [
+    UsePlugin({
+      include: /.*/,
+      exclude: /node_modules/,
+      use: BabelPlugin({
+        presets: [require('babel-preset-solid')]
+      })
+    })
+  ]
+});
 ```
 
 ## Svelte
