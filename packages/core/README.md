@@ -46,7 +46,7 @@ If you don't want to use the CLI, you can [manually create an app](/docs/manuall
 bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 
 ## Docs
-[Changelog](CHANGELOG.md)\
+[Changelog](/packages/core/CHANGELOG.md)\
 [Configurations](/docs/configurations.md)\
 [Plugins](/docs/plugins.md)\
 [Plugin API](/docs/plugin-api.md)\
@@ -58,33 +58,35 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 ## Features
 - **No bundling**. So the server start time is *fast*.
 - Transforms only the **required/changed files**.
-- Uses advanced **filesystem cache + memory cache**. It will stay fast even after restarting.
-- Source maps support for better developer experience.
+- Uses advanced **filesystem cache**. It will stay fast even after restarting.
+- Complete source maps support for better developer experience.
 - Supports **CommonJS modules**.
-- Support for Plugins.
-- Import resolving.
+- Plugin API for extending its capability.
+- Enhanced import resolving.
 - Built-in Hot Reload API.
 - Out of the box support for JSON, CSS Modules, JSX, and TypeScript.
-- Preprocessor support.
-- **Works with [Electron](https://www.electronjs.org/)**.
+- Preprocessor support using Plugin.
+- **Works with [Electron](https://www.electronjs.org/)** (client side).
 
 ## What are supported
 - ES Modules
-- [CommonJS Modules](/docs/recipes.md#commonjs-modules)
-- [CSS](/docs/recipes.md#css-and-css-modules)
-- JSON
-- [CSS Modules](/docs/recipes.md#css-and-css-modules)
-- [JSX](/docs/recipes.md#jsx)
-- [TSX](/docs/recipes.md#tsx)
 - JS/TS Decorators
+- JSON
 - [Babel](/docs/recipes.md#babel)
+- [CSS and CSS Modules (with Hot Reloading)](/docs/recipes.md#css-and-css-modules)
+- [CommonJS Modules](/docs/recipes.md#commonjs-modules)
+- [JSX](/docs/recipes.md#jsx)
+- [Lit element](/docs/recipes.md#lit-element)
+- [Malina.js](/docs/recipes.md#malinajs)
 - [PostCSS](/docs/recipes.md#postcss)
 - [Preact](/docs/recipes.md#preact)
 - [React (with Fast Refresh)](/docs/recipes.md#react-with-fast-refresh)
 - [Sass/SCSS](/docs/recipes.md#sass-or-scss)
+- [Solid](/docs/recipes.md#solid)
 - [Svelte](/docs/recipes.md#svelte)
+- [TSX](/docs/recipes.md#tsx)
 - [TypeScript](/docs/recipes.md#typescript)
-- [Vue 3](/docs/recipes.md#vue-3)
+- [Vue 3 (with Hot Reloading)](/docs/recipes.md#vue-3)
 - and almost anything as long as you can implement it as [a plugin](/docs/plugin-api.md)
 
 See the [Recipes](/docs/recipes.md) for many template configurations.

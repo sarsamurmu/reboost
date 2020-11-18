@@ -18,9 +18,10 @@ are available in exported `builtInPlugins` object.
 These plugins don't come out of the box with this package.
 You have to manually install them when necessary.
 
-- [BabelPlugin](../packages/plugin-babel/README.md)
-- [PostCSSPlugin](../packages/plugin-postcss/README.md)
-- [ReactRefreshPlugin](../packages/plugin-react-refresh/README.md)
-- [SassPlugin](../packages/plugin-sass/README.md)
-- [SveltePlugin](../packages/plugin-svelte/README.md)
-- [VuePlugin](../packages/plugin-vue/README.md)
+- [BabelPlugin](/packages/plugin-babel/README.md)
+- [MalinaJSPlugin](/packages/plugin-malinajs/README.md)
+- [PostCSSPlugin](/packages/plugin-postcss/README.md)
+- [ReactRefreshPlugin](/packages/plugin-react-refresh/README.md)
+- [SassPlugin](/packages/plugin-sass/README.md)
+- [SveltePlugin](/packages/plugin-svelte/README.md)
+- [VuePlugin](/packages/plugin-vue/README.md)

@@ -390,7 +390,8 @@ An array of plugins to be used by Reboost.
 Type: `string`\
 Default: `process.cwd()`
 
-Directory to use as the root directory. Used to resolve relative paths.
+Directory to use as the root directory. This path will be used to resolve all relative paths
+in the configuration.
 
 #### `resolve`
 Type: `object`

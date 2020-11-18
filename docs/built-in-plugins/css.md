@@ -1,5 +1,5 @@
 # CSS Plugin
-Adds support for importing CSS files in JavaScript. Enables Hot reload for CSS files.
+Adds support for importing CSS files in JavaScript. Enables Hot reloading for CSS files.
 
 ## Usage
 ### Setup

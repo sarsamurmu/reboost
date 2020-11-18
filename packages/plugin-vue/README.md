@@ -3,6 +3,7 @@
 
 # Vue Plugin
 Adds support for `.vue` files, using [Vue 3 SFC compiler](https://www.npmjs.com/package/@vue/compiler-sfc).
+Also enables Hot Reloading for Vue Components.
 
 ## Usage
 ### Setup

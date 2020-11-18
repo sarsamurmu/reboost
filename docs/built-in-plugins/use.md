@@ -53,6 +53,7 @@ Plugin(s) to use if the test passes for a file.
 
 
 ## Example
+### Simple
 With the following configuration, `FilePlugin` will be used for all files ending with `.png`.
 
 ```js
@@ -67,17 +68,18 @@ const {
 start({
   plugins: [
     UsePlugin({
-      test: /\.png$/
+      include: /\.png$/
       use: FilePlugin()
     })
   ]
 })
 ```
 
+### Multiple plugins
 You can use multiple plugins -
 ```js
 UsePlugin({
-  test: '**/some-glob/*',
+  include: '**/some-glob/*',
   use: [
     Plugin1(),
     Plugin2(),
@@ -86,16 +88,27 @@ UsePlugin({
 })
 ```
 
+### Multiple rules
 Also, you can pass multiple rules/options, like so
 ```js
 UsePlugin(
   {
-    test: '**/some-glob/*',
+    include: '**/some-glob/*',
     use: Plugin1()
   },
   {
-    test: '**/another-glob/*',
+    include: '**/another-glob/*',
     use: Plugin2()
   }
 )
+```
+
+### Relative globs
+You can use relative globs, they would be resolved against [rootDir](../configurations.md#rootdir).
+
+```js
+UsePlugin({
+  include: './src/**/*.js',
+  use: Plugin()
+})
 ```

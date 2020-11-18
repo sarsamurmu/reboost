@@ -12,14 +12,14 @@ npm init @reboost/app
 ## Available templates
 - Electron
 - Lit Element
+- Malina.js
 - Preact
 - React
+- React TypeScript
+- Solid
 - Svelte
 - Vanilla
 - Vue
-
-## Todo
-- Add webpack config in templates
 
 # License
 Licensed under the [MIT License](/LICENSE).

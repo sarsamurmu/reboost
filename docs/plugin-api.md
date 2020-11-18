@@ -43,7 +43,7 @@ Type: `function`
 Executes when Reboost starts up. You can start your services,
 add server functionality, or do the initial setup in this function.
 
-The first argument of this function is an object with the following properties -
+The first parameter of this function is an object with the following properties -
 - `config` - The configuration object passed when starting Reboost.
 - `proxyServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's proxy server.
 - `contentServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's content server.
@@ -56,14 +56,95 @@ Type: `() => void`
 Used to stop the plugin. The provided function should
 stop any running service started by the plugin.
 
+#### `getCacheKey`
+Type: `(utils: object) => string`
+
+Used to get the cache key of the plugin. This is a required field.
+
+Reboost caches all files in the disk. You can use this function to return
+a cache key associated with the plugin. Whenever cache key changes Reboost invalidates
+the old cache and generates a new cache with new contents.
+
+Imagine you built a plugin that transforms files with transformer version 1. Then
+it got a new major update and in the new version the transformer
+transforms all file in a new different way. Even if your users update your plugin,
+they won't see any difference, because Reboost would serve it from the cache,
+there's no way Reboost get to know that your plugin received a breaking change and
+transforms files in a new way. So to let Reboost know that the cache should be invalidated,
+you will have to provide a new cache key using this function. Same with your plugins options,
+even if your user changes the plugin's options, they won't see the change because all of
+the files would get served from the cache. So you should always provide a cache key using this function.
+
+The first parameter is a object that contains utility function. The utility functions are -
+- `serializeObject` -
+  A function which serializes an object into a string. This function takes two arguments.
+  
+  The first argument should be an object which will get serialized.
+
+  The second argument is optional. This should be an array of object paths that should
+  not be included in the serialized object.
+
+  You may ask, "So what's the difference with `JSON.stringify()`?". Unlike `JSON.stringify`
+  it sorts the properties (so result is consistent across runs) and can serialize regular expressions and functions.
+
+  You can use this function to serialize your options object and use it as
+  the cache key.
+
+  ```js
+  function Plugin() {
+    return {
+      getCacheKey({ serializeObject }) {
+        const object = {
+          a: 1,
+          b: 2,
+          nest: {
+            e: 1,
+            f: 7
+          }
+        };
+
+        serializeObject(object)
+        // => A string of the serialized object
+
+        serializeObject(object, ['b', 'nest.f'])
+        // => A string of the serialized object,
+        // without including property 'b' and 'f' property of 'nested'
+      }
+    }
+  }
+  ```
+
+Here's a complete example
+```js
+// Schema of our options object
+/*
+{
+  include: RegExp;
+  logWarning: boolean;
+}
+*/
+
+function Plugin(options) {
+  return {
+    getCacheKey({ serializeObject }) {
+      return serializeObject(options, [
+        'logWarning'
+        // => We are not including this property in cache key, cause
+        // logging about warning should not affect our code transformation
+      ])
+    }
+  }
+}
+```
+
 #### `resolve`
 Type: `(importedPath: string, importer: string) => string`
 
 Used to resolve imported paths.
 
 If your plugin's main purpose is to resolve file paths or needs to resolve
-specific paths, use this hook. The first argument is the path to resolve,
-the second argument is an absolute path from which the path should be resolved.
+specific paths, use this hook. The first parameter is the path to resolve,
+the second parameter is an absolute path from which the path should be resolved.
 This function should return the resolved path, the path should be absolute.
 
 #### `load`
@@ -71,7 +152,7 @@ Type: `(filePath: string) => { code: string; type: string; map?: RawSourceMap; }
 
 Used to load the code of a file.
 
-The first argument is the absolute path
+The first parameter is the absolute path
 to the file which should be loaded. This function should return an object with
 two required properties and one optional property. The required properties are
 `code` and `type`. `code` should be a string of the file's content.
@@ -87,12 +168,12 @@ Type: `(data: { code: string; type: string; map: RawSourceMap }, filePath) => Er
 
 Used to transform the code as a string.
 
-The first argument is an object with the following properties -
+The first parameter is an object with the following properties -
 - `code` - The code to transform
 - `type` - The type of the code
 - `map` - Source map object for the code, it can be `null` at this point
 
-The second argument is the absolute path to the file from which the `code` was loaded.
+The second parameter is the absolute path to the file from which the `code` was loaded.
 
 You should do your transformation in this function and return an object with
 two required and one optional property. The required properties are `code` and `map`.
@@ -119,12 +200,12 @@ Type: `(ast: ASTNode, babel: { traverse: BabelTraverse; types: BabelTypes; }, fi
 
 Used to transform the JavaScript AST.
 
-The first argument is the babel generated AST of the code.
-The second argument is an object which includes two properties -
+The first parameter is the babel generated AST of the code.
+The second parameter is an object which includes two properties -
 - `traverse` - Babel's [`traverse` function](https://babeljs.io/docs/en/babel-traverse)
 - `types` - Babel's [`types`](https://babeljs.io/docs/en/babel-types)
 
-The third argument is the absolute path to the file from which the AST is generated.
+The third parameter is the absolute path to the file from which the AST is generated.
 
 ### Plugin Context
 The plugin context holds some useful data/functions, which can help you in different hooks.
@@ -218,6 +299,24 @@ then it returns the resolved path. You can use it to resolve modules, relative i
 argument can be [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve)'s resolve options,
 which will be then merged with the resolve option used in the configurations and will be
 used as the resolve option to resolve the requested path.
+
+#### `rootRelative`
+Type: `(filePath: string) => string`
+
+Just a utility function to get the root directory relative file path of a file.
+```js
+const path = require('path');
+
+function Plugin() {
+  return {
+    transformContent(_, filePath) {
+      const relativePath = path.relative(this.config.rootDir, filePath);
+      // This is same as
+      const relativePath = this.rootRelative(filePath);
+    }
+  }
+}
+```
 
 ## Support/Help
 If you are having problems making a plugin you can open an issue on this repository.

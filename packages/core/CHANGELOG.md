@@ -1,3 +1,27 @@
+## next
+- Updated file caching algorithm with better cache invalidation
+- Updated dependencies
+- Added `react-typescript` template
+- Updated React Refresh Plugin
+- Fix issue with minification in esbuild
+- Updated typings. Now you can access `Options` type easily
+  - Using JS Doc
+    ```js
+    /** @type import('reboost').builtInPlugins.CSSPlugin.Options */
+    ```
+  - Using TypeScript
+    ```ts
+    import { builtInPlugins } from 'reboost';
+    type Options = builtInPlugins.esbuildPlugin.Options;
+    ```
+- Added [`MalinaJSPlugin`](/packages/plugin-/README.md)
+- New Recipes
+  - [Malina.js](/docs/recipes.md#malinajs)
+  - [Solid](/docs/recipes.md#solid)
+- Support for relative globs in [UsePlugin](/docs/built-in-plugins/use.md)
+- Major rework on all plugins, especially [VuePlugin](/packages/plugin-vue/README.md)
+  which now supports Hot Reloading
+
 ## 0.17.1
 - Add new option `hotReload` to enable/disable hot reload.
 
