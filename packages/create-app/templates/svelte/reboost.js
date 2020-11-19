@@ -10,8 +10,8 @@ start({
     open: true
   },
   resolve: {
-    extensions: ['.svelte'].concat(DefaultConfig.resolve.extensions),
-    mainFields: ['svelte'].concat(DefaultConfig.resolve.mainFields)
+    extensions: ['.svelte', ...DefaultConfig.resolve.extensions],
+    mainFields: ['svelte', ...DefaultConfig.resolve.mainFields]
   },
   plugins: [
     SveltePlugin()
