@@ -1,22 +1,60 @@
 import type { ReboostGlobalWithPrivateObject } from './setup';
 
+
+type AcceptCB = {
+  /**
+   * @param module The updated module
+   */
+  (module: any): void;
+}
+type DisposeCB = {
+  /** 
+   * @param data A object that you can use to pass the data to the updated module
+   */
+  (data: Record<string, any>): void;
+}
+
 export type Hot = Readonly<{
+  /** The data passed from the disposal callbacks */
   data: Record<string, any>;
+  /** The id of the module, it can be used as a key to store data about the module */
   id: string;
-  self: Readonly<{
-    accept(callback: (module: any) => void): void;
-    dispose(callback: (data: Record<string, any>) => void): void;
-    decline(): void;
-  }>;
-  accept(dependency: string, callback: (module: any) => void): void;
-  dispose(dependency: string, callback: (data: Record<string, any>) => void): void;
+  /** 
+   * Sets accept listener for the module itself
+   * @param callback The callback which will be triggered on module update
+   */
+  accept(callback: AcceptCB): void;
+  /**
+   * Sets accept listener for a dependency of the module
+   * @param dependency Path to the dependency
+   * @param callback The callback which will be triggered on module update
+   */
+  accept(dependency: string, callback: AcceptCB): void;
+  /**
+   * Sets dispose listener for the module itself
+   * @param callback The callback which will triggered on module disposal
+   */
+  dispose(callback: DisposeCB): void;
+  /**
+   * Sets dispose listener for a dependency of the module
+   * @param dependency Path to the dependency
+   * @param callback The callback which will triggered on module disposal
+   */
+  dispose(dependency: string, callback: DisposeCB): void;
+  /** Marks the module itself as not Hot Reload-able */
+  decline(): void;
+  /** 
+   * Marks the dependency of the module as not Hot Reload-able
+   * @param dependency Path to the dependency
+   */
   decline(dependency: string): void;
+  /** Invalidates the Hot Reload phase and causes a full page reload */
   invalidate(): void;
 }>;
 
 export interface HandlerObject {
-  accept?: (module: any) => void;
-  dispose?: (data: Record<string, any>) => void;
+  accept?: AcceptCB;
+  dispose?: DisposeCB;
 }
 
 export type HotMapType = Map<string, {
@@ -50,13 +88,34 @@ const getListenerFileData = (emitterFile: string, listenerFile: string) => {
   return listenedFileData.listeners.get(listenerFile);
 }
 
-const resolveDependency = async (dependency: string) => {
+const resolveDependency = async (dependency: string, fnName: 'accept' | 'dispose' | 'decline') => {
   const response = await fetch(`${address}/resolve?from=${filePath}&to=${dependency}`);
   if (!response.ok) {
-    console.error(`[reboost] Unable to resolve dependency "${dependency}" of "${filePath}" while using hot.accept()`);
+    console.error(`[reboost] Unable to resolve dependency "${dependency}" of "${filePath}" while using hot.${fnName}()`);
     return 'UNRESOLVED';
   }
   return response.text();
+}
+
+const makeSetCallbackFn = <T extends 'accept' | 'dispose'>(type: T) => {
+  type CallbackT = 'accept' extends T ? AcceptCB : DisposeCB;
+
+  return async (a: string | CallbackT, b?: CallbackT) => {
+    let dependencyFilePath: string;
+    let callback: CallbackT;
+
+    if (typeof a === 'function') {
+      // Self
+      dependencyFilePath = filePath;
+      callback = a;
+    } else {
+      dependencyFilePath = await resolveDependency(a, type);
+      callback = b;
+    }
+
+    const listenerData = getListenerFileData(dependencyFilePath, filePath);
+    if (!listenerData[type]) listenerData[type] = callback;
+  }
 }
 
 const hot: Hot = {
@@ -67,48 +126,35 @@ const hot: Hot = {
     ).get(filePath);
   },
   id: filePath,
-  self: {
-    accept(callback): void {
-      const listenerData = getListenerFileData(filePath, filePath);
-      if (!listenerData.accept) listenerData.accept = callback;
-    },
-    dispose(callback): void {
-      const listenerData = getListenerFileData(filePath, filePath);
-      if (!listenerData.dispose) listenerData.dispose = callback;
-    },
-    decline() {
-      getEmitterFileData(filePath).declined = true;
-    }
+  accept: makeSetCallbackFn('accept'),
+  dispose: makeSetCallbackFn('dispose'),
+  decline: async (dependency?: string) => {
+    getEmitterFileData(
+      dependency || await resolveDependency(dependency, 'decline')
+    ).declined = true;
   },
-  async accept(dependency, callback) {
-    const listenerData = getListenerFileData(await resolveDependency(dependency), filePath);
-    if (!listenerData.accept) listenerData.accept = callback;
-  },
-  async dispose(dependency, callback) {
-    const listenerData = getListenerFileData(await resolveDependency(dependency), filePath);
-    if (!listenerData.dispose) listenerData.dispose = callback;
-  },
-  async decline(dependency) {
-    getEmitterFileData(await resolveDependency(dependency)).declined = true;
-  },
-  invalidate() {
-    Reboost.reload();
-  }
+  invalidate: () => Reboost.reload()
 }
 
-// TODO: Remove it in v1.0
-Object.defineProperties(hot, {
-  selfAccept: {
-    enumerable: false,
-    value: hot.self.accept
-  },
-  selfDispose: {
-    enumerable: false,
-    value: hot.self.dispose
-  }
-});
+// TODO: Remove these in v1.0
+{
+  Object.defineProperties(hot, {
+    selfAccept: {
+      value: hot.accept
+    },
+    selfDispose: {
+      value: hot.dispose
+    },
+    self: {
+      value: {
+        accept: hot.accept,
+        dispose: hot.dispose
+      }
+    }
+  });
+  Object.freeze((hot as any).self);
+}
 
-Object.freeze(hot.self);
 Object.freeze(hot);
 
 export { hot }
