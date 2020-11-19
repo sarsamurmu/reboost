@@ -1,3 +1,6 @@
+## next
+- Add support for Hot Reloading Svelte components
+
 ## 0.18.0
 - Minor fixes
 

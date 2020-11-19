@@ -83,7 +83,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 - [React (with Fast Refresh)](/docs/recipes.md#react-with-fast-refresh)
 - [Sass/SCSS](/docs/recipes.md#sass-or-scss)
 - [Solid](/docs/recipes.md#solid)
-- [Svelte](/docs/recipes.md#svelte)
+- [Svelte (with Hot Reloading)](/docs/recipes.md#svelte)
 - [TSX](/docs/recipes.md#tsx)
 - [TypeScript](/docs/recipes.md#typescript)
 - [Vue 3 (with Hot Reloading)](/docs/recipes.md#vue-3)

@@ -303,10 +303,10 @@ start({
   // Other options
   resolve: {
     // Adds support for resolving `.svelte` files
-    extensions: ['.svelte'].concat(DefaultConfig.resolve.extensions),
+    extensions: ['.svelte', ...DefaultConfig.resolve.extensions],
 
     // Prefer `svelte` field to load script from `package.json`
-    mainFields: ['svelte'].concat(DefaultConfig.resolve.mainFields)
+    mainFields: ['svelte', ...DefaultConfig.resolve.mainFields]
   },
   plugins: [
     // ... Other plugins
@@ -315,6 +315,7 @@ start({
   // ...
 })
 ```
+Hot Reloading is also enabled by the plugin.
 
 ## TSX
 TSX transformation is enabled for files with `.tsx` extension. If you want to enable

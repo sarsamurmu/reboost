@@ -1,3 +1,7 @@
+## next
+- Update Hot Reload API
+- Support for Hot Reloading in [SveltePlugin](/packages/plugin-svelte/README.md)
+
 ## 0.18.0
 - Updated file caching algorithm with better cache invalidation
 - Updated dependencies

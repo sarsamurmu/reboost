@@ -2,7 +2,7 @@
 [![license](https://img.shields.io/npm/l/@reboost/plugin-svelte?style=flat-square)](/LICENSE)
 
 # Svelte Plugin
-Adds support for `.svelte` files.
+Adds support for `.svelte` files. Enables Hot Reloading in Svelte components.
 
 ## Usage
 ### Setup
@@ -115,7 +115,7 @@ const SveltePlugin = require('@reboost/plugin-svelte');
 
 start({
   resolve: {
-    extensions: ['.svelte'].concat(DefaultConfig.resolve.extensions)
+    extensions: ['.svelte', ...DefaultConfig.resolve.extensions]
   },
   plugins: [
     SveltePlugin()
