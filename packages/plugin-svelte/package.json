@@ -34,5 +34,8 @@
     "magic-string": "^0.25.7",
     "svelte": "^3.29.7",
     "typescript": "^4.0.5"
+  },
+  "dependencies": {
+    "svelte-hmr": "^0.11.6"
   }
 }

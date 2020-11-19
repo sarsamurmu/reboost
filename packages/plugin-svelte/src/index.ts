@@ -1,3 +1,6 @@
+// @ts-expect-error No need for declaration files
+import { createMakeHot } from 'svelte-hmr';
+
 import fs from 'fs';
 import path from 'path';
 
@@ -7,6 +10,7 @@ declare namespace SveltePlugin {
   export interface Options {
     configFile?: string;
     preprocess?: any;
+    hotOptions?: any;
   }
 }
 
@@ -14,6 +18,14 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
   let compiler: typeof import('svelte/compiler');
   let compilerVersion: string;
   let svelteConfig = {} as Record<string, any>;
+  let makeHot: (data: {
+    id: string;
+    compiledCode: string;
+    hotOptions: any;
+    compiled: ReturnType<typeof compiler['compile']>;
+    originalCode: string;
+    compileOptions: any;
+  }) => string;
 
   const loadSvelte = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
     if (!compiler) {
@@ -24,6 +36,10 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         compilerVersion = JSON.parse(
           fs.readFileSync(resolve(__filename, 'svelte/package.json')).toString()
         ).version;
+        makeHot = createMakeHot({
+          walk: (compiler as any).walk,
+          meta: 'ReboostHot'
+        });
       } catch (e) {
         if (/resolve/i.test(e.message)) {
           console.log(chalk.red(
@@ -58,30 +74,36 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         } = await compiler.preprocess(
           data.code,
           options.preprocess || svelteConfig.preprocess || {},
-          {
-            filename: filePath
-          }
+          { filename: filePath }
         );
 
         dependencies.forEach((dependency) => {
           const absolutePath = path.isAbsolute(dependency) ? dependency : path.join(path.dirname(filePath), dependency);
           this.addDependency(absolutePath);
         });
-
-        /* eslint-disable prefer-const */
-        let {
-          js: { code, map },
-          warnings
-        } = compiler.compile(processedCode, {
+        
+        const compileOptions: Parameters<typeof compiler['compile']>[1] = {
           dev: true,
           ...svelteConfig,
           filename: filePath,
+        };
+        const compiled = compiler.compile(processedCode, compileOptions);
+        // eslint-disable-next-line prefer-const
+        let { code, map } = compiled.js;
+
+        compiled.warnings.forEach((warning) => {
+          console.log(this.chalk.yellow(`SveltePlugin: Warning "${this.rootRelative(filePath)}"\n\n${warning.toString()}\n`));
         });
 
-        /* eslint-enable */
+        code += '\n\n' + 'import * as ReboostHot from "reboost/hot";';
 
-        warnings.forEach((warning) => {
-          console.log(this.chalk.yellow(`SveltePlugin: Warning "${this.rootRelative(filePath)}"\n\n${warning.toString()}\n`));
+        code = makeHot({
+          id: filePath,
+          compiledCode: code,
+          hotOptions: options.hotOptions,
+          compiled,
+          originalCode: data.code,
+          compileOptions: compileOptions
         });
 
         // Replace the source map for CSS
