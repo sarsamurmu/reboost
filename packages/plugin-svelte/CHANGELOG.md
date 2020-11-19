@@ -1,4 +1,4 @@
-## next
+## 0.18.1
 - Add support for Hot Reloading Svelte components
 
 ## 0.18.0

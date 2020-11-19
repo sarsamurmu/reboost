@@ -1,4 +1,4 @@
-## next
+## 0.18.1
 - Update Hot Reload API
 - Support for Hot Reloading in [SveltePlugin](/packages/plugin-svelte/README.md)
 
