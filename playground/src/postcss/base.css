@@ -6,10 +6,10 @@ body {
     font-size: 1.5rem;
   }
 
-  & > .pink-box {
+  /* & > .pink-box {
     background-color: rgb(255, 0, 119);
     color: white;
     padding: 10px 14px;
     display: inline-block;
-  }
+  } */
 }
