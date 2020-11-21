@@ -201,7 +201,7 @@ export const generateModuleCode = (data: {
         patchObject(defaultExport, newDefaultExport);
       });
 
-      hot.self.accept((...args) => updateListeners.forEach((cb) => cb(...args)));
+      hot.accept((...args) => updateListeners.forEach((cb) => cb(...args)));
     }
 
     export default defaultExport;
