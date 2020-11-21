@@ -1,14 +1,20 @@
-// @ts-expect-error No need of declarations
+// @ts-check
 import RefreshRuntime from 'react-refresh/runtime';
 
-RefreshRuntime.injectIntoGlobalHook(window);
+/* global self */
 
-(window as any).$RefreshReg$ = () => {/* Nothing */};
-(window as any).$RefreshSig$ = () => (type: any) => type;
+/** @type any */
+const aSelf = self;
+
+RefreshRuntime.injectIntoGlobalHook(aSelf);
+
+aSelf.$RefreshReg$ = () => {/* Nothing */ };
+aSelf.$RefreshSig$ = () => (type) => type;
 
 // Modified from -
 // https://github.com/facebook/metro/blob/febdba2383113c88296c61e28e4ef6a7f4939fda/packages/metro/src/lib/polyfills/require.js#L748-L774
-export const isReactRefreshBoundary = (moduleExports: Record<string, any>) => {
+/** @param {Record<string, any>} moduleExports */
+export const isReactRefreshBoundary = (moduleExports) => {
   if (RefreshRuntime.isLikelyComponentType(moduleExports)) {
     return true;
   }
