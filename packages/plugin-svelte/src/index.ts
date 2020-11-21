@@ -26,6 +26,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
     originalCode: string;
     compileOptions: any;
   }) => string;
+  const HotName = '__Hot_for_Svelte__';
 
   const loadSvelte = (resolve: PluginContext['resolve'], chalk: PluginContext['chalk']) => {
     if (!compiler) {
@@ -38,7 +39,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         ).version;
         makeHot = createMakeHot({
           walk: (compiler as any).walk,
-          meta: 'ReboostHot'
+          meta: HotName
         });
       } catch (e) {
         if (/resolve/i.test(e.message)) {
@@ -95,7 +96,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
           console.log(this.chalk.yellow(`SveltePlugin: Warning "${this.rootRelative(filePath)}"\n\n${warning.toString()}\n`));
         });
 
-        code += '\n\n' + 'import * as ReboostHot from "reboost/hot";';
+        code += '\n\n' + `import * as ${HotName} from "reboost/hot";`;
 
         code = makeHot({
           id: filePath,
