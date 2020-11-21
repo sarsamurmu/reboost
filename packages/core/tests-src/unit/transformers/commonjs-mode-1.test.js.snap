@@ -43,13 +43,31 @@ const module = {
 };
 module.exports.item1 = 0;
 exports.item2 = 0;
-export const __cjsExports = module.exports;"
+export var __cjsExports = module.exports;"
 `;
 
 exports[`transforms CommonJS modules - only "exports" 1`] = `
 "const exports = {};
 exports.item1 = 0;
-export const __cjsExports = exports;"
+export var __cjsExports = exports;"
+`;
+
+exports[`transforms CommonJS modules - only "exports" 2`] = `
+"const exports = {};
+Object.assign(exports, '__esModule', {
+  value: true
+});
+export var __cjsExports = exports;"
+`;
+
+exports[`transforms CommonJS modules - only "module.exports" 1`] = `
+"const module = {
+  exports: {}
+};
+Object.assign(module.exports, '__esModule', {
+  value: true
+});
+export var __cjsExports = module.exports;"
 `;
 
 exports[`transforms CommonJS modules - only "module.exports": using bracket notation 1`] = `
@@ -57,7 +75,7 @@ exports[`transforms CommonJS modules - only "module.exports": using bracket nota
   exports: {}
 };
 module['exports'].item1 = 0;
-export const __cjsExports = module.exports;"
+export var __cjsExports = module.exports;"
 `;
 
 exports[`transforms CommonJS modules - only "module.exports": using dot notation 1`] = `
@@ -65,7 +83,7 @@ exports[`transforms CommonJS modules - only "module.exports": using dot notation
   exports: {}
 };
 module.exports.item1 = 0;
-export const __cjsExports = module.exports;"
+export var __cjsExports = module.exports;"
 `;
 
 exports[`transforms ES modules which has import just for side effect 1`] = `"import 'module_1';"`;

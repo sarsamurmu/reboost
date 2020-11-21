@@ -8,6 +8,10 @@ describe('transforms CommonJS modules -', () => {
     expect(t(`
       exports.item1 = 0;
     `)).toMatchSnapshot();
+
+    expect(t(`
+      Object.assign(exports, '__esModule', { value: true });
+    `)).toMatchSnapshot();
   });
 
   test('only "module.exports"', () => {
@@ -18,6 +22,10 @@ describe('transforms CommonJS modules -', () => {
     expect(t(`
       module['exports'].item1 = 0;
     `)).toMatchSnapshot('using bracket notation');
+
+    expect(t(`
+      Object.assign(module.exports, '__esModule', { value: true });
+    `)).toMatchSnapshot();
   });
 
   test('both', () => {

@@ -22,6 +22,8 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
   traverse(ast, {
     Program(path) {
       program = path;
+      if (path.scope.hasGlobal('module')) usedModuleExports = true;
+      if (path.scope.hasGlobal('exports')) usedExports = true;
     },
     ImportDeclaration(path) {
       if (path.node.specifiers.length === 0) return;
@@ -118,21 +120,6 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
         );
       }
     },
-    MemberExpression(path) {
-      if (
-        !usedModuleExports &&
-        t.isIdentifier(path.node.object, { name: 'module' }) &&
-        (
-          path.node.computed
-            ? t.isStringLiteral(path.node.property, { value: 'exports' })
-            : t.isIdentifier(path.node.property, { name: 'exports' })
-        )
-      ) {
-        if (!path.scope.hasBinding('module')) usedModuleExports = true;
-      } else if (!usedExports && t.isIdentifier(path.node.object, { name: 'exports' })) {
-        if (!path.scope.hasBinding('exports')) usedExports = true;
-      }
-    }
   });
 
   if (usedModuleExports || usedExports) {
@@ -174,7 +161,7 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
     program.node.body.push(
       t.exportNamedDeclaration(
         t.variableDeclaration(
-          'const',
+          'var',
           [
             t.variableDeclarator(
               t.identifier('__cjsExports'),
