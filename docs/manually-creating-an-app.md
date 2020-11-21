@@ -37,8 +37,9 @@ and the HTML content (`public/index.html`)
 <!doctype html>
 <html>
   <body>
-    <!-- Note that the type is "module" -->
+    <!-- Both tags are required -->
     <script type="module" src="./dist/index.js"></script>
+    <script nomodule src="./dist/index.js"></script>
   </body>
 </html>
 ```
