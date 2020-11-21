@@ -166,10 +166,12 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           );
         }
 
+        const Hot = '__Hot_for_Vue__';
+
         const postCode = `
           __modExp.render = render;
 
-          import { hot as ReboostHot } from 'reboost/hot';
+          import { hot as ${Hot} } from 'reboost/hot';
 
           let __hmrData = {
             hash: {
@@ -180,43 +182,42 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
             },
             style: ${JSON.stringify(cssStr)},
           }
-          let __styleEl;
           export const __HMR_DATA__ = __hmrData;
 
           // NOTE: This enables HMR in Vue internally
-          __modExp.__hmrId = ReboostHot.id;
+          __modExp.__hmrId = ${Hot}.id;
 
-          if (!ReboostHot.data) {
-            __styleEl = document.createElement('style');
-            __styleEl.textContent = __hmrData.style;
-            document.head.appendChild(__styleEl);
-          }
+          if (!${Hot}.data) {
+            const styleEl = document.createElement('style');
+            styleEl.textContent = __hmrData.style;
+            document.head.appendChild(styleEl);
 
-          if (!ReboostHot.data && __VUE_HMR_RUNTIME__) {
-            __VUE_HMR_RUNTIME__.createRecord(ReboostHot.id, __modExp);
+            if (__VUE_HMR_RUNTIME__) {
+              __VUE_HMR_RUNTIME__.createRecord(${Hot}.id, __modExp);
 
-            ReboostHot.self.accept((updatedModule) => {
-              const component = updatedModule.default;
-              const newHMRData = updatedModule.__HMR_DATA__;
-              const curHash = __hmrData.hash;
-              const newHash = newHMRData.hash;
+              ${Hot}.accept((updatedModule) => {
+                const component = updatedModule.default;
+                const newHMRData = updatedModule.__HMR_DATA__;
+                const curHash = __hmrData.hash;
+                const newHash = newHMRData.hash;
 
-              if (
-                curHash.script !== newHash.script ||
-                curHash.scriptSetup !== newHash.scriptSetup ||
-                curHash.style !== newHash.style
-              ) {
-                __VUE_HMR_RUNTIME__.reload(ReboostHot.id, component);
-              } else if (curHash.template !== newHash.template) {
-                __VUE_HMR_RUNTIME__.rerender(ReboostHot.id, component.render);
-              }
+                if (
+                  curHash.script !== newHash.script ||
+                  curHash.scriptSetup !== newHash.scriptSetup ||
+                  curHash.style !== newHash.style
+                ) {
+                  __VUE_HMR_RUNTIME__.reload(${Hot}.id, component);
+                } else if (curHash.template !== newHash.template) {
+                  __VUE_HMR_RUNTIME__.rerender(${Hot}.id, component.render);
+                }
 
-              if (__hmrData.style !== newHMRData.style) {
-                __styleEl.textContent = newHMRData.style;
-              }
+                if (__hmrData.style !== newHMRData.style) {
+                  styleEl.textContent = newHMRData.style;
+                }
 
-              __hmrData = newHMRData;
-            });
+                __hmrData = newHMRData;
+              });
+            }
           }
 
           export default __modExp;
