@@ -44,6 +44,12 @@ Default: `./svelte.config.js`
 
 Path to Svelte config file.
 
+#### `hotOptions`
+Type: `object`
+
+Options for [`svelte-hmr`](https://github.com/rixo/svelte-hmr). Controls
+Svelte's hot reloading behaviour.
+
 #### `preprocess`
 Type: `object | array`
 
