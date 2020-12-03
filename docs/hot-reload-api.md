@@ -8,8 +8,8 @@ export const name = 'Some name';
 
 setName(name);
 
-if (hot) { // Code will be stripped out when bundled using bundler
-  hot.self.accept((updatedMod) => {
+if (hot) { // Code will be stripped out when bundled using a bundler
+  hot.accept((updatedMod) => {
     // Called when the module itself updates
     // `updatedMod` is the updated instance of the module
 
@@ -17,8 +17,8 @@ if (hot) { // Code will be stripped out when bundled using bundler
     setName(updatedMod.name);
   });
 
-  hot.self.dispose((data) => {
-    // Called before hot.self.accept
+  hot.dispose((data) => {
+    // Called before `hot.accept` callback
     // You can do cleanups here
     // Assign properties to the `data` to pass the data to the
     // module which being updated
@@ -61,10 +61,9 @@ if (hot) {
   // Hot Reload updates. Whenever this module is updated (doing modification and saving it)
   // it will do a full page reload no matter what
 
-  // Declining the module itself
-  hot.self.decline();
-
-  // Declining other modules
+  // Decline the module itself
+  hot.decline();
+  // or decline other modules
   hot.decline('./someDep.js');
 }
 ```
@@ -74,7 +73,7 @@ if (hot) {
 import { hot } from 'reboost/hot';
 
 if (hot) {
-  hot.self.accept(() => {
+  hot.accept(() => {
     // You can cancel an ongoing Hot Reload update by calling `hot.invalidate`
     // You can use it to cancel updates conditionally
     if (someCondition) {
@@ -131,5 +130,6 @@ if (hot) {
 // to the `Reboost` object of global `self` object
 self.Reboost.reload = () => {
   // Do your things to reload the page
+  // like asking the user if they want to reload the page or not
 }
 ```
