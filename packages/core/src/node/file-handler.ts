@@ -143,7 +143,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
 
             if (!error) {
               fs.writeFileSync(cacheFilePath, transformedCode);
-              cacheInfo.hash = hash;
+              cacheInfo.hash = hash || await getHash(filePath);
               cacheInfo.mtime = mtime;
               cacheInfo.plugins = currentPlugins;
               await cache.updateDependencies(filePath, dependencies);
