@@ -19,6 +19,7 @@ These plugins don't come out of the box with this package.
 You have to manually install them when necessary.
 
 - [BabelPlugin](/packages/plugin-babel/README.md)
+- [LitCSSPlugin](/packages/plugin-litcss/README.md)
 - [MalinaJSPlugin](/packages/plugin-malinajs/README.md)
 - [PostCSSPlugin](/packages/plugin-postcss/README.md)
 - [ReactRefreshPlugin](/packages/plugin-react-refresh/README.md)
