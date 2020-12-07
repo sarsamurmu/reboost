@@ -2,6 +2,7 @@
   "npm.exclude": "{**/playground,**/plugin-template,**/create-app/templates/**}",
   "cSpell.words": [
     "etag",
+    "litcss",
     "malina",
     "malinajs"
   ],
