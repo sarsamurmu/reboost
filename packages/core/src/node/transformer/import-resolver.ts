@@ -20,6 +20,9 @@ export const resolveDependency = async (
   return null;
 }
 
+const isPathRouted = (path: string) => path.startsWith('#/');
+const pathFromRouted = (path: string) => path.substring(1);
+
 export const resolveImports = async (
   instance: ReboostInstance,
   ast: t.Node,
@@ -45,14 +48,14 @@ export const resolveImports = async (
       } else {
         let finalPath = null;
         let routed = false;
-        if (source.startsWith('#/')) {
-          finalPath = source.substring(1);
+        if (isPathRouted(source)) {
+          finalPath = pathFromRouted(source);
           routed = true;
         } else {
           const resolvedPath = await resolveDependency(instance, source, filePath);
           if (resolvedPath) {
-            if (resolvedPath.startsWith('#/')) {
-              finalPath = resolvedPath.substring(1);
+            if (isPathRouted(resolvedPath)) {
+              finalPath = pathFromRouted(resolvedPath);
               routed = true;
             } else {
               finalPath = resolvedPath;
@@ -92,11 +95,15 @@ export const resolveImports = async (
     CallExpression(nodePath) {
       if (t.isIdentifier(nodePath.node.callee, { name: '__reboost_resolve' })) {
         promiseExecutors.push(async () => {
-          nodePath.replaceWith(
-            t.stringLiteral(
-              await resolveDependency(instance, (nodePath.node.arguments[0] as t.StringLiteral).value, filePath)
-            )
-          );
+          const toResolve = (nodePath.node.arguments[0] as t.StringLiteral).value;
+          if (isPathRouted(toResolve)) {
+            nodePath.replaceWith(t.stringLiteral(pathFromRouted(toResolve)));
+          } else {
+            const resolvedPath = await resolveDependency(instance, toResolve, filePath);
+            if (resolvedPath) {
+              nodePath.replaceWith(t.stringLiteral(resolvedPath));
+            }
+          }
         });
       } else if (t.isImport(nodePath.node.callee)) {
         // Rewrite dynamic imports
