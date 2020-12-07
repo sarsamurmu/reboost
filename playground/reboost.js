@@ -14,6 +14,7 @@ const SveltePlugin = require('@reboost/plugin-svelte');
 const VuePlugin = require('@reboost/plugin-vue');
 const PostCSSPlugin = require('@reboost/plugin-postcss');
 const MalinaJSPlugin = require('@reboost/plugin-malinajs');
+const LitCSSPlugin = require('@reboost/plugin-litcss');
 
 console.time();
 start({
@@ -42,7 +43,7 @@ start({
   plugins: [
     UsePlugin({
       include: './**/*.lit.css',
-      use: require('./lit-css-plugin')()
+      use: LitCSSPlugin()
     }),
     UsePlugin({
       include: './src/postcss/**',
