@@ -4,7 +4,6 @@
     "baseUrl": ".",
     "paths": {
       "reboost": ["./packages/core"]
-    },
-    "skipLibCheck": true
+    }
   }
 }
