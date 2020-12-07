@@ -1,0 +1,34 @@
+{
+  "private": true,
+  "name": "@reboost/plugin-litcss",
+  "version": "0.18.1",
+  "description": "LitCSS plugin for Reboost",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../prepare rm-dist",
+    "version": "node ../../prepare update-changelog",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "keywords": [
+    "reboost",
+    "plugin",
+    "litcss"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarsamurmu/reboost.git",
+    "directory": "packages/plugin-litcss"
+  },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-litcss",
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.0.5"
+  }
+}
