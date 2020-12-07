@@ -3,7 +3,8 @@
   "compilerOptions": {
     "module": "CommonJS",
     "outDir": "../../dist/node",
-    "importHelpers": true
+    "importHelpers": true,
+    "skipLibCheck": true
   },
   "include": [
     "**/*"
