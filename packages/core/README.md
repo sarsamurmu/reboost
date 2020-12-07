@@ -24,6 +24,26 @@
 <br>It makes use of native ES modules to enable fast, bundle-less development experience, so you can develop your app faster.
 <a href="#what-it-does">Learn more about what it does.</a></p>
 
+## Features
+- *No bundling*. So the server start time is *fast*.
+- Transforms only the *required/changed files*.
+- Uses advanced filesystem cache. It will stay fast even after restarting.
+- Complete source maps support for better developer experience.
+- Supports *CommonJS modules*.
+- Plugin API for extending its capability.
+- Enhanced import resolving.
+- Built-in Hot Reload API.
+- Out of the box support for JSON, CSS Modules, JSX, and TypeScript.
+- Preprocessor support using Plugin.
+- Combine with any other server.
+- Built-in content server with live reload and hot reload for CSS.
+- Lots of configurable options.
+
+#### *NOTE*
+**Experimental**: Reboost is in early development, and some things may change/break before we hit version 1.0.\
+**Only for development build**: Reboost is intended to use only on development, for production you've to
+bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
+
 ## Quickstart
 Run this command in your terminal
 ```shell
@@ -40,11 +60,6 @@ node reboost
 
 If you don't want to use the CLI, you can [manually create an app](/docs/manually-creating-an-app.md).
 
-#### *NOTE*
-**Experimental**: Reboost is in early development, and some things may change/break before we hit version 1.0.\
-**Only for development build**: Reboost is intended to use only on development, for production you've to
-bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
-
 ## Docs
 [Changelog](/packages/core/CHANGELOG.md)\
 [Configurations](/docs/configurations.md)\
@@ -52,21 +67,7 @@ bundle up your files by yourself using bundlers like Webpack, Rollup, etc.
 [Plugin API](/docs/plugin-api.md)\
 [Hot Reload API](/docs/hot-reload-api.md)\
 [Recipes](/docs/recipes.md)\
-[FAQs/Troubleshooting](/docs/faqs-and-troubleshooting.md)\
-[Supporting old browsers while using `script type="module"`](/docs/supporting-old-browsers.md)
-
-## Features
-- **No bundling**. So the server start time is *fast*.
-- Transforms only the **required/changed files**.
-- Uses advanced **filesystem cache**. It will stay fast even after restarting.
-- Complete source maps support for better developer experience.
-- Supports **CommonJS modules**.
-- Plugin API for extending its capability.
-- Enhanced import resolving.
-- Built-in Hot Reload API.
-- Out of the box support for JSON, CSS Modules, JSX, and TypeScript.
-- Preprocessor support using Plugin.
-- **Works with [Electron](https://www.electronjs.org/)** (client side).
+[FAQs/Troubleshooting](/docs/faqs-and-troubleshooting.md)
 
 ## What are supported
 - ES Modules
