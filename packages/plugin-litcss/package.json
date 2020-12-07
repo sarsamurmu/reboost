@@ -1,7 +1,6 @@
 {
-  "private": true,
   "name": "@reboost/plugin-litcss",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "description": "LitCSS plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,3 +1,6 @@
+## 0.18.2
+- Use more unique identifiers
+
 ## 0.18.0
 - Minor fixes
 

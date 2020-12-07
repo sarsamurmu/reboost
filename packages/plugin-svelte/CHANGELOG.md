@@ -1,3 +1,6 @@
+## 0.18.2
+- Minor fix
+
 ## 0.18.1
 - Add support for Hot Reloading Svelte components
 

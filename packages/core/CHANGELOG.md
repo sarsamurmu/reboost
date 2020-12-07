@@ -1,3 +1,7 @@
+## 0.18.2
+- Fixed issue with CommonJS interop mode 1
+- Added [`LitCSSPlugin`](/packages/plugin-litcss/README.md)
+
 ## 0.18.1
 - Update Hot Reload API
 - Support for Hot Reloading in [SveltePlugin](/packages/plugin-svelte/README.md)

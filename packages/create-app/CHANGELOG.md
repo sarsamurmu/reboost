@@ -1,3 +1,6 @@
+## 0.18.2
+- Added fallback script tag for old browsers
+
 ## 0.18.0
 - New templates
   - `malinajs`

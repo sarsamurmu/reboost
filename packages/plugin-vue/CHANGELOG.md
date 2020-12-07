@@ -1,3 +1,6 @@
+## 0.18.2
+- Minor fixes
+
 ## 0.18.0
 - Minor fixes
 - Added support for Hot Reload
