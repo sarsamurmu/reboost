@@ -5,7 +5,7 @@
     "start": "node reboost"
   },
   "dependencies": {
-    "@babel/core": "^7.12.3",
+    "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-pipeline-operator": "^7.12.1",
     "@reboost/plugin-babel": "file:../packages/plugin-babel",
     "@reboost/plugin-litcss": "file:../packages/plugin-litcss",
@@ -16,13 +16,13 @@
     "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
     "@reboost/plugin-vue": "file:../packages/plugin-vue",
     "lit-element": "^2.4.0",
-    "malinajs": "^0.6.4",
+    "malinajs": "^0.6.7",
     "node-sass": "^5.0.0",
     "postcss-nesting": "^7.0.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "reboost": "file:../packages/core",
-    "svelte": "^3.29.7",
+    "svelte": "^3.31.0",
     "tailwindcss": "^2.0.1",
     "vue": "^3.0.0"
   },

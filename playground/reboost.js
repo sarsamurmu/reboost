@@ -16,7 +16,7 @@ const PostCSSPlugin = require('@reboost/plugin-postcss');
 const MalinaJSPlugin = require('@reboost/plugin-malinajs');
 const LitCSSPlugin = require('@reboost/plugin-litcss');
 
-console.time();
+const startTime = process.hrtime();
 start({
   entries: [
     ['./src/babel/index.js', './public/dist/babel.js'],
@@ -85,4 +85,7 @@ start({
   // Don't use these options, these are only for debugging
   dumpCache: true,
   debugMode: true,
-}).then(() => console.timeEnd());
+}).then(() => {
+  const [seconds, nanoseconds] = process.hrtime(startTime);
+  console.log(`Took - ${seconds}s ${Math.floor(nanoseconds / 1e6)}ms`)
+});
