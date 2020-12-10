@@ -124,7 +124,7 @@ export interface ReboostConfig {
     /** All content files will be available under this path */
     basePath?: string;
     /** Enable ETag */
-    etag: boolean;
+    etag?: boolean;
     /** Extensions to resolve when no extension is present in the URL */
     extensions?: false | string[];
     /** When enabled, also serves hidden files */
