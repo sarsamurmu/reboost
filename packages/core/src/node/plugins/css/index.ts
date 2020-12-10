@@ -112,7 +112,7 @@ function CSSPlugin(options: CSSPlugin.Options = {}): ReboostPlugin {
                 resolve(new Error(errorMessage));
               } else {
                 console.error(err);
-                resolve();
+                resolve(undefined);
               }
             }
             

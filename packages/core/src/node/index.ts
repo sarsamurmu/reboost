@@ -377,7 +377,12 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     },
   }
 
-  const startServer = (name: string, server: Koa, port: number, host = 'localhost') => new Promise((doneStart) => {
+  const startServer = (
+    name: string,
+    server: Koa,
+    port: number,
+    host = 'localhost'
+  ) => new Promise<void>((doneStart) => {
     const httpServer = server.listen(port, host, () => doneStart());
     const connections = new Map<string, net.Socket>();
 
@@ -387,7 +392,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       connection.on('close', () => connections.delete(key));
     });
 
-    it.onStop(`Closes ${name}`, () => new Promise((doneClose) => {
+    it.onStop(`Closes ${name}`, () => new Promise<void>((doneClose) => {
       connections.forEach((connection) => connection.destroy());
       httpServer.close(() => doneClose());
     }));
