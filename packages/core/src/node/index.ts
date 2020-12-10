@@ -123,6 +123,8 @@ export interface ReboostConfig {
   contentServer?: {
     /** All content files will be available under this path */
     basePath?: string;
+    /** Enable ETag */
+    etag: boolean;
     /** Extensions to resolve when no extension is present in the URL */
     extensions?: false | string[];
     /** When enabled, also serves hidden files */
@@ -246,6 +248,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
 
 export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['contentServer']>> = {
   basePath: '/',
+  etag: true,
   extensions: ['.html'],
   hidden: false,
   index: 'index.html',

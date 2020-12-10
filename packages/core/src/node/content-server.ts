@@ -179,6 +179,8 @@ const attachFileServer = (instance: ReboostInstance, app: Koa) => {
   });
 
   const initScriptHTML = `<script src="${initScriptPath}"></script>`;
+  const etagKey = uniqueID(10) + '-';
+
   app.use(async (ctx, next) => {
     if (ctx.path === initScriptPath) {
       ctx.type = 'text/javascript';
@@ -205,6 +207,19 @@ const attachFileServer = (instance: ReboostInstance, app: Koa) => {
       if (!watchedFiles.has(sentFilePath)) {
         watcher.add(sentFilePath);
         watchedFiles.add(sentFilePath);
+      }
+
+      if (contentServer.etag) {
+        const etag = etagKey + Math.floor(fs.statSync(sentFilePath).mtimeMs);
+        if (ctx.get('If-None-Match') === etag) {
+          ctx.status = 304;
+          ctx.body = undefined;
+          ctx.remove('Content-Length');
+
+          return next();
+        } else {
+          ctx.set('ETag', etag);
+        }
       }
 
       if (/^\.html?$/.test(path.extname(sentFilePath))) {
