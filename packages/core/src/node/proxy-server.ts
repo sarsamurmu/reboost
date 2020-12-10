@@ -34,11 +34,13 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
   routedPaths['/raw'] = async (ctx) => {
     const filePath = ctx.query.q;
     try {
-      const mtime = Math.floor((await fs.promises.stat(filePath)).mtimeMs) + '';
+      const stat = await fs.promises.stat(filePath);
+      const mtime = Math.floor(stat.mtimeMs) + '';
       if (ctx.get('If-None-Match') === mtime) {
         ctx.status = 304;
       } else {
-        ctx.body = await fs.promises.readFile(filePath);
+        ctx.body = fs.createReadStream(filePath);
+        ctx.set('Content-Length', stat.size + '');
         ctx.set('ETag', mtime);
       }
     } catch (e) {/* The file probably doesn't exist */}
