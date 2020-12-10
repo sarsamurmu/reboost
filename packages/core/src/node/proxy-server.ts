@@ -8,7 +8,7 @@ import path from 'path';
 import { ReboostInstance } from './index';
 import { resolveDependency } from './transformer/import-resolver';
 import { createFileHandler } from './file-handler';
-import { onServerCreated } from './utils';
+import { onServerCreated, uniqueID } from './utils';
 
 const webSockets = new Set<WebSocket>();
 
@@ -31,17 +31,18 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
     ctx.body += instance.config.debugMode ? loadSetupCode() : setupCode;
   }
 
+  const eTagKey = uniqueID(10) + '-';
   routedPaths['/raw'] = async (ctx) => {
     const filePath = ctx.query.q;
     try {
       const stat = await fs.promises.stat(filePath);
-      const mtime = Math.floor(stat.mtimeMs) + '';
-      if (ctx.get('If-None-Match') === mtime) {
+      const etag = eTagKey + Math.floor(stat.mtimeMs);
+      if (ctx.get('If-None-Match') === etag) {
         ctx.status = 304;
       } else {
         ctx.body = fs.createReadStream(filePath);
         ctx.set('Content-Length', stat.size + '');
-        ctx.set('ETag', mtime);
+        ctx.set('ETag', etag);
       }
     } catch (e) {/* The file probably doesn't exist */}
   }
