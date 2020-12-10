@@ -26,7 +26,6 @@ import { createProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
 export { PluginOptions } from './plugins';
-export * from './plugins/removed';
 
 export type { babelTypes, RawSourceMap }
 
