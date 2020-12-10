@@ -472,10 +472,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   if (contentServer) {
     const contentServerPath = (host: string, port: string | number) => (
       `http://${host}:${port}${it.config.contentServer.basePath}`.replace(/\/$/, '')
-    )
-    const startedAt = (address: string) => {
-      it.log('info', chalk.green(`Content server started at: ${address}`));
-    }
+    );
 
     const localPort = await portFinder.getPortPromise({
       port: it.config.contentServer.port
@@ -483,7 +480,6 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     const contentServerLocal = contentServerPath('localhost', localPort);
 
     await startServer('Local content server', contentServer, localPort);
-    startedAt(contentServerLocal);
 
     const openOptions = it.config.contentServer.open;
     if (openOptions) {
@@ -498,7 +494,6 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       const contentServerExternal = contentServerPath(externalHost, externalPort);
 
       await startServer('External content server', contentServer, externalPort, externalHost);
-      startedAt(contentServerExternal);
 
       it.exports = {
         stop,
@@ -517,6 +512,16 @@ const createInstance = async (initialConfig: ReboostConfig) => {
         }
       }
     }
+
+    it.log('info', chalk.green([
+      'Content server is running on:',
+      '  Local    - ' + chalk.blue(it.exports.contentServer.local),
+      ...(
+        it.exports.contentServer.external
+          ? ['  External - ' + chalk.blue(it.exports.contentServer.external)]
+          : []
+      )
+    ].join('\n')))
   } else {
     it.exports = {
       stop,
