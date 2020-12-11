@@ -20,6 +20,8 @@ console.log('Count', count);
 console.log('Increased count', incCount());
 console.log('Count', count);
 
+console.log(Object.keys(import.meta.hot));
+
 render();
 
 export { add }
