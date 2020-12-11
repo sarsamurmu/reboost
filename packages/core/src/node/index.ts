@@ -189,7 +189,7 @@ export interface ReboostConfig {
   dumpCache?: boolean;
 }
 
-const INCOMPATIBLE_BELOW = '0.17.0';
+const INCOMPATIBLE_BELOW = '0.19.0';
 const DEFAULT_PORT = 7456;
 
 export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
@@ -463,7 +463,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       continue;
     }
 
-    let fileContent = `import '${fullAddress}/setup';\n`;
+    let fileContent = `import '${fullAddress}/runtime';\n`;
     fileContent += 'import';
     if (libName) fileContent += ' * as _$lib$_ from';
     fileContent += ` '${fullAddress}/transformed?q=${encodeURIComponent(path.join(it.config.rootDir, input))}';\n`;

@@ -79,6 +79,7 @@ export const resolveImports = async (
 
   const promiseExecutors: (() => Promise<void>)[] = [];
   let astProgram: NodePath<t.Program>;
+  let hasImportMeta = false;
 
   traverse(ast, {
     Program(nodePath) {
@@ -126,53 +127,77 @@ export const resolveImports = async (
           )
         );
       }
+    },
+    MetaProperty(path) {
+      if (
+        t.isIdentifier(path.node.meta, { name: 'import' }) &&
+        t.isIdentifier(path.node.property, { name: 'meta' })
+      ) hasImportMeta = true;
     }
   });
 
-  const importMeta = t.metaProperty(
-    t.identifier('import'),
-    t.identifier('meta')
-  );
-  const importMetaUrl = t.memberExpression(
-    importMeta,
-    t.identifier('url')
-  );
+  if (hasImportMeta) {
+    const importMeta = t.metaProperty(
+      t.identifier('import'),
+      t.identifier('meta')
+    );
+    const importMetaUrl = t.memberExpression(
+      importMeta,
+      t.identifier('url')
+    );
+    const localHotIdentifier = t.identifier('Hot_' + uniqueID(4));
 
-  astProgram.node.body.unshift(
-    t.expressionStatement(
-      t.assignmentExpression(
-        '=',
-        importMetaUrl,
-        t.stringLiteral(filePath)
-      )
-    )
-  );
+    astProgram.node.body.unshift(
+      t.importDeclaration(
+        [t.importSpecifier(localHotIdentifier, t.identifier('Hot'))],
+        t.stringLiteral('/runtime')
+      ),
 
-  astProgram.node.body.unshift(
-    t.expressionStatement(
-      t.assignmentExpression(
-        '=',
-        t.memberExpression(
-          importMeta,
-          t.identifier('absoluteUrl')
-        ),
-        importMetaUrl
-      )
-    )
-  );
+      t.expressionStatement(
+        t.assignmentExpression(
+          '=',
+          t.memberExpression(
+            importMeta,
+            t.identifier('reboost')
+          ),
+          t.booleanLiteral(true)
+        )
+      ),
 
-  astProgram.node.body.unshift(
-    t.expressionStatement(
-      t.assignmentExpression(
-        '=',
-        t.memberExpression(
-          importMeta,
-          t.identifier('reboost')
-        ),
-        t.booleanLiteral(true)
+      t.expressionStatement(
+        t.assignmentExpression(
+          '=',
+          t.memberExpression(
+            importMeta,
+            t.identifier('absoluteUrl')
+          ),
+          importMetaUrl
+        )
+      ),
+
+      t.expressionStatement(
+        t.assignmentExpression(
+          '=',
+          importMetaUrl,
+          t.stringLiteral(filePath)
+        )
+      ),
+
+      t.expressionStatement(
+        t.assignmentExpression(
+          '=',
+          t.memberExpression(
+            importMeta,
+            t.identifier('hot')
+          ),
+          t.newExpression(
+            localHotIdentifier,
+            [t.stringLiteral(filePath)]
+          )
+        )
       )
-    )
-  );
+    );
+  }
 
   for (const execute of promiseExecutors) await execute();
 

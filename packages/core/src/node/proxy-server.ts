@@ -17,18 +17,18 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
 
   routedPaths['/transformed'] = createFileHandler(instance);
 
-  const loadSetupCode = () => (
-    fs.readFileSync(path.resolve(__dirname, '../browser/setup.js')).toString()
+  const loadRuntimeCode = () => (
+    fs.readFileSync(path.resolve(__dirname, '../browser/runtime.js')).toString()
   );
-  const setupCode = loadSetupCode();
+  const runtimeCode = loadRuntimeCode();
 
-  routedPaths['/setup'] = (ctx) => {
+  routedPaths['/runtime'] = (ctx) => {
     ctx.type = 'text/javascript';
     ctx.body = `const address = "${instance.proxyAddress}";\n`;
     ctx.body += `const debugMode = ${instance.config.debugMode};\n`;
     ctx.body += `const mode = "${instance.config.mode}";\n`;
     ctx.body += `const hotReload = ${instance.config.hotReload};\n\n`;
-    ctx.body += instance.config.debugMode ? loadSetupCode() : setupCode;
+    ctx.body += instance.config.debugMode ? loadRuntimeCode() : runtimeCode;
   }
 
   const eTagKey = uniqueID(10) + '-';
@@ -47,13 +47,10 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
     } catch (e) {/* The file probably doesn't exist */}
   }
 
-  const hotCode = fs.readFileSync(path.resolve(__dirname, '../browser/hot.js')).toString();
-
   routedPaths['/hot'] = (ctx) => {
     ctx.type = 'text/javascript';
-    ctx.body = `const address = "${instance.proxyAddress}";\n`;
-    ctx.body += `const filePath = ${JSON.stringify(ctx.query.q)};\n\n`;
-    ctx.body += hotCode;
+    ctx.body = 'import { Hot } from "/runtime";\n';
+    ctx.body += `export const hot = new Hot(${JSON.stringify(ctx.query.q)});`;
   }
 
   const importerCode = fs.readFileSync(path.resolve(__dirname, '../browser/importer.js')).toString();
