@@ -23,18 +23,16 @@ function ReactRefreshPlugin({ excludeNodeModules = true }: ReactRefreshPlugin.Op
   }
 
   const Runtime = '__React_Refresh_Runtime__';
-  const Hot = '__Hot_for_React__';
   const runtimeFilePath = path.join(__dirname, '../runtime/index.js');
 
   const preCode = /* js */`
     import * as ${Runtime} from ${JSON.stringify(runtimeFilePath)};
-    import { hot as ${Hot} } from 'reboost/hot';
 
     const __prevRefreshReg = self.$RefreshReg$;
     const __prevRefreshSig = self.$RefreshSig$;
 
     self.$RefreshReg$ = (type, id) => {
-      const fullId = ${Hot}.id + ' ' + id;
+      const fullId = import.meta.hot.id + ' ' + id;
       ${Runtime}.register(type, fullId);
     }
     self.$RefreshSig$ = ${Runtime}.createSignatureFunction;\n
@@ -44,12 +42,12 @@ function ReactRefreshPlugin({ excludeNodeModules = true }: ReactRefreshPlugin.Op
     self.$RefreshReg$ = __prevRefreshReg;
     self.$RefreshSig$ = __prevRefreshSig;
 
-    ${Hot}.accept((updatedModule) => {
+    import.meta.hot.accept((updatedModule) => {
       // Check if all exports are React components
       if (${Runtime}.isReactRefreshBoundary(updatedModule)) {
         ${Runtime}.performReactRefresh();
       } else {
-        ${Hot}.invalidate();
+        import.meta.hot.invalidate();
       }
     });
   `;

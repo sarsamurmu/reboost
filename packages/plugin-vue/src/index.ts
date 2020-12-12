@@ -82,7 +82,10 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
 
         if (descriptor.script || descriptor.scriptSetup) {
           try {
-            const script = compiler.compileScript(descriptor);
+            const script = compiler.compileScript(descriptor, {
+              id,
+              isProd: false
+            });
 
             preCode = compiler.rewriteDefault(script.content, '__modExp');
             scriptMap = script.map as any;
@@ -132,6 +135,7 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
         );
 
         const template = compiler.compileTemplate({
+          id,
           filename: filePath,
           compilerOptions: {
             scopeId: hasScopedCSS ? `data-v-${id}` : null
@@ -166,12 +170,8 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           );
         }
 
-        const Hot = '__Hot_for_Vue__';
-
         const postCode = `
           __modExp.render = render;
-
-          import { hot as ${Hot} } from 'reboost/hot';
 
           let __hmrData = {
             hash: {
@@ -185,17 +185,17 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
           export const __HMR_DATA__ = __hmrData;
 
           // NOTE: This enables HMR in Vue internally
-          __modExp.__hmrId = ${Hot}.id;
+          __modExp.__hmrId = import.meta.hot.id;
 
-          if (!${Hot}.data) {
+          if (!import.meta.hot.data) {
             const styleEl = document.createElement('style');
             styleEl.textContent = __hmrData.style;
             document.head.appendChild(styleEl);
 
             if (__VUE_HMR_RUNTIME__) {
-              __VUE_HMR_RUNTIME__.createRecord(${Hot}.id, __modExp);
+              __VUE_HMR_RUNTIME__.createRecord(import.meta.hot.id, __modExp);
 
-              ${Hot}.accept((updatedModule) => {
+              import.meta.hot.accept((updatedModule) => {
                 const component = updatedModule.default;
                 const newHMRData = updatedModule.__HMR_DATA__;
                 const curHash = __hmrData.hash;
@@ -206,9 +206,9 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
                   curHash.scriptSetup !== newHash.scriptSetup ||
                   curHash.style !== newHash.style
                 ) {
-                  __VUE_HMR_RUNTIME__.reload(${Hot}.id, component);
+                  __VUE_HMR_RUNTIME__.reload(import.meta.hot.id, component);
                 } else if (curHash.template !== newHash.template) {
-                  __VUE_HMR_RUNTIME__.rerender(${Hot}.id, component.render);
+                  __VUE_HMR_RUNTIME__.rerender(import.meta.hot.id, component.render);
                 }
 
                 if (__hmrData.style !== newHMRData.style) {

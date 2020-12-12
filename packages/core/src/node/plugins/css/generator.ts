@@ -175,7 +175,6 @@ export const generateModuleCode = (data: {
 
   code += `
     // Main style injection and its hot reload
-    import { hot } from 'reboost/hot';
     import { replaceReplacements, patchObject } from '#/css-runtime';
 
     const updateListeners = new Set();
@@ -190,7 +189,7 @@ export const generateModuleCode = (data: {
       style = undefined;
     }
 
-    if (!hot.data) {
+    if (!import.meta.hot.data) {
       style = document.createElement('style');
       style.textContent = exportedCSS;
       document.head.appendChild(style);
@@ -201,7 +200,7 @@ export const generateModuleCode = (data: {
         patchObject(defaultExport, newDefaultExport);
       });
 
-      hot.accept((...args) => updateListeners.forEach((cb) => cb(...args)));
+      import.meta.hot.accept((...args) => updateListeners.forEach((cb) => cb(...args)));
     }
 
     export default defaultExport;
@@ -226,7 +225,7 @@ export const generateModuleCode = (data: {
     });
 
     code += `
-      if (!hot.data) {
+      if (!import.meta.hot.data) {
         importedStyles.forEach(({ apply }) => apply());
         updateListeners.add(({ __importedStyles }) => {
           importedStyles.forEach(({ destroy }) => destroy());
