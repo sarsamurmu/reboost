@@ -51,7 +51,7 @@ export const waitForConsole = (
 
   setTimeout(() => reject(`Waiter exceeded timeout limit of ${timeout}`), timeout);
 
-  return new Promise((res, rej) => {
+  return new Promise<void>((res, rej) => {
     resolve = res;
     reject = rej;
     page.on('console', listener);
