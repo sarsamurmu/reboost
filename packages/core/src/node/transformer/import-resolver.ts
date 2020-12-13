@@ -82,6 +82,7 @@ export const resolveImports = async (
   let hasImportMeta = false;
 
   traverse(ast, {
+    noScope: true,
     Program(nodePath) {
       astProgram = nodePath;
     },
@@ -108,7 +109,7 @@ export const resolveImports = async (
         });
       } else if (t.isImport(nodePath.node.callee)) {
         // Rewrite dynamic imports
-        const importerIdentifier = nodePath.scope.generateUidIdentifier(`importer_${uniqueID(6)}`);
+        const importerIdentifier = t.identifier(`importer_${uniqueID(6)}`);
         const importerDeclaration = t.importDeclaration([
           t.importDefaultSpecifier(importerIdentifier)
         ], t.stringLiteral('/importer'));
