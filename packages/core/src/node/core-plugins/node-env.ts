@@ -39,7 +39,6 @@ const evaluateParents = (parent: NodePath) => {
 
 export const runTransformation = (ast: t.Node, mode: string) => {
   traverse(ast, {
-    noScope: true,
     MemberExpression(path) {
       if (
         t.isIdentifier(path.node.object, { name: 'process' }) &&
