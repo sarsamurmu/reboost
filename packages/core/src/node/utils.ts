@@ -1,10 +1,14 @@
 import Koa from 'koa';
 import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map';
+import chalk from 'chalk';
 
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
 import os from 'os';
+import net from 'net';
+
+import { ReboostInstance } from './index';
 
 export type DeepRequire<T> = T extends Record<string, any> ? {
   [P in keyof T]-?: DeepRequire<T[P]>;
@@ -177,12 +181,49 @@ export const onServerCreated = (app: Koa, cb: (server: http.Server) => void) => 
   }
 }
 
-export const getExternalHost = () => {
-  const interfaces = os.networkInterfaces();
-  for (const dev in interfaces) {
-    for (const details of interfaces[dev]) {
-      if (details.family === 'IPv4' && !details.internal) {
-        return details.address;
+export const getExternalHost = async (instance: ReboostInstance) => {
+  const { externalHost } = instance.config;
+
+  if (typeof externalHost === 'string') {
+    if (!net.isIPv4(externalHost)) {
+      return instance.log('info', chalk.red(
+        `The provided external host address "${externalHost}" is not a valid IPv4 address. ` +
+        'Please provide a different host address.'
+      ));
+    }
+
+    const isServerUsable = await new Promise<boolean>((resolve) => {
+      const server = net.createServer();
+      server.once('listening', () => {
+        server.close();
+        resolve(true);
+      });
+      server.once('error', (err: { code: string }) => {
+        server.close();
+        if (err.code === 'EADDRNOTAVAIL' || err.code === 'EINVAL') {
+          resolve(false);
+        }
+      });
+      server.listen(/* Any port number */ 1678, externalHost);
+    });
+
+    if (!isServerUsable) {
+      return instance.log('info', chalk.red(
+        `The provided external host "${externalHost}" is not available. ` +
+        'Please provide a different host address.'
+      ));
+    }
+
+    return externalHost;
+  }
+
+  if (externalHost) {
+    const interfaces = os.networkInterfaces();
+    for (const dev in interfaces) {
+      for (const details of interfaces[dev]) {
+        if (details.family === 'IPv4' && !details.internal) {
+          return details.address;
+        }
       }
     }
   }

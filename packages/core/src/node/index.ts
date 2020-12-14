@@ -146,6 +146,8 @@ export interface ReboostConfig {
   };
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
+  /** Enable/disable external host. Set a string of IPv4 address to set the external host */
+  externalHost?: boolean | string;
   /** Enable/disable Hot reload */
   hotReload?: boolean;
   /** Use plugins included by default */
@@ -202,6 +204,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
   },
   contentServer: undefined,
   entries: null,
+  externalHost: true,
   hotReload: true,
   includeDefaultPlugins: true,
   log: {
@@ -432,7 +435,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
 
   const proxyServer = createProxyServer(it);
   const contentServer = it.config.contentServer ? createContentServer(it) : undefined;
-  const externalHost = getExternalHost();
+  const externalHost = await getExternalHost(it);
 
   for (const { setup } of it.plugins) {
     if (setup) {
