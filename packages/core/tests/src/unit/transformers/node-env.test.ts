@@ -1,4 +1,4 @@
-import { runTransformation } from 'src-node/core-plugins/node-env';
+import { runTransformation } from '<thisPackage>/core-plugins/node-env';
 import { createTransformer } from './transformer';
 
 const t = createTransformer((ast) => runTransformation(ast, 'development'));

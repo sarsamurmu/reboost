@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { uniqueID } from 'src-node/utils';
+import { uniqueID } from '<thisPackage>/utils';
 
 type DirectoryStructure = {
   [filePath: string]: string | DirectoryStructure;

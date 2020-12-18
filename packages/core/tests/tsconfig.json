@@ -2,15 +2,14 @@
   "extends": "../../../base.tsconfig.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "outDir": "../__tests__",
+    "outDir": "../__tests__/build",
     "declaration": false,
     "importHelpers": true,
     "baseUrl": "../",
     "paths": {
-      "src-node/*": ["./src/node/*"]
+      "<thisPackage>": ["./src/node"],
+      "<thisPackage>/*": ["./src/node/*"]
     },
   },
-  "include": [
-    "**/*"
-  ]
+  "include": ["./src/**/*"]
 }

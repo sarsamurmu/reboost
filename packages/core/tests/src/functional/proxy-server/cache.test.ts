@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { ReboostConfig, start } from 'src-node/index';
+import { ReboostConfig, start } from '<thisPackage>';
 
 import { newPage, waitForConsole } from '../../helpers/browser';
 import { createFixture } from '../../helpers/fixture';

@@ -4,10 +4,8 @@
     "sourceMap": true,
     "baseUrl": "../",
     "paths": {
-      "src-node/*": ["./dist/node/*"]
+      "<thisPackage>": ["./dist/node"],
+      "<thisPackage>/*": ["./dist/node/*"]
     }
-  },
-  "include": [
-    "**/*"
-  ]
+  }
 }

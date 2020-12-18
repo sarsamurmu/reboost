@@ -1,4 +1,4 @@
-import * as utils from 'src-node/utils';
+import * as utils from '<thisPackage>/utils';
 
 import fs from 'fs';
 

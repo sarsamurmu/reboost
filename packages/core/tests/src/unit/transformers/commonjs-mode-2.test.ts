@@ -1,4 +1,4 @@
-import { runTransformation } from 'src-node/core-plugins/commonjs-mode-2';
+import { runTransformation } from '<thisPackage>/core-plugins/commonjs-mode-2';
 import { createTransformer } from './transformer';
 
 const t = createTransformer((ast) => runTransformation(ast, ''));

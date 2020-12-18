@@ -1,4 +1,4 @@
-import { start } from 'src-node/index';
+import { start } from '<thisPackage>';
 
 import { newPage, waitForConsole } from '../../helpers/browser';
 import { createFixture } from '../../helpers/fixture';

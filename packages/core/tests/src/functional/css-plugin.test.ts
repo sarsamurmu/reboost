@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { start, builtInPlugins } from 'src-node/index';
+import { start, builtInPlugins } from '<thisPackage>';
 
 import { createFixture } from '../helpers/fixture';
 import { newPage, waitForConsole, waitFor } from '../helpers/browser';
