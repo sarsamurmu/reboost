@@ -1,10 +1,10 @@
-import { CompilerOptions, ModuleKind, ScriptTarget, transpileModule } from 'typescript';
+import type ts from 'typescript';
 import loadConfig from 'tsconfig-loader';
 
 import fs from 'fs';
 import path from 'path';
 
-import { RawSourceMap, ReboostPlugin } from 'reboost';
+import { PluginContext, RawSourceMap, ReboostPlugin } from 'reboost';
 
 declare namespace TypeScriptPlugin {
   export interface Options {
@@ -16,23 +16,46 @@ declare namespace TypeScriptPlugin {
 }
 
 function TypeScriptPlugin(options: TypeScriptPlugin.Options = {}): ReboostPlugin {
-  let compilerOptions: CompilerOptions;
+  let compilerOptions: ts.CompilerOptions = {};
+  let compiler: typeof ts;
+  let compilerVersion: string;
 
-  const defaultCompilerOptions: CompilerOptions = {
-    target: ScriptTarget.ES2020,
-    module: ModuleKind.ES2020,
-    experimentalDecorators: true,
-  }
+  const loadTypeScript = (
+    resolve: PluginContext['resolve'],
+    chalk: PluginContext['chalk'],
+    config: PluginContext['config']
+  ) => {
+    if (!compiler) {
+      try {
+        compiler = require(resolve(__filename, 'typescript'));
+        compilerVersion = JSON.parse(
+          fs.readFileSync(resolve(__filename, 'typescript/package.json')).toString()
+        ).version;
+      } catch (e) {
+        if (/resolve/i.test(e.message)) {
+          console.log(chalk.red(
+            'You need to install "typescript" package in order to use TypeScriptPlugin.\n' +
+            'Please run "npm i typescript" to install TypeScript.'
+          ));
+        } else {
+          console.error(e);
+        }
+        return false;
+      }
 
-  return {
-    name: 'typescript-plugin',
-    getCacheKey: ({ serializeObject }) => serializeObject(compilerOptions),
-    setup({ config }) {
       if (!options.tsconfig) {
         const defaultTSConfigPath = path.join(config.rootDir, './tsconfig.json');
         if (fs.existsSync(defaultTSConfigPath)) {
           options.tsconfig = defaultTSConfigPath;
         }
+      }
+
+      const { ScriptTarget, ModuleKind } = compiler;
+
+      const defaultCompilerOptions: ts.CompilerOptions = {
+        target: ScriptTarget.ES2020,
+        module: ModuleKind.ES2020,
+        experimentalDecorators: true,
       }
 
       if (options.tsconfig) {
@@ -50,25 +73,36 @@ function TypeScriptPlugin(options: TypeScriptPlugin.Options = {}): ReboostPlugin
           ) as any;
           compilerOptions.module = ((/es/i.test(cOpts.module as any)
             ? ModuleKind[cOpts.module.toUpperCase()]
-            : 0) ?? defaultCompilerOptions.module) as any;
+            : 0) || defaultCompilerOptions.module) as any;
         }
       }
 
       if (!compilerOptions) compilerOptions = defaultCompilerOptions;
       if (!options.compatibleTypes) options.compatibleTypes = ['ts'];
 
-      Object.assign<any, CompilerOptions>(compilerOptions, {
+      Object.assign<any, ts.CompilerOptions>(compilerOptions, {
         inlineSourceMap: false,
         inlineSources: false,
         removeComments: true,
         sourceMap: true,
       });
+    }
+    return true;
+  }
+
+  return {
+    name: 'typescript-plugin',
+    getCacheKey: ({ serializeObject }) => serializeObject(compilerOptions) + `@v${compilerVersion}`,
+    setup(data) {
+      loadTypeScript(data.resolve, data.chalk, data.config);
     },
     transformContent({ code, type }, filePath) {
       // ? Should we care about `include` and `exclude` field
 
       if (options.compatibleTypes.includes(type)) {
-        const { sourceMapText, outputText } = transpileModule(code, { compilerOptions });
+        if (!loadTypeScript(this.resolve, this.chalk, this.config)) return;
+
+        const { sourceMapText, outputText } = compiler.transpileModule(code, { compilerOptions });
 
         return {
           code: outputText,
