@@ -1,3 +1,6 @@
+## 0.19.0
+- Target PostCSS `v8.2.1`
+
 ## 0.18.0
 - Minor fixes
 

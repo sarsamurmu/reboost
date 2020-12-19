@@ -1,3 +1,11 @@
+## 0.19.0
+- Updated dependencies
+- Content server now supports ETags
+- Now supports `import.meta.hot`
+- Performance improvements
+- Add new option `externalHost`
+- Added [`TypeScriptPlugin`](/packages/plugin-typescript/README.md)
+
 ## 0.18.2
 - Fixed issue with CommonJS interop mode 1
 - Added [`LitCSSPlugin`](/packages/plugin-litcss/README.md)

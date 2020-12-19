@@ -1,3 +1,6 @@
+## 0.19.0
+- Minor fix
+
 ## 0.18.0
 - Minor fixes
 

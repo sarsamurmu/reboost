@@ -1,3 +1,6 @@
+## 0.19.0
+- Updated template dependencies
+
 ## 0.18.2
 - Added fallback script tag for old browsers
 

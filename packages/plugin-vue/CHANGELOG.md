@@ -1,3 +1,6 @@
+## 0.19.0
+- Target Compiler `v3.0.4`
+
 ## 0.18.2
 - Minor fixes
 

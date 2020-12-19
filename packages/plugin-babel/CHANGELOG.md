@@ -1,3 +1,6 @@
+## 0.19.0
+- Target Babel `v7.12.10`
+
 ## 0.18.0
 - Minor fixes
 

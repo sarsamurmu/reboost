@@ -1,3 +1,7 @@
+## 0.19.0
+- Target Svelte `v3.31.0`
+- Use Svelte HMR `v0.12.1`
+
 ## 0.18.2
 - Minor fix
 

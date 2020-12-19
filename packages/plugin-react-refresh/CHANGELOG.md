@@ -1,3 +1,6 @@
+## 0.19.0
+- Updated dependencies
+
 ## 0.18.2
 - Use more unique identifiers
 
