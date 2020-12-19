@@ -32,6 +32,7 @@ function BabelPlugin(options: BabelPlugin.Options = {}): ReboostPlugin {
         } else {
           console.error(e);
         }
+        return false;
       }
     }
     return true;

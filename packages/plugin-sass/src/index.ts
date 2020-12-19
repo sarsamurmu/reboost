@@ -40,6 +40,7 @@ function SassPlugin(options: SassPlugin.Options = {}): ReboostPlugin {
         } else {
           console.error(e);
         }
+        return false;
       }
     }
     return true;

@@ -49,6 +49,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         } else {
           console.error(e);
         }
+        return false;
       }
     }
     return true;
@@ -68,6 +69,8 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
     },
     async transformContent(data, filePath) {
       if (data.type === 'svelte') {
+        if (!loadSvelte(this.resolve, this.chalk)) return;
+
         const {
           code: processedCode,
           dependencies

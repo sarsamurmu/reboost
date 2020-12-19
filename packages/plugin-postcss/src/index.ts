@@ -81,6 +81,7 @@ function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
         } else {
           console.error(e);
         }
+        return false;
       }
     }
     return true;
