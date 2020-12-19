@@ -15,6 +15,7 @@ const VuePlugin = require('@reboost/plugin-vue');
 const PostCSSPlugin = require('@reboost/plugin-postcss');
 const MalinaJSPlugin = require('@reboost/plugin-malinajs');
 const LitCSSPlugin = require('@reboost/plugin-litcss');
+const TypeScriptPlugin = require('@reboost/plugin-typescript');
 
 const startTime = process.hrtime();
 start({
@@ -29,6 +30,7 @@ start({
     ['./src/react/index.jsx', './public/dist/react.js'],
     ['./src/sass/index.js', './public/dist/sass.js'],
     ['./src/svelte/index.js', './public/dist/svelte.js'],
+    ['./src/typescript/index.ts', './public/dist/typescript.js'],
     ['./src/vue/index.js', './public/dist/vue.js']
   ],
   commonJSInterop: {
@@ -74,6 +76,12 @@ start({
     }, {
       include: './src/react/**',
       use: ReactFastRefreshPlugin()
+    }),
+    UsePlugin({
+      include: './src/typescript/**',
+      use: TypeScriptPlugin({
+        tsconfig: './src/typescript/tsconfig.json'
+      })
     })
   ],
   log: {
