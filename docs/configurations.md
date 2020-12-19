@@ -179,6 +179,12 @@ Assume that your server is running on `http://localhost:8000`. If you have file 
 it will be available on `http://localhost:8000/index.html`. If you set `basePath` to `/some-path`,
 now the `index.html` should be available on `http://localhost:8000/some-path/index.html`.
 
+##### `contentServer.etag`
+Type: `boolean`\
+Default: `true`
+
+Enable ETag in content server.
+
 ##### `contentServer.extensions`
 Type: `string[]`\
 Default: `['.html']`
@@ -335,6 +341,13 @@ In browser
 window.coolLib // Module { add: (...), subtract: (...) }
 ```
 As you expected, exports are available through the `window` object
+
+#### `externalHost`
+Type: `string | boolean`\
+Default: `true`
+
+Enable/disable external host feature. Set a string of IPv4 address to
+set the external host address.
 
 #### `hotReload`
 Type: `boolean`\

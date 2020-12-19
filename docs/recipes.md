@@ -349,6 +349,8 @@ by your IDE/Code editor or by yourself. If you were using `tsc` to compile your
 TypeScript code, you can use it to do type checking by using the command
 `tsc --noEmit` (if you want `tsc` to watch for changes, use the command `tsc --noEmit -w`).
 
+Also, you can use the default [TypeScriptPlugin](/packages/plugin-typescript/README.md).
+
 ## Vue 3
 Reboost supports Vue 3 using [VuePlugin](/packages/plugin-vue/README.md).
 Hot Reload feature comes built-in with the plugin.

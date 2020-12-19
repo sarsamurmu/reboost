@@ -25,4 +25,5 @@ You have to manually install them when necessary.
 - [ReactRefreshPlugin](/packages/plugin-react-refresh/README.md)
 - [SassPlugin](/packages/plugin-sass/README.md)
 - [SveltePlugin](/packages/plugin-svelte/README.md)
+- [TypeScriptPlugin](/packages/plugin-typescript/README.md)
 - [VuePlugin](/packages/plugin-vue/README.md)
