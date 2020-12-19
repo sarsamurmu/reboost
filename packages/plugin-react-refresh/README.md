@@ -36,6 +36,44 @@ Default: `true`
 
 Excludes all files which match `/node_modules/`. Disabling it will decrease performance.
 
+## Minimal setup needed
+If you want this plugin to work, please part up your components and renderers to different
+files.
+
+#### This won't work
+`index.jsx`
+```js
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+
+const App = () => {
+  return (
+    <div>Hi there!</div>
+  )
+}
+
+ReactDOM.render(<App />, document.querySelector('#app'));
+```
+#### This works
+`index.jsx`
+```js
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { App } from './App';
+
+ReactDOM.render(<App />, document.querySelector('#app'));
+```
+`App.jsx`
+```js
+import * as React from 'react';
+
+export const App = () => {
+  return (
+    <div>Hi there!</div>
+  )
+}
+```
+
 ## Example
 ### Improving performance by excluding non-related files
 By default, it runs the transformation on all files. You can run the transformation
