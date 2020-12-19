@@ -48,7 +48,7 @@ Path to Svelte config file.
 Type: `object`
 
 Options for [`svelte-hmr`](https://github.com/rixo/svelte-hmr). Controls
-Svelte's hot reloading behaviour.
+Svelte's hot reloading behavior.
 
 #### `preprocess`
 Type: `object | array`
