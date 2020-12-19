@@ -1,0 +1,39 @@
+{
+  "name": "@reboost/plugin-typescript",
+  "version": "0.18.2",
+  "description": "TypeScript plugin for Reboost",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "node ../../prepare rm-dist",
+    "version": "node ../../prepare update-changelog",
+    "build": "tsc -p build.tsconfig.json",
+    "watch": "tsc -p build.tsconfig.json -w"
+  },
+  "keywords": [
+    "reboost",
+    "plugin",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarsamurmu/reboost.git",
+    "directory": "packages/plugin-typescript"
+  },
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-typescript",
+  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "typescript": "^4.1.3"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "tsconfig-loader": "^1.1.0"
+  }
+}
