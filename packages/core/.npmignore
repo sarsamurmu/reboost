@@ -2,7 +2,7 @@ coverage/
 src/
 __tests__/
 __fixtures__/
-tests-src/
+tests/
 
 *tsconfig.json
 jest.config.js
