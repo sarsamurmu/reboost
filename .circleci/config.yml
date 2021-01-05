@@ -45,7 +45,7 @@ commands:
                   if ! [ -d node_modules ]; then
                     printf "Cache is not available, installing dependencies\n\n"
                     export NODE_ENV=development
-                    npm ci
+                    sudo npm ci
                   else
                     printf "Cache is available, skipping installation\n"
                   fi
