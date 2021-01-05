@@ -56,7 +56,7 @@ commands:
                 name: "[<< parameters.package >>] Running tests"
                 working_directory: ./packages/<< parameters.package >>
                 command: |
-                  npm bin
+                  ls "$(npm bin)"
                   PATH=$(npm bin):$PATH npm run test:ci --if-present
   install_chromium:
     steps:
