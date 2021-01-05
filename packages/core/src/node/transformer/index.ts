@@ -46,6 +46,12 @@ const getPluginContext = (
   chalk,
   config: instance.config,
   meta: {},
+  emitWarning(message, color = true) {
+    const line = '-'.repeat(process.stdout.columns);
+    message = line + '\n' + message + '\n' + line;
+    if (color) message = chalk.yellow(message);
+    console.log(message);
+  },
   addDependency(dependency) {
     mergedDependencies.push(path.normalize(dependency));
   },

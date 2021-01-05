@@ -95,7 +95,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
         let { code, map } = compiled.js;
 
         compiled.warnings.forEach((warning) => {
-          console.log(this.chalk.yellow(`SveltePlugin: Warning "${this.rootRelative(filePath)}"\n\n${warning.toString()}\n`));
+          this.emitWarning(`SveltePlugin: Warning "${this.rootRelative(filePath)}"\n\n${warning.toString()}\n`)
         });
 
         code = makeHot({

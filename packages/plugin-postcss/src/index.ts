@@ -124,7 +124,7 @@ function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
                   if (this.config.log) {
                     warnings().forEach((warning) => {
                       const { text, line, column } = warning;
-                      console.log(this.chalk.yellow(`PostCSS: Warning "${this.rootRelative(filePath)}"\n\n(${line}:${column}) ${text}`));
+                      this.emitWarning(`PostCSS: Warning "${this.rootRelative(filePath)}"\n\n(${line}:${column}) ${text}`);
                     });
                   }
                 } catch (e) {

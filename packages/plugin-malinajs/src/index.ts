@@ -61,7 +61,7 @@ function MalinaJSPlugin(options: MalinaJSPlugin.Options = {}): ReboostPlugin {
           const code = await compiler.compile(data.code, options.compilerOptions);
 
           warningsStack.pop().forEach(({ message }) => {
-            console.log(this.chalk.yellow(`MalinaJSPlugin: Warning "${this.rootRelative(filePath)}"\n\n${message}`));
+            this.emitWarning(`MalinaJSPlugin: Warning "${this.rootRelative(filePath)}"\n\n${message}`);
           });
 
           return {

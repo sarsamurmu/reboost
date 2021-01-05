@@ -136,11 +136,11 @@ function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
               const lText = text.toLowerCase();
               if (lText.includes('unsupported source map')) return;
 
-              let msg = `esbuild: Warning "${file}"\n\n`;
+              let msg = `esbuildPlugin: Warning "${file}"\n\n`;
               msg += `(${line}:${column}) ${text}\n`;
               msg += `| ${lineText}`;
               
-              console.log(this.chalk.yellow(msg));
+              this.emitWarning(msg);
             });
           }
 

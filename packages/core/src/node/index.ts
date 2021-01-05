@@ -50,6 +50,7 @@ export interface PluginContext {
   addDependency: (dependency: string) => void;
   chalk: typeof chalk;
   config: ReboostConfig;
+  emitWarning: (message: string, color?: boolean) => void;
   getCompatibleSourceMap: (map: RawSourceMap) => RawSourceMap;
   getSourceMapComment: (map: any) => string;
   MagicString: typeof MagicString;

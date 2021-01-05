@@ -27,15 +27,17 @@ export const importParser = (imports: ParsedImport[], testerFn: TesterFn): Plugi
         if (node.parent.type !== 'root') return;
 
         if (node.nodes) {
-          return result.warn(
+          result.warn(
             'Import statement should not contain child nodes. Please fix your import statement (check for missing semicolons)',
             { node, word: '@import' }
           );
+          return;
         }
 
         const [firstNode, ...mediaNodes] = valueParser(node.params).nodes;
         if ((!firstNode && !mediaNodes.length) || !['string', 'function'].includes(firstNode.type)) {
-          return result.warn('Unable to resolve URL of the import statement', { node });
+          result.warn('Unable to resolve URL of the import statement', { node });
+          return;
         }
 
         let importPath: string;
@@ -44,7 +46,8 @@ export const importParser = (imports: ParsedImport[], testerFn: TesterFn): Plugi
           importPath = firstNode.value;
         } else {
           if (firstNode.value.toLowerCase() !== 'url') {
-            return result.warn('Unable to resolve URL of the import statement', { node });
+            result.warn('Unable to resolve URL of the import statement', { node });
+            return;
           }
 
           const { nodes } = (firstNode as valueParser.FunctionNode);
@@ -53,7 +56,8 @@ export const importParser = (imports: ParsedImport[], testerFn: TesterFn): Plugi
         }
 
         if (!importPath.trim().length) {
-          return result.warn('The import statement imports nothing', { node });
+          result.warn('The import statement imports nothing', { node });
+          return;
         }
 
         if (shouldHandleURL(importPath, testerFn)) {
