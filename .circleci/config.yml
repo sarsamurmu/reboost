@@ -69,7 +69,7 @@ commands:
       - run:
           name: Installing "concurrently"
           command: |
-            npm i -g concurrently
+            sudo npm i -g concurrently
 
 jobs:
   test:
