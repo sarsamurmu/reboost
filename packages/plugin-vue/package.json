@@ -29,7 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "@babel/code-frame": "^7.12.11",
-    "@vue/compiler-sfc": "^3.0.4",
+    "@vue/compiler-sfc": "^3.0.5",
     "combine-source-map": "^0.8.0",
     "convert-source-map": "^1.7.0",
     "hash-sum": "^2.0.0"
