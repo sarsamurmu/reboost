@@ -44,7 +44,6 @@ commands:
                 command: |
                   if ! [ -d node_modules ]; then
                     printf "Cache is not available, installing dependencies\n\n"
-                    export NODE_ENV=development
                     sudo npm ci
                   else
                     printf "Cache is available, skipping installation\n"
@@ -57,9 +56,7 @@ commands:
                 name: "[<< parameters.package >>] Running tests"
                 working_directory: ./packages/<< parameters.package >>
                 command: |
-                  ls "$(npm bin)"
-                  echo $NODE_ENV
-                  PATH=$(npm bin):$PATH npm run test:ci --if-present
+                  npm run test:ci --if-present
   install_chromium:
     steps:
       - run:
