@@ -13,9 +13,9 @@
     "test": "lerna run test:ci"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.10.0",
-    "@typescript-eslint/parser": "^4.10.0",
-    "eslint": "^7.15.0",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "eslint": "^7.17.0",
     "lerna": "^3.22.1",
     "npm-check-updates": "^10.2.5",
     "plop": "^2.7.4",
