@@ -16,7 +16,7 @@ commands:
             - restore_cache:
                 name: "[root] Restoring cache"
                 keys:
-                  - v2-npm-root-{{ checksum "package-lock.json" }}
+                  - npm-{{ .Environment.CACHE_VERSION }}-root-{{ checksum "package-lock.json" }}
             - run:
                 name: "[root] Installing dependencies"
                 command: |
@@ -26,7 +26,7 @@ commands:
                   fi
             - save_cache:
                 name: "[root] Saving cache"
-                key: v2-npm-root-{{ checksum "package-lock.json" }}
+                key: npm-{{ .Environment.CACHE_VERSION }}-root-{{ checksum "package-lock.json" }}
                 paths: node_modules
       - unless:
           condition:
@@ -37,7 +37,7 @@ commands:
             - restore_cache:
                 name: "[<< parameters.package >>] Restoring cache"
                 keys:
-                  - v2-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+                  - npm-{{ .Environment.CACHE_VERSION }}-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
             - run:
                 name: "[<< parameters.package >>] Installing dependencies"
                 working_directory: ./packages/<< parameters.package >>
@@ -50,7 +50,7 @@ commands:
                   fi
             - save_cache:
                 name: "[<< parameters.package >>] Saving cache"
-                key: v2-npm-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+                key: npm-{{ .Environment.CACHE_VERSION }}-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
                 paths: ./packages/<< parameters.package >>/node_modules
             - run:
                 name: "[<< parameters.package >>] Running tests"
