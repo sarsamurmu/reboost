@@ -246,6 +246,12 @@ The [`chalk`](https://www.npmjs.com/package/chalk) module.
 #### `config`
 The configuration object passed when starting Reboost.
 
+#### `emitWarning`
+Type: `(message: string, color: boolean) => void`
+
+Logs the `message` to the console. The message is colored yellow,
+if you don't want this behavior pass `color` to `false`.
+
 #### `getCompatibleSourceMap`
 Type: `(map: RawSourceMap) => RawSourceMap`
 
