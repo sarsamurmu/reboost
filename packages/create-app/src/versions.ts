@@ -8,14 +8,14 @@ const reboostPackageVersions: Record<string, string> = JSON.parse(
 export const versions: Record<string, string> = {
   'reboost': reboostPackageVersions['core'],
   
-  'electron': '11.1.0',
+  'electron': '11.1.1',
   
   'lit-element': '2.4.0',
 
-  'malinajs': '0.6.8',
+  'malinajs': '0.6.10',
   'reboost-plugin-malinajs': reboostPackageVersions['plugin-malinajs'],
 
-  'preact': '10.5.7',
+  'preact': '10.5.9',
 
   'react': '17.0.1',
   'react-dom': '17.0.1',
@@ -23,12 +23,12 @@ export const versions: Record<string, string> = {
   '@types/react-dom': '17.0.0',
   'reboost-plugin-react-refresh': reboostPackageVersions['plugin-react-refresh'],
 
-  'solid-js': '0.23.4',
+  'solid-js': '0.23.8',
   '@babel/core': '7.12.10',
-  'babel-preset-solid': '0.23.4',
+  'babel-preset-solid': '0.23.8',
   'reboost-plugin-babel': reboostPackageVersions['plugin-babel'],
 
-  'svelte': '3.31.0',
+  'svelte': '3.31.2',
   'reboost-plugin-svelte': reboostPackageVersions['plugin-svelte'],
 
   'vue': '3.0.0',
