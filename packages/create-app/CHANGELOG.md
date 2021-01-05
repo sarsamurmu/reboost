@@ -1,3 +1,6 @@
+## 0.19.2
+- Updated template dependencies
+
 ## 0.19.0
 - Updated template dependencies
 

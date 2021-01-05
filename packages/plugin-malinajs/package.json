@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-malinajs",
-  "version": "0.19.1",
+  "version": "0.19.2",
   "description": "Malina.js plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

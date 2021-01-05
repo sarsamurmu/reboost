@@ -1,3 +1,6 @@
+## 0.19.2
+- Updated dependencies
+
 ## 0.19.0
 - Updated dependencies
 - Content server now supports ETags
