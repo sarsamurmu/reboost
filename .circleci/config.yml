@@ -43,10 +43,10 @@ commands:
                 working_directory: ./packages/<< parameters.package >>
                 command: |
                   if ! [ -d node_modules ]; then
-                    echo "Cache is not available, installing dependencies"
+                    printf "Cache is not available, installing dependencies\n\n"
                     npm ci
                   else
-                    echo "Cache is available, skipping installation"
+                    printf "Cache is available, skipping installation\n"
                   fi
             # - save_cache:
             #     name: "[<< parameters.package >>] Saving cache"
@@ -56,7 +56,8 @@ commands:
                 name: "[<< parameters.package >>] Running tests"
                 working_directory: ./packages/<< parameters.package >>
                 command: |
-                  npm run test:ci --if-present
+                  npm bin
+                  PATH=$(npm bin):$PATH npm run test:ci --if-present
   install_chromium:
     steps:
       - run:
