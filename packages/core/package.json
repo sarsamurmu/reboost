@@ -28,7 +28,7 @@
     "super-fast",
     "hot-reload",
     "esm",
-    "ecmascript-moudles",
+    "ecmascript-modules",
     "commonjs-modules",
     "no-bundle",
     "dev-server",
