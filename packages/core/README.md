@@ -6,9 +6,10 @@
 </p>
 
 <p align="center">
-  <a href="https://circleci.com/gh/sarsamurmu/reboost">
+  <!-- IDK why it's not working -->
+  <!-- <a href="https://circleci.com/gh/sarsamurmu/reboost">
     <img alt="CircleCI" src="https://circleci.com/gh/sarsamurmu/reboost.svg?style=svg">
-  </a>
+  </a> -->
   <a href="https://www.npmjs.com/package/reboost">
     <img alt="npm" src="https://img.shields.io/npm/v/reboost?style=flat-square">
   </a>
