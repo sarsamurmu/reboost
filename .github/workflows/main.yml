@@ -10,12 +10,17 @@ jobs:
         package-name: [core]
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: '15.x'
-    - run: cd ./packages/${{ matrix.package-name }}
-    - run: npm i
-    - run: npm run test:ci
+    - name: Install dependencies
+      run: |
+        cd ./packages/${{ matrix.package-name }}
+        # Workaround for now
+        rm package-lock.json
+        npm i
+    - name: Run tests
+      run: npm run test:ci
       env:
         CI: true
