@@ -16,16 +16,16 @@ jobs:
         package: [core]
     steps:
     - uses: actions/checkout@v2
+
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: '15.x'
+    
     - name: Install dependencies
       working-directory: ./packages/${{ matrix.package }}
-      run: |
-        # Workaround for now
-        # rm package-lock.json
-        npm install
+      run: npm ci
+    
     - name: Run tests
       working-directory: ./packages/${{ matrix.package }}
       env:
