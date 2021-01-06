@@ -6,11 +6,7 @@ on:
     - 'docs/**'
     - 'playground/**'
     - 'plugin-template/**'
-    paths:
-    - '**.js'
-    - '**.ts'
-    - '**.json'
-    - '.github/workflows/**'
+    - '**.md'
 
 jobs:
   build:
