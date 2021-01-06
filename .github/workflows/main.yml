@@ -1,13 +1,23 @@
 name: Tests
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+    - 'docs/**'
+    - 'playground/**'
+    - 'plugin-template/**'
+    paths:
+    - '**.js'
+    - '**.ts'
+    - '**.json'
+    - '.github/workflows/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package-name: [core]
+        package: [core]
     steps:
     - uses: actions/checkout@v2
     - name: Setup Node.js ${{ matrix.node-version }}
@@ -15,12 +25,13 @@ jobs:
       with:
         node-version: '15.x'
     - name: Install dependencies
+      working-directory: ./packages/${{ matrix.package }}
       run: |
-        cd ./packages/${{ matrix.package-name }}
         # Workaround for now
-        rm package-lock.json
-        npm i
+        # rm package-lock.json
+        npm install
     - name: Run tests
-      run: npm run test:ci
+      working-directory: ./packages/${{ matrix.package }}
       env:
         CI: true
+      run: npm run test:ci
