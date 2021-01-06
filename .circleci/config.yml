@@ -1,85 +1,45 @@
 version: 2.1
 
 commands:
-  run_package:
+  test_package:
     parameters:
       package:
         type: string
     steps:
-      # For root, only install dependencies
-      - when:
-          condition:
-            equal:
-              - << parameters.package >>
-              - root
-          steps:
-            - restore_cache:
-                name: "[root] Restoring cache"
-                keys:
-                  - npm-{{ .Environment.CACHE_VERSION }}-root-{{ checksum "package-lock.json" }}
-            - run:
-                name: "[root] Installing dependencies"
-                command: |
-                  if ! [ -d node_modules ]; then
-                    # Cache is not available, install dependencies
-                    npm ci
-                  fi
-            - save_cache:
-                name: "[root] Saving cache"
-                key: npm-{{ .Environment.CACHE_VERSION }}-root-{{ checksum "package-lock.json" }}
-                paths: node_modules
-      - unless:
-          condition:
-            equal:
-              - << parameters.package >>
-              - root
-          steps:
-            # - restore_cache:
-            #     name: "[<< parameters.package >>] Restoring cache"
-            #     keys:
-            #       - npm-{{ .Environment.CACHE_VERSION }}-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
-            - run:
-                name: "[<< parameters.package >>] Installing dependencies"
-                working_directory: ./packages/<< parameters.package >>
-                command: |
-                  if ! [ -d node_modules ]; then
-                    printf "Cache is not available, installing dependencies\n\n"
-                    sudo npm ci
-                  else
-                    printf "Cache is available, skipping installation\n"
-                  fi
-            # - save_cache:
-            #     name: "[<< parameters.package >>] Saving cache"
-            #     key: npm-{{ .Environment.CACHE_VERSION }}-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
-            #     paths: ./packages/<< parameters.package >>/node_modules
-            - run:
-                name: "[<< parameters.package >>] Running tests"
-                working_directory: ./packages/<< parameters.package >>
-                command: |
-                  npm run test:ci --if-present
-  install_chromium:
-    steps:
+      - restore_cache:
+          name: "[<< parameters.package >>] Restoring cache"
+          keys:
+            - npm-{{ .Environment.CACHE_VERSION }}-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
       - run:
-          name: Installing Chromium
+          name: "[<< parameters.package >>] Installing dependencies"
+          working_directory: ./packages/<< parameters.package >>
           command: |
-            sudo apt-get update
-            sudo apt-get install -yq chromium-browser libxss1
+            if ! [ -d node_modules ]; then
+              printf "Cache is not available, installing dependencies\n\n"
+              npm ci
+            else
+              printf "Cache is available, skipping installation\n"
+            fi
+      - save_cache:
+          name: "[<< parameters.package >>] Saving cache"
+          key: npm-{{ .Environment.CACHE_VERSION }}-<< parameters.package >>-{{ checksum "./packages/<< parameters.package >>/package-lock.json" }}
+          paths: ./packages/<< parameters.package >>/node_modules
+      - run:
+          name: "[<< parameters.package >>] Running tests"
+          working_directory: ./packages/<< parameters.package >>
+          command: |
+            npm run test:ci --if-present
 
 jobs:
-  test:
+  test_packages:
     docker:
       - image: 'cimg/node:15.5.1-browsers'
     steps:
       - checkout
-      # - install_chromium
-      # - run_package:
-      #     package: root
-      - run_package:
+      - test_package:
           package: core
-      # - run_package:
-      #     package: other-package
 
 workflows:
     run_tests:
       jobs:
-        - test
+        - test_packages
