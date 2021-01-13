@@ -8,7 +8,7 @@ const ReactRefreshPlugin = require('@reboost/plugin-react-refresh');
 
 start({
   entries: [
-    ['./src/index.js', './public/dist/index.js']
+    ['./src/index.tsx', './public/dist/index.js']
   ],
   contentServer: {
     root: './public',
