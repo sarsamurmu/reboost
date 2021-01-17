@@ -27,7 +27,7 @@ module.exports = (
         templateFiles: './plugin-template/**/*',
         globOptions: { dot: true },
         data: {
-          version: JSON.parse(fs.readFileSync(path.join(__dirname, './lerna.json')).toString()).version
+          version: JSON.parse(fs.readFileSync(path.join(__dirname, './lerna.json'), 'utf8')).version
         }
       }
     ]

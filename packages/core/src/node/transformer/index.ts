@@ -26,7 +26,7 @@ const getCompatibleSourceMap = (instance: ReboostInstance, map: RawSourceMap) =>
   map.sources.forEach((sourcePath) => {
     const absolutePath = path.join(config.rootDir, sourcePath);
     if (fs.existsSync(absolutePath)) {
-      map.sourcesContent.push(fs.readFileSync(absolutePath).toString());
+      map.sourcesContent.push(fs.readFileSync(absolutePath, 'utf8'));
     } else {
       instance.log('info', chalk.red(`Unable to find file "${absolutePath}". Required for source map generation.`));
       map.sourcesContent.push(`Unable to find file in "${absolutePath}".`);

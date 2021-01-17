@@ -36,7 +36,7 @@ export const initCache = (
   const noop = () => {/* No Operation */}
 
   const getCurrentVersion = (): string => {
-    const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json')).toString());
+    const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf8'));
     return version;
   }
 
@@ -81,7 +81,7 @@ export const initCache = (
     get version(): string {
       if (!memoized.cacheVersion) {
         memoized.cacheVersion = fs.existsSync(versionFilePath())
-          ? fs.readFileSync(versionFilePath()).toString()
+          ? fs.readFileSync(versionFilePath(), 'utf8')
           : getCurrentVersion();
         needsSave.cacheVersion = true;
       }
@@ -90,7 +90,7 @@ export const initCache = (
     get cacheIDs(): { [filePath: string]: string } {
       if (!memoized.cacheIDs) {
         const cacheIDs = fs.existsSync(cacheIDsFilePath())
-          ? JSON.parse(fs.readFileSync(cacheIDsFilePath()).toString())
+          ? JSON.parse(fs.readFileSync(cacheIDsFilePath(), 'utf8'))
           : {};
         memoized.cacheIDs = observable(cacheIDs, () => {
           needsSave.cacheIDs = true;
@@ -101,7 +101,7 @@ export const initCache = (
     get dependentsData(): { [filePath: string]: string[] } {
       if (!memoized.dependentsData) {
         const dependentsData = fs.existsSync(dependentsDataFilePath())
-          ? JSON.parse(fs.readFileSync(dependentsDataFilePath()).toString())
+          ? JSON.parse(fs.readFileSync(dependentsDataFilePath(), 'utf8'))
           : {};
         memoized.dependentsData = observable(dependentsData, () => {
           needsSave.dependentsData = true;
@@ -114,7 +114,7 @@ export const initCache = (
       get: (cacheInfos, cacheID: string) => {
         if (!cacheInfos[cacheID]) {
           const cacheInfo: CacheInfo = JSON.parse(
-            fs.readFileSync(it.cacheInfoFilePath(cacheID)).toString()
+            fs.readFileSync(it.cacheInfoFilePath(cacheID), 'utf8')
           );
           cacheInfos[cacheID] = observable(cacheInfo, () => {
             unsavedCacheInfos[cacheID] = cacheInfo;

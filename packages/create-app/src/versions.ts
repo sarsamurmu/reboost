@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const reboostPackageVersions: Record<string, string> = JSON.parse(
-  fs.readFileSync(path.join(__dirname, './package-versions.json')).toString()
+  fs.readFileSync(path.join(__dirname, './package-versions.json'), 'utf8')
 );
 
 export const versions: Record<string, string> = {

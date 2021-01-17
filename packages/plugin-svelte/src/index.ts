@@ -34,7 +34,7 @@ function SveltePlugin(options: SveltePlugin.Options = {}): ReboostPlugin {
           conditionNames: ['require']
         }));
         compilerVersion = JSON.parse(
-          fs.readFileSync(resolve(__filename, 'svelte/package.json')).toString()
+          fs.readFileSync(resolve(__filename, 'svelte/package.json'), 'utf8')
         ).version;
         makeHot = createMakeHot({
           walk: (compiler as any).walk,

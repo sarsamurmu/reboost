@@ -70,7 +70,7 @@ function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
       try {
         postcss = require(resolve(__filename, 'postcss', { mainFields: ['main'] }));
         postcssVersion = JSON.parse(
-          fs.readFileSync(resolve(__filename, 'postcss/package.json')).toString()
+          fs.readFileSync(resolve(__filename, 'postcss/package.json'), 'utf8')
         ).version;
       } catch (e) {
         if (/resolve/i.test(e.message)) {

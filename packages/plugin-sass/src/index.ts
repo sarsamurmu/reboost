@@ -23,12 +23,12 @@ function SassPlugin(options: SassPlugin.Options = {}): ReboostPlugin {
         try {
           sass = require(resolve(__filename, 'node-sass', { mainFields: ['main'] }));
           sassVersion = JSON.parse(
-            fs.readFileSync(resolve(__filename, 'node-sass/package.json')).toString()
+            fs.readFileSync(resolve(__filename, 'node-sass/package.json'), 'utf8')
           ).version;
         } catch (e) {
           sass = require(resolve(__filename, 'sass', { mainFields: ['main'] }));
           sassVersion = JSON.parse(
-            fs.readFileSync(resolve(__filename, 'sass/package.json')).toString()
+            fs.readFileSync(resolve(__filename, 'sass/package.json'), 'utf8')
           ).version;
         }
       } catch (e) {

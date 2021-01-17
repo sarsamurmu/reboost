@@ -157,7 +157,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
             if (ctx.get('If-None-Match') === getETag(filePath)) {
               ctx.status = 304;
             } else {
-              transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(cacheFilePath).toString();
+              transformedCode = config.cacheOnMemory && memoizedFiles.get(filePath) || fs.readFileSync(cacheFilePath, 'utf8');
 
               if (cacheInfo.mtime !== mtime) {
                 cacheInfo.mtime = mtime;

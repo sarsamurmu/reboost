@@ -68,7 +68,7 @@ describe('updates cache', () => {
             const dependencyPath = fixture.p('src/dep.txt');
             this.addDependency(dependencyPath);
             return {
-              code: code.replace('__DEP__', JSON.stringify(fs.readFileSync(dependencyPath).toString())),
+              code: code.replace('__DEP__', JSON.stringify(fs.readFileSync(dependencyPath, 'utf8'))),
               map: undefined
             }
           }

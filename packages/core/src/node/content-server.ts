@@ -143,7 +143,7 @@ const attachFileServer = (instance: ReboostInstance, app: Koa) => {
     index: contentServer.index
   }
 
-  const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js')).toString();
+  const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js'), 'utf8');
   const initCode = loadInitCode();
   const initScriptPath = `/reboost-${uniqueID(10)}`;
   const webSockets = new Set<WebSocket>();

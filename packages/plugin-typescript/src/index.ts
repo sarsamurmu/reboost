@@ -29,7 +29,7 @@ function TypeScriptPlugin(options: TypeScriptPlugin.Options = {}): ReboostPlugin
       try {
         compiler = require(resolve(__filename, 'typescript'));
         compilerVersion = JSON.parse(
-          fs.readFileSync(resolve(__filename, 'typescript/package.json')).toString()
+          fs.readFileSync(resolve(__filename, 'typescript/package.json'), 'utf8')
         ).version;
       } catch (e) {
         if (/resolve/i.test(e.message)) {

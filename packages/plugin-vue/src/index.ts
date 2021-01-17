@@ -48,7 +48,7 @@ function VuePlugin(options: VuePlugin.Options = {}): ReboostPlugin {
   return {
     name: 'vue-plugin',
     getCacheKey: () => JSON.parse(
-      fs.readFileSync(require.resolve('@vue/compiler-sfc/package.json')).toString()
+      fs.readFileSync(require.resolve('@vue/compiler-sfc/package.json'), 'utf8')
     ).version,
     async transformContent(data, filePath) {
       if (data.type === 'vue') {

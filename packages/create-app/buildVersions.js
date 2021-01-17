@@ -10,7 +10,7 @@ fs.readdirSync(packagesDir).forEach((dirName) => {
   if (!fs.lstatSync(path.join(packagesDir, dirName)).isDirectory()) return;
 
   const pkgJSON = JSON.parse(
-    fs.readFileSync(path.join(packagesDir, dirName, 'package.json')).toString()
+    fs.readFileSync(path.join(packagesDir, dirName, 'package.json'), 'utf8')
   );
   packageVersions[dirName] = pkgJSON.version;
 });

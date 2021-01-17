@@ -34,8 +34,8 @@ if (args.length > 1) {
         console.log(`Changelog file does not exist in ${cwd}`);
         break;
       }
-      const changelogContent = fs.readFileSync(changelogFilePath).toString();
-      const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath).toString());
+      const changelogContent = fs.readFileSync(changelogFilePath, 'utf8');
+      const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf8'));
       fs.writeFileSync(
         changelogFilePath,
         changelogContent.replace('## next', `## ${packageJSON.version}`)

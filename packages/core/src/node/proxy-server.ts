@@ -18,7 +18,7 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
   routedPaths['/transformed'] = createFileHandler(instance);
 
   const loadRuntimeCode = () => (
-    fs.readFileSync(path.resolve(__dirname, '../browser/runtime.js')).toString()
+    fs.readFileSync(path.resolve(__dirname, '../browser/runtime.js'), 'utf8')
   );
   const runtimeCode = loadRuntimeCode();
 
@@ -53,7 +53,7 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
     ctx.body += `export const hot = new Hot(${JSON.stringify(ctx.query.q)});`;
   }
 
-  const importerCode = fs.readFileSync(path.resolve(__dirname, '../browser/importer.js')).toString();
+  const importerCode = fs.readFileSync(path.resolve(__dirname, '../browser/importer.js'), 'utf8');
 
   routedPaths['/importer'] = (ctx) => {
     ctx.type = 'text/javascript';

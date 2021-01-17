@@ -151,7 +151,7 @@ export const createProcessor = (instance: ReboostInstance) => {
             } else {
               const absPathToSource = path.join(instance.config.rootDir, originalLoc.source);
               if (fs.existsSync(absPathToSource)) {
-                rawCode = fs.readFileSync(absPathToSource).toString();
+                rawCode = fs.readFileSync(absPathToSource, 'utf8');
                 location = originalLoc;
                 location.column = location.column || 1;
               } else {
