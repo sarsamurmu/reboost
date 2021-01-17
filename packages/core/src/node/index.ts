@@ -226,6 +226,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
     plugins: undefined,
     pnpApi: undefined,
     preferRelative: undefined,
+    preferAbsolute: undefined,
     restrictions: undefined,
     roots: undefined,
     symlinks: true
