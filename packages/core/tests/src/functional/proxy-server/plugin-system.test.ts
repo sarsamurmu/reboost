@@ -465,11 +465,11 @@ test('transformAST hook', async () => {
     }
   }).apply();
   type transformFnT = ReboostPlugin['transformAST'];
-  const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((ast, { traverse }, filePath) => {
+  const transformFn = jest.fn<ReturnType<transformFnT>, Parameters<transformFnT>>((programPath, _, filePath) => {
     if (filePath === fixture.p('./src/log.js')) {
-      traverse(ast, {
-        StringLiteral(path) {
-          path.node.value = path.node.value.split('').reverse().join('');
+      programPath.traverse({
+        Literal(path) {
+          path.node.value = (path.node.value as string).split('').reverse().join('');
         }
       });
     }

@@ -1,4 +1,4 @@
-import generate, { GeneratorOptions } from '@babel/generator';
+import escodegen from 'escodegen';
 import anymatch from 'anymatch';
 import { RawSourceMap } from 'source-map';
 import chalk from 'chalk';
@@ -75,6 +75,15 @@ const getErrorObj = (msg: string, dependencies: string[]) => ({
 });
 
 export const createTransformer = (instance: ReboostInstance) => {
+  const { debugMode } = instance.config;
+  const baseGeneratorOptions: escodegen.GenerateOptions = {
+    format: debugMode ? {
+      indent: { style: '  ' },
+    } : (escodegen as any).FORMAT_MINIFY,
+    comment: debugMode,
+  }
+  const sourceMapsConfig = instance.config.sourceMaps;
+
   const processor = createProcessor(instance);
   const transformFile = async (filePath: string): Promise<{
     code: string;
@@ -90,26 +99,25 @@ export const createTransformer = (instance: ReboostInstance) => {
 
     if (processed.error) return getErrorObj(processed.error, dependencies);
 
-    const { ast, sourceMap } = processed;
+    const { programPath, sourceMap } = processed;
 
-    errorOccurred = await resolveImports(instance, ast, filePath);
+    errorOccurred = await resolveImports(instance, programPath, filePath);
 
-    const sourceMapsConfig = instance.config.sourceMaps;
     const sourceMapsEnabled = !anymatch(sourceMapsConfig.exclude, filePath) && anymatch(sourceMapsConfig.include, filePath);
-    const { debugMode } = instance.config;
-    const generatorOptions: GeneratorOptions = {
-      sourceMaps: true,
-      sourceFileName: toPosix(path.relative(instance.config.rootDir, filePath)),
-      sourceRoot: 'reboost:///',
-      minified: !debugMode
-    }
 
-    const { code: generatedCode, map: generatedMap } = generate(ast, sourceMapsEnabled ? generatorOptions : undefined);
-    let map;
+    let generatedCode, map;
 
     if (sourceMap && sourceMapsEnabled) {
-      const merged = await mergeSourceMaps(sourceMap, generatedMap);
+      const generated: any = escodegen.generate(programPath.node, Object.assign({}, baseGeneratorOptions, {
+        sourceMap: toPosix(path.relative(instance.config.rootDir, filePath)),
+        sourceMapRoot: 'reboost:///',
+        sourceMapWithCode: true,
+      }));
+      generatedCode = generated.code;
+      const merged = await mergeSourceMaps(sourceMap, generated.map.toString());
       map = getCompatibleSourceMap(instance, merged);
+    } else {
+      generatedCode = escodegen.generate(programPath.node, baseGeneratorOptions);
     }
 
     return {

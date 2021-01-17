@@ -1,10 +1,13 @@
 {
   "npm.exclude": "{**/playground,**/plugin-template,**/create-app/templates/**}",
   "cSpell.words": [
+    "escodegen",
+    "estree",
     "etag",
     "litcss",
     "malina",
-    "malinajs"
+    "malinajs",
+    "meriyah"
   ],
   "files.associations": {
     "*.tsconfig.json": "jsonc"

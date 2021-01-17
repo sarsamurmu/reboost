@@ -1,33 +1,36 @@
-import * as t from '@babel/types';
-import traverse, { NodePath, Scope } from '@babel/traverse';
+import { NodePath, types as t, builders as b, utils as u, is, Scope } from 'estree-toolkit';
 
 import { builtinModules } from 'module';
 
+const hasProp = (prop: string, obj: Record<string, unknown>) => (
+  Object.prototype.hasOwnProperty.call(obj, prop)
+)
+
 const isRequireFunc = (node: t.CallExpression, scope: Scope) => (
-  t.isIdentifier(node.callee, { name: 'require' }) &&
+  is.identifier(node.callee, { name: 'require' }) &&
   node.arguments.length === 1 &&
-  t.isStringLiteral(node.arguments[0]) &&
+  is.literal(node.arguments[0], { value: (v) => typeof v === 'string' }) &&
   !scope.hasBinding('require')
 );
 
 const isModuleExports = (node: t.MemberExpression, scope: Scope) => (
-  t.isIdentifier(node.object, { name: 'module' }) &&
+  is.identifier(node.object, { name: 'module' }) &&
   (
     node.computed
-      ? t.isStringLiteral(node.property, { value: 'exports' })
-      : t.isIdentifier(node.property, { name: 'exports' })
+      ? is.literal(node.property, { value: 'exports' })
+      : is.identifier(node.property, { name: 'exports' })
   ) &&
   !scope.hasBinding('module')
 );
 
-const export__cjsModuleTrue = () => t.exportNamedDeclaration(
-  t.variableDeclaration(
+const export__cjsModuleTrue = () => b.exportNamedDeclaration(
+  b.variableDeclaration(
     'const',
-    [t.variableDeclarator(t.identifier('__cjsModule'), t.booleanLiteral(true))]
+    [b.variableDeclarator(b.identifier('__cjsModule'), b.literal(true))]
   )
 );
 
-export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
+export const transformCommonJSToES6 = (programPath: NodePath<t.Program>, id: string) => {
   // Most of variables are initialized lazily
   let importIdx = 0;
   let importIdentifierMap: Record<string, t.Identifier>;
@@ -40,7 +43,6 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
   let modExports: t.ExportSpecifier[];
   let insertAfters: [NodePath, t.Node][];
   let interopFuncIdentifier: t.Identifier;
-  let program: NodePath<t.Program>;
   // If `exports.<member> = value;` is used
   let usedExports: boolean;
   // If `module.exports.<member> = value;` is used
@@ -48,41 +50,38 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
   let is__esModule: boolean;
 
   const fixRequireCallExpression = (path: NodePath<t.CallExpression>) => {
-    const importPath = (path.node.arguments[0] as t.StringLiteral).value;
-    const importIdentifier = (importIdentifierMap || (importIdentifierMap = {}))[importPath] ||
-      t.identifier(`imported_${importIdx++}_${id}`);
+    const importPath = (path.node.arguments[0] as t.Literal).value as string;
+    const importIdentifier = (importIdentifierMap ||= {})[importPath] ||
+      b.identifier(`imported_${importIdx++}_${id}`);
 
     // Don't resolve built-in modules like path, fs, etc.
     if (builtinModules.includes(importPath)) return;
 
-    if (!(importPath in importIdentifierMap)) {
+    if (!hasProp(importPath, importIdentifierMap)) {
       importIdentifierMap[importPath] = importIdentifier;
-      (modImports || (modImports = [])).push(
-        t.importDeclaration(
-          [t.importNamespaceSpecifier(importIdentifier)],
-          t.stringLiteral(importPath)
+      (modImports ||= []).push(
+        b.importDeclaration(
+          [b.importNamespaceSpecifier(importIdentifier)],
+          b.literal(importPath)
         )
       );
     }
 
     path.replaceWith(
-      t.callExpression(
-        (interopFuncIdentifier || (interopFuncIdentifier = t.identifier(`__commonJS_${id}`))),
+      b.callExpression(
+        (interopFuncIdentifier ||= b.identifier(`__commonJS_${id}`)),
         [importIdentifier]
       )
     );
   }
 
-  traverse(ast, {
-    Program(path) {
-      program = path;
-    },
+  programPath.traverse({
     CallExpression(path) {
       if (isRequireFunc(path.node, path.scope)) {
         const parentPath = path.parentPath;
         if (
-          t.isAssignmentExpression(parentPath.node) &&
-          t.isMemberExpression(parentPath.node.left) &&
+          is.assignmentExpression(parentPath.node) &&
+          is.memberExpression(parentPath.node.left) &&
           isModuleExports(parentPath.node.left, parentPath.scope)
         ) {
           // module.exports = require('something')
@@ -94,30 +93,30 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
       }
     },
     MemberExpression(path) {
-      const parent = path.parentPath;
-      let exportIdentifier;
-      let exportName;
+      const { parentPath } = path;
+      let exportIdentifier: t.Identifier;
+      let exportName: string;
       let usedExportType: 'module.exports' | 'exports';
 
       if (
-        parent.isCallExpression() &&
-        t.isIdentifier(path.node.object, { name: 'Object' }) &&
-        t.isIdentifier(path.node.property, { name: 'defineProperty' }) &&
+        is.callExpression(parentPath) &&
+        is.identifier(path.node.object, { name: 'Object' }) &&
+        is.identifier(path.node.property, { name: 'defineProperty' }) &&
         (
           (
-            t.isIdentifier(parent.node.arguments[0], { name: 'exports' }) &&
-            !parent.scope.hasBinding('exports')
+            is.identifier(parentPath.node.arguments[0], { name: 'exports' }) &&
+            !parentPath.scope.hasBinding('exports')
           ) || (
-            t.isMemberExpression(parent.node.arguments[0]) &&
-            isModuleExports(parent.node.arguments[0], parent.scope)
+            is.memberExpression(parentPath.node.arguments[0]) &&
+            isModuleExports(parentPath.node.arguments[0], parentPath.scope)
           )
         ) &&
-        t.isStringLiteral(parent.node.arguments[1], { value: '__esModule' }) &&
-        t.isObjectExpression(parent.node.arguments[2]) &&
-        parent.node.arguments[2].properties.some((n) => (
-          t.isObjectProperty(n) &&
-          t.isIdentifier(n.key, { name: 'value' }) &&
-          t.isBooleanLiteral(n.value, { value: true }) &&
+        is.literal(parentPath.node.arguments[1], { value: '__esModule' }) &&
+        is.objectExpression(parentPath.node.arguments[2]) &&
+        parentPath.node.arguments[2].properties.some((n) => (
+          is.property(n) &&
+          is.identifier(n.key, { name: 'value' }) &&
+          is.literal(n.value, { value: true }) &&
           !n.computed && !n.shorthand
         ))
       ) {
@@ -125,7 +124,7 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
         // Object.defineProperty(module.exports, '__esModule', { value: true });
 
         is__esModule = true;
-        parent.remove();
+        parentPath.remove();
         return;
       }
 
@@ -136,17 +135,21 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
         }
 
         if (
-          t.isMemberExpression(parent.node) &&
-          (parent.node.computed ? t.isStringLiteral(parent.node.property) : true)
+          is.memberExpression(parentPath.node) &&
+          (
+            parentPath.node.computed
+              ? is.literal(parentPath.node.property, { value: (v) => typeof v === 'string' })
+              : true
+          )
         ) {
           // module.exports.any
-          exportName = (parent.node.property as t.Identifier).name ||
-            (parent.node.property as t.StringLiteral).value;
+          exportName = (parentPath.node.property as t.Identifier).name ||
+            (parentPath.node.property as t.Literal).value as string;
 
           if (
             exportName === '__esModule' &&
-            parent.parentPath.isAssignmentExpression() &&
-            (parent.parentPath.get('right') as NodePath).evaluateTruthy()
+            is.assignmentExpression(parentPath.parentPath) &&
+            u.evaluateTruthy(parentPath.parentPath.get('right'))
           ) {
             // module.exports.__esModule = <truthyValue>;
             is__esModule = true;
@@ -154,16 +157,16 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
           markUsedModuleExports();
         } else if (
-          t.isAssignmentExpression(parent.node) &&
+          is.assignmentExpression(parentPath) &&
           (
-            t.isProgram(parent.parentPath) ||
+            is.program(parentPath.parentPath) ||
             (
-              t.isExpressionStatement(parent.parentPath) &&
-              t.isProgram(parent.parentPath.parentPath)
+              is.expressionStatement(parentPath.parentPath) &&
+              is.program(parentPath.parentPath.parentPath)
             )
           ) &&
-          t.isCallExpression(parent.node.right) &&
-          isRequireFunc(parent.node.right, parent.scope)
+          is.callExpression(parentPath.node.right) &&
+          isRequireFunc(parentPath.node.right, parentPath.scope)
         ) {
           // module.exports = require('some/code');
           /*
@@ -177,10 +180,10 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
             this mean `module.exports = require()` basically resets other exports,
             so we are going to do the same
           */
-          exportAll = t.exportAllDeclaration(
-            t.stringLiteral((parent.node.right.arguments[0] as t.StringLiteral).value)
+          exportAll = b.exportAllDeclaration(
+            b.literal((parentPath.node.right.arguments[0] as t.Literal).value)
           );
-          exportAllParent = parent;
+          exportAllParent = parentPath;
 
           // Reset previous exports
           exportIdx = 0;
@@ -191,16 +194,16 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
           markUsedModuleExports();
         }
       } else if (
-        t.isIdentifier(path.node.object, { name: 'exports' }) &&
+        is.identifier(path.node.object, { name: 'exports' }) &&
         !path.scope.hasBinding('exports')
       ) {
         exportName = (path.node.property as t.Identifier).name ||
-          (path.node.property as t.StringLiteral).value;
+          (path.node.property as t.Literal).value as string;
 
         if (
           exportName === '__esModule' &&
-          path.parentPath.isAssignmentExpression() &&
-          (path.parentPath.get('right') as NodePath).evaluateTruthy()
+          is.assignmentExpression(parentPath) &&
+          u.evaluateTruthy(parentPath.get('right'))
         ) {
           // exports.__esModule = <truthyValue>;
           is__esModule = true;
@@ -215,42 +218,42 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
         exportName !== '__esModule' &&
         /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(exportName)
       ) {
-        exportIdentifier = (exportIdentifierMap || (exportIdentifierMap = {}))[exportName] ||
-          t.identifier(`export_${exportIdx++}_${id}`);
+        exportIdentifier = (exportIdentifierMap ||= {})[exportName] ||
+          b.identifier(`export_${exportIdx++}_${id}`);
 
-        (insertAfters || (insertAfters = [])).push([
-          path.findParent((p) => p.isExpressionStatement()),
-          t.expressionStatement(
-            t.assignmentExpression(
+        (insertAfters ||= []).push([
+          path.findParent((p) => is.expressionStatement(p)),
+          b.expressionStatement(
+            b.assignmentExpression(
               '=',
               exportIdentifier,
-              t.memberExpression(
+              b.memberExpression(
                 usedExportType === 'module.exports'
-                  ? t.memberExpression(t.identifier('module'), t.identifier('exports'))
-                  : t.identifier('exports'),
-                t.identifier(exportName)
+                  ? b.memberExpression(b.identifier('module'), b.identifier('exports'))
+                  : b.identifier('exports'),
+                b.identifier(exportName)
               )
             )
           )
         ]);
 
-        if (!(exportName in exportIdentifierMap)) {
+        if (!hasProp(exportName, exportIdentifierMap)) {
           exportIdentifierMap[exportName] = exportIdentifier;
-          (modExports || (modExports = [])).push(
-            t.exportSpecifier(exportIdentifier, t.identifier(exportName))
+          (modExports ||= []).push(
+            b.exportSpecifier(exportIdentifier, b.identifier(exportName))
           );
         }
       }
     },
   });
 
-  const hasOtherExports = program.get('body').some((p) => p.isExportDeclaration());
+  const hasOtherExports = programPath.get('body').some((p: NodePath) => is.exportDeclaration(p));
 
-  if (insertAfters) insertAfters.forEach(([path, toInsert]) => path && path.insertAfter(toInsert));
+  if (insertAfters) insertAfters.forEach(([path, toInsert]) => path && path.insertAfter([toInsert]));
 
   if (exportAll) {
     if (exportIdentifierMap) {
-      fixRequireCallExpression(exportAllParent.get('right') as NodePath<t.CallExpression>);
+      fixRequireCallExpression(exportAllParent.get<t.CallExpression>('right'));
     } else {
       exportAllParent.remove();
     }
@@ -258,25 +261,26 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
 
   if (exportIdentifierMap) {
     const exportIdentifiers = Object.values(exportIdentifierMap);
-    program.node.body.unshift(
-      t.variableDeclaration(
+    programPath.unshiftContainer('body', [
+      b.variableDeclaration(
         'let',
-        exportIdentifiers.map((name) => t.variableDeclarator(name))
+        exportIdentifiers.map((name) => b.variableDeclarator(name))
       )
-    );
+    ]);
   }
 
   if (usedModuleExports) {
-    program.node.body.unshift(
-      t.variableDeclaration(
+    programPath.unshiftContainer('body', [
+      b.variableDeclaration(
         'const',
         [
-          t.variableDeclarator(
-            t.identifier('module'),
-            t.objectExpression([
-              t.objectProperty(
-                t.identifier('exports'),
-                usedExports ? t.identifier('exports') : t.objectExpression([]),
+          b.variableDeclarator(
+            b.identifier('module'),
+            b.objectExpression([
+              b.property(
+                'init',
+                b.identifier('exports'),
+                usedExports ? b.identifier('exports') : b.objectExpression([]),
                 false,
                 usedExports
               )
@@ -284,99 +288,99 @@ export const transformCommonJSToES6 = (ast: t.Node, id: string) => {
           )
         ]
       )
-    );
+    ]);
   }
 
   if (usedExports) {
-    program.node.body.unshift(
-      t.variableDeclaration(
+    programPath.unshiftContainer('body', [
+      b.variableDeclaration(
         'const',
         [
-          t.variableDeclarator(
-            t.identifier('exports'),
-            t.objectExpression([])
+          b.variableDeclarator(
+            b.identifier('exports'),
+            b.objectExpression([])
           )
         ]
       )
-    );
+    ]);
   }
 
-  if (modImports) program.node.body.unshift(...modImports);
-  if (modExports) program.node.body.push(t.exportNamedDeclaration(null, modExports));
-  if (exportAll) program.node.body.push(exportAll);
+  if (modImports) programPath.unshiftContainer('body', modImports);
+  if (modExports) programPath.pushContainer('body', [b.exportNamedDeclaration(null, modExports)]);
+  if (exportAll) programPath.pushContainer('body', [exportAll]);
 
   const shouldExportDefaultFromExportAll = !exportIdentifierMap && exportAll &&
     !is__esModule && !modExports && !hasOtherExports;
 
   if (shouldExportDefaultFromExportAll) {
-    const namespaceIdentifier = t.identifier(`for_default_${id}`);
-    const defaultExportIdentifier = t.identifier(`default_export_${id}`);
-    program.node.body.unshift(
-      t.importDeclaration(
-        [t.importNamespaceSpecifier(namespaceIdentifier)],
-        t.stringLiteral(exportAll.source.value)
+    const namespaceIdentifier = b.identifier(`for_default_${id}`);
+    const defaultExportIdentifier = b.identifier(`default_export_${id}`);
+    programPath.unshiftContainer('body', [
+      b.importDeclaration(
+        [b.importNamespaceSpecifier(namespaceIdentifier)],
+        b.literal(exportAll.source.value)
       ),
-      t.variableDeclaration(
+      b.variableDeclaration(
         'let',
-        [t.variableDeclarator(defaultExportIdentifier)]
+        [b.variableDeclarator(defaultExportIdentifier)]
       )
-    );
-    program.node.body.push(
-      t.ifStatement(
-        t.binaryExpression(
+    ]);
+    programPath.pushContainer('body', [
+      b.ifStatement(
+        b.binaryExpression(
           'in',
-          t.stringLiteral('default'),
+          b.literal('default'),
           namespaceIdentifier
         ),
-        t.expressionStatement(
-          t.assignmentExpression(
+        b.expressionStatement(
+          b.assignmentExpression(
             '=',
             defaultExportIdentifier,
-            t.memberExpression(
+            b.memberExpression(
               namespaceIdentifier,
-              t.stringLiteral('default'),
+              b.literal('default'),
               true
             )
           )
         )
       ),
-      t.exportDefaultDeclaration(defaultExportIdentifier)
-    );
+      b.exportDefaultDeclaration(defaultExportIdentifier)
+    ]);
   }
 
   if (
     /* Not exporting default if default is already exported --> */ !shouldExportDefaultFromExportAll &&
-    (exportIdentifierMap ? !('default' in exportIdentifierMap) : true) &&
+    (exportIdentifierMap ? !hasProp('default', exportIdentifierMap) : true) &&
     !is__esModule && (usedModuleExports || usedExports)
   ) {
-    program.node.body.push(
-      t.exportDefaultDeclaration(
+    programPath.pushContainer('body', [
+      b.exportDefaultDeclaration(
         usedModuleExports
-          ? t.memberExpression(t.identifier('module'), t.identifier('exports'))
-          : t.identifier('exports')
+          ? b.memberExpression(b.identifier('module'), b.identifier('exports'))
+          : b.identifier('exports')
       ),
       export__cjsModuleTrue()
-    );
+    ]);
   }
 
   if (interopFuncIdentifier) {
-    program.node.body.unshift(
-      t.variableDeclaration(
+    programPath.unshiftContainer('body', [
+      b.variableDeclaration(
         'const',
         [
-          t.variableDeclarator(
+          b.variableDeclarator(
             interopFuncIdentifier,
-            t.arrowFunctionExpression(
-              [t.identifier('mod')],
-              t.conditionalExpression(
-                t.memberExpression(t.identifier('mod'), t.identifier('__cjsModule')),
-                t.memberExpression(t.identifier('mod'), t.stringLiteral('default'), true),
-                t.identifier('mod')
+            b.arrowFunctionExpression(
+              [b.identifier('mod')],
+              b.conditionalExpression(
+                b.memberExpression(b.identifier('mod'), b.identifier('__cjsModule')),
+                b.memberExpression(b.identifier('mod'), b.literal('default'), true),
+                b.identifier('mod')
               )
             )
           )
         ]
       )
-    );
+    ]);
   }
 }

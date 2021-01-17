@@ -1,9 +1,8 @@
 import { RawSourceMap, SourceMapConsumer } from 'source-map';
 import chalk from 'chalk';
-import * as babelTypes from '@babel/types';
-import { parse } from '@babel/parser';
 import { SourceLocation, codeFrameColumns } from '@babel/code-frame';
-import traverse from '@babel/traverse';
+import * as estreeToolkit from 'estree-toolkit';
+import { parseModule } from 'meriyah';
 
 import fs from 'fs';
 import path from 'path';
@@ -54,7 +53,7 @@ export const createProcessor = (instance: ReboostInstance) => {
       filePath: string,
       pluginContext: PluginContext
     ): Promise<{
-      ast?: babelTypes.Node;
+      programPath?: estreeToolkit.NodePath<estreeToolkit.types.Program>;
       sourceMap?: RawSourceMap;
       error?: string;
     }> => {
@@ -62,8 +61,9 @@ export const createProcessor = (instance: ReboostInstance) => {
 
       let code: string;
       let sourceMap: RawSourceMap;
-      let ast: babelTypes.Node;
+      let ast: estreeToolkit.types.Program;
       let type: string;
+      let programPath: estreeToolkit.NodePath<estreeToolkit.types.Program>;
 
       for (const hook of pluginHooks.loadHooks) {
         const result = await bind(hook, pluginContext)(filePath);
@@ -125,16 +125,17 @@ export const createProcessor = (instance: ReboostInstance) => {
       if (transformContentError) return transformContentError;
 
       try {
-        ast = parse(code, { sourceType: 'module' });
+        ast = parseModule(code) as estreeToolkit.types.Program;
       } catch (e) /* istanbul ignore next */ {
         let message = '';
         let consoleMessage = '';
-        const frameMessage = e.message.replace(/\s*\(.*\)$/, '');
+        // Example original message - `[1:4]: Unexpected token: 'end of source'`
+        // After replace - `Unexpected token: 'end of source'`
+        const frameMessage = e.message.replace(/^(\s*\[\d*:\d*\]:\s*)/, '');
         let rawCode = code;
         let location: SourceLocation['start'] = e.loc;
         let unableToLocateFile = false;
         message += `Error while parsing "${filePath}"\n`;
-        message += 'You may need proper loader to handle this kind of files.\n\n';
 
         consoleMessage += chalk.red(message);
 
@@ -190,12 +191,19 @@ export const createProcessor = (instance: ReboostInstance) => {
         }
       }
 
+      estreeToolkit.traverse(ast, {
+        $: { scope: true },
+        Program(path) {
+          programPath = path;
+        }
+      });
+
       for (const hook of pluginHooks.transformASTHooks) {
-        await bind(hook, pluginContext)(ast, { traverse, types: babelTypes }, filePath);
+        await bind(hook, pluginContext)(programPath, estreeToolkit, filePath);
       }
 
       return {
-        ast,
+        programPath,
         sourceMap
       }
     }

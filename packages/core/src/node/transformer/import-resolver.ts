@@ -1,6 +1,5 @@
 import chalk from 'chalk';
-import traverse, { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import { NodePath, types as t, builders as b, is } from 'estree-toolkit';
 
 import { ReboostInstance } from '../index';
 import { getPluginHooks } from './processor';
@@ -25,18 +24,18 @@ const pathFromRouted = (path: string) => path.substring(1);
 
 export const resolveImports = async (
   instance: ReboostInstance,
-  ast: t.Node,
+  programPath: NodePath<t.Program>,
   filePath: string
 ) => {
   let error = false;
   const imports: string[] = [];
 
   const resolveDeclaration = async (
-    nodePath: NodePath<t.ImportDeclaration> | NodePath<t.ExportDeclaration>
+    nodePath: NodePath<t.ImportDeclaration | t.ExportDeclaration>
   ): Promise<void> => {
     if (nodePath.has('source')) {
-      const sourcePath = nodePath.get('source') as NodePath<t.StringLiteral>;
-      const source = sourcePath.node.value;
+      const sourcePath = nodePath.get<t.Literal>('source');
+      const source = sourcePath.node.value as string;
 
       if (source === 'reboost/hmr' || source === 'reboost/hot') {
         // TODO: Remove it in v1.0
@@ -44,7 +43,7 @@ export const resolveImports = async (
           instance.log('info', chalk.yellow(`Warning ${filePath}: "reboost/hmr" is deprecated, please use "reboost/hot"`));
         }
 
-        sourcePath.replaceWith(t.stringLiteral(`/hot?q=${encodeURIComponent(filePath)}`));
+        sourcePath.replaceWith(b.literal(`/hot?q=${encodeURIComponent(filePath)}`));
       } else {
         let finalPath = null;
         let routed = false;
@@ -66,7 +65,7 @@ export const resolveImports = async (
           }
         }
 
-        sourcePath.replaceWith(t.stringLiteral(
+        sourcePath.replaceWith(b.literal(
           routed
             ? finalPath
             : finalPath
@@ -78,145 +77,141 @@ export const resolveImports = async (
   }
 
   const promiseExecutors: (() => Promise<void>)[] = [];
-  let astProgram: NodePath<t.Program>;
   let hasImportMeta = false;
 
-  traverse(ast, {
-    noScope: true,
-    Program(nodePath) {
-      astProgram = nodePath;
+  programPath.traverse({
+    ImportDeclaration(path) {
+      promiseExecutors.push(() => resolveDeclaration(path));
     },
-    ImportDeclaration(nodePath) {
-      promiseExecutors.push(() => resolveDeclaration(nodePath));
-      return false;
+    ExportDeclaration(path) {
+      promiseExecutors.push(() => resolveDeclaration(path));
     },
-    ExportDeclaration(nodePath) {
-      promiseExecutors.push(() => resolveDeclaration(nodePath));
-      return false;
-    },
-    CallExpression(nodePath) {
-      if (t.isIdentifier(nodePath.node.callee, { name: '__reboost_resolve' })) {
+    CallExpression(path) {
+      if (is.identifier(path.node.callee, { name: '__reboost_resolve' })) {
         promiseExecutors.push(async () => {
-          const toResolve = (nodePath.node.arguments[0] as t.StringLiteral).value;
+          const toResolve = (path.node.arguments[0] as t.Literal).value as string;
           if (isPathRouted(toResolve)) {
-            nodePath.replaceWith(t.stringLiteral(pathFromRouted(toResolve)));
+            path.replaceWith(b.literal(pathFromRouted(toResolve)));
           } else {
             const resolvedPath = await resolveDependency(instance, toResolve, filePath);
             if (resolvedPath) {
-              nodePath.replaceWith(t.stringLiteral(resolvedPath));
+              path.replaceWith(b.literal(resolvedPath));
             }
           }
         });
-      } else if (t.isImport(nodePath.node.callee)) {
-        // Rewrite dynamic imports
-        const importerIdentifier = t.identifier(`importer_${uniqueID(6)}`);
-        const importerDeclaration = t.importDeclaration([
-          t.importDefaultSpecifier(importerIdentifier)
-        ], t.stringLiteral('/importer'));
-        astProgram.node.body.unshift(importerDeclaration);
-        
-        nodePath.replaceWith(
-          t.callExpression(
-            t.memberExpression(
-              t.identifier(importerIdentifier.name),
-              t.identifier('Dynamic')
-            ),
-            [
-              nodePath.node.arguments[0],
-              t.stringLiteral(filePath)
-            ]
-          )
-        );
       }
+    },
+    ImportExpression(path) {
+      // Rewrite dynamic imports
+      const importerIdentifier = b.identifier(`importer_${uniqueID(6)}`);
+      const importerDeclaration = b.importDeclaration([
+        b.importDefaultSpecifier(importerIdentifier)
+      ], b.literal('/importer'));
+      programPath.unshiftContainer('body', [importerDeclaration])[0].skip(); // Don't traverse the import declaration
+
+      path.replaceWith(
+        b.callExpression(
+          b.memberExpression(
+            b.identifier(importerIdentifier.name),
+            b.identifier('Dynamic')
+          ),
+          [
+            path.node.source,
+            b.literal(filePath)
+          ]
+        )
+      );
     },
     MetaProperty(path) {
       if (
-        t.isIdentifier(path.node.meta, { name: 'import' }) &&
-        t.isIdentifier(path.node.property, { name: 'meta' })
-      ) hasImportMeta = true;
+        is.identifier(path.node.meta, { name: 'import' }) &&
+        is.identifier(path.node.property, { name: 'meta' })
+      ) {
+        hasImportMeta = true;
+      }
     }
   });
 
   if (hasImportMeta) {
-    const importMeta = t.metaProperty(
-      t.identifier('import'),
-      t.identifier('meta')
+    const importMeta = b.metaProperty(
+      b.identifier('import'),
+      b.identifier('meta')
     );
-    const importMetaUrl = t.memberExpression(
+    const importMetaUrl = b.memberExpression(
       importMeta,
-      t.identifier('url')
+      b.identifier('url')
     );
-    const localHotIdentifier = t.identifier('Hot_' + uniqueID(4));
+    const localHotIdentifier = b.identifier('Hot_' + uniqueID(4));
 
-    astProgram.node.body.unshift(
-      t.importDeclaration(
-        [t.importSpecifier(localHotIdentifier, t.identifier('Hot'))],
-        t.stringLiteral('/runtime')
+    programPath.unshiftContainer('body', [
+      b.importDeclaration(
+        [b.importSpecifier(b.identifier('Hot'), localHotIdentifier)],
+        b.literal('/runtime')
       ),
 
-      t.expressionStatement(
-        t.assignmentExpression(
+      b.expressionStatement(
+        b.assignmentExpression(
           '=',
-          t.memberExpression(
+          b.memberExpression(
             importMeta,
-            t.identifier('reboost')
+            b.identifier('reboost')
           ),
-          t.booleanLiteral(true)
+          b.literal(true)
         )
       ),
 
-      t.expressionStatement(
-        t.assignmentExpression(
+      b.expressionStatement(
+        b.assignmentExpression(
           '=',
-          t.memberExpression(
+          b.memberExpression(
             importMeta,
-            t.identifier('absoluteUrl')
+            b.identifier('absoluteUrl')
           ),
           importMetaUrl
         )
       ),
 
-      t.expressionStatement(
-        t.assignmentExpression(
+      b.expressionStatement(
+        b.assignmentExpression(
           '=',
           importMetaUrl,
-          t.stringLiteral(filePath)
+          b.literal(filePath)
         )
       ),
 
-      t.expressionStatement(
-        t.assignmentExpression(
+      b.expressionStatement(
+        b.assignmentExpression(
           '=',
-          t.memberExpression(
+          b.memberExpression(
             importMeta,
-            t.identifier('hot')
+            b.identifier('hot')
           ),
-          t.newExpression(
+          b.newExpression(
             localHotIdentifier,
-            [t.stringLiteral(filePath)]
+            [b.literal(filePath)]
           )
         )
       )
-    );
+    ]);
   }
 
   for (const execute of promiseExecutors) await execute();
 
   if (imports.length) {
-    astProgram.node.body.push(
-      t.expressionStatement(
-        t.callExpression(
-          t.memberExpression(
-            t.memberExpression(t.identifier('Reboost'), t.stringLiteral('[[Private]]'), true),
-            t.identifier('setDependencies')
+    programPath.pushContainer('body', [
+      b.expressionStatement(
+        b.callExpression(
+          b.memberExpression(
+            b.memberExpression(b.identifier('Reboost'), b.literal('[[Private]]'), true),
+            b.identifier('setDependencies')
           ),
           [
-            t.stringLiteral(filePath),
-            t.arrayExpression(imports.map((s) => t.stringLiteral(s)))
+            b.literal(filePath),
+            b.arrayExpression(imports.map((s) => b.literal(s)))
           ]
         )
       )
-    );
+    ]);
   }
 
   return error;

@@ -1,35 +1,32 @@
-import * as t from '@babel/types';
-import traverse, { NodePath } from '@babel/traverse';
+import { NodePath, types as t, builders as b, is } from 'estree-toolkit';
 
 import { builtinModules } from 'module';
 
-const getReboostResolveCall = (source: string) => t.callExpression(
-  t.identifier('__reboost_resolve'),
-  [t.stringLiteral(source)]
+const getReboostResolveCall = (source: string) => b.callExpression(
+  b.identifier('__reboost_resolve'),
+  [b.literal(source)]
 );
 
-export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => {
-  let program: NodePath<t.Program>;
+export const transformCommonJS = (programPath: NodePath<t.Program>, filePath: string, id: string) => {
   let usedModuleExports: boolean;
   let usedExports: boolean;
   let modImports: t.ImportDeclaration[];
   let importIdentifierMap: Record<string, t.Identifier>;
-  const importerIdentifier: t.Identifier = t.identifier(`importer_${id}`);
+  const importerIdentifier: t.Identifier = b.identifier(`importer_${id}`);
   let usedImporter: boolean;
   let replacements: [NodePath<t.ImportDeclaration>, t.ImportDeclaration, t.VariableDeclarator[]][];
   let importIdx = 0;
 
-  traverse(ast, {
+  programPath.traverse({
     Program(path) {
-      program = path;
-      if (path.scope.hasGlobal('module')) usedModuleExports = true;
-      if (path.scope.hasGlobal('exports')) usedExports = true;
+      if (path.scope.hasGlobalBinding('module')) usedModuleExports = true;
+      if (path.scope.hasGlobalBinding('exports')) usedExports = true;
     },
     ImportDeclaration(path) {
       if (path.node.specifiers.length === 0) return;
 
       const declarators: t.VariableDeclarator[] = [];
-      const identifier = t.identifier(`import_${importIdx++}_${id}`);
+      const identifier = b.identifier(`import_${importIdx++}_${id}`);
 
       usedImporter = true;
 
@@ -38,32 +35,30 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
         let importedName;
         const localName = specifier.local.name;
         const commons = [
-          getReboostResolveCall(path.node.source.value),
-          t.stringLiteral(filePath)
+          getReboostResolveCall(path.node.source.value as string),
+          b.literal(filePath)
         ];
 
-        if (t.isImportDefaultSpecifier(specifier)) {
+        if (is.importDefaultSpecifier(specifier)) {
           usage = 'Default';
-        } else if (t.isImportNamespaceSpecifier(specifier)) {
+        } else if (is.importNamespaceSpecifier(specifier)) {
           usage = 'All';
-        } else if (t.isImportSpecifier(specifier)) {
+        } else if (is.importSpecifier(specifier)) {
           usage = 'Member';
-          importedName = t.isIdentifier(specifier.imported)
-            ? specifier.imported.name
-            : specifier.imported.value;
+          importedName = specifier.imported.name;
         }
 
         declarators.push(
-          t.variableDeclarator(
-            t.identifier(localName),
-            t.callExpression(
-              t.memberExpression(
+          b.variableDeclarator(
+            b.identifier(localName),
+            b.callExpression(
+              b.memberExpression(
                 importerIdentifier,
-                t.identifier(usage)
+                b.identifier(usage)
               ),
               importedName ? [
                 identifier,
-                t.stringLiteral(importedName),
+                b.literal(importedName),
                 ...commons
               ] : [identifier, ...commons]
             )
@@ -71,34 +66,34 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
         );
       });
 
-      (replacements || (replacements = [])).push([
+      (replacements ||= []).push([
         path,
-        t.importDeclaration([
-          t.importNamespaceSpecifier(identifier)
-        ], t.stringLiteral(path.node.source.value)),
+        b.importDeclaration([
+          b.importNamespaceSpecifier(identifier)
+        ], b.literal(path.node.source.value)),
         declarators
       ]);
     },
     CallExpression(path) {
       if (
-        t.isIdentifier(path.node.callee, { name: 'require' }) &&
+        is.identifier(path.node.callee, { name: 'require' }) &&
         path.node.arguments.length === 1 &&
-        t.isStringLiteral(path.node.arguments[0]) &&
+        is.literal(path.node.arguments[0], { value: (v) => typeof v === 'string' }) &&
         !path.scope.hasBinding('require')
       ) {
-        const importPath = path.node.arguments[0].value;
-        const importIdentifier = (importIdentifierMap || (importIdentifierMap = {}))[importPath] ||
-          t.identifier(`imported_${importIdx++}_${id}`);
+        const importPath = path.node.arguments[0].value as string;
+        const importIdentifier = (importIdentifierMap ||= {})[importPath] ||
+          b.identifier(`imported_${importIdx++}_${id}`);
 
         // Don't resolve built-in modules like path, fs, etc.
         if (builtinModules.includes(importPath)) return;
 
         if (!(importPath in importIdentifierMap)) {
           importIdentifierMap[importPath] = importIdentifier;
-          (modImports || (modImports = [])).push(
-            t.importDeclaration(
-              [t.importNamespaceSpecifier(importIdentifier)],
-              t.stringLiteral(importPath)
+          (modImports ||= []).push(
+            b.importDeclaration(
+              [b.importNamespaceSpecifier(importIdentifier)],
+              b.literal(importPath)
             )
           );
         }
@@ -106,34 +101,35 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
         usedImporter = true;
 
         path.replaceWith(
-          t.callExpression(
-            t.memberExpression(
+          b.callExpression(
+            b.memberExpression(
               importerIdentifier,
-              t.identifier('All'),
+              b.identifier('All'),
             ),
             [
               importIdentifier,
               getReboostResolveCall(importPath),
-              t.stringLiteral(filePath)
+              b.literal(filePath)
             ]
           )
         );
       }
-    },
+    }
   });
 
   if (usedModuleExports || usedExports) {
     if (usedModuleExports) {
-      program.node.body.unshift(
-        t.variableDeclaration(
+      programPath.unshiftContainer('body', [
+        b.variableDeclaration(
           'const',
           [
-            t.variableDeclarator(
-              t.identifier('module'),
-              t.objectExpression([
-                t.objectProperty(
-                  t.identifier('exports'),
-                  usedExports ? t.identifier('exports') : t.objectExpression([]),
+            b.variableDeclarator(
+              b.identifier('module'),
+              b.objectExpression([
+                b.property(
+                  'init',
+                  b.identifier('exports'),
+                  usedExports ? b.identifier('exports') : b.objectExpression([]),
                   false,
                   usedExports
                 )
@@ -141,56 +137,56 @@ export const transformCommonJS = (ast: t.Node, filePath: string, id: string) => 
             ),
           ]
         )
-      );
+      ]);
     }
 
     if (usedExports) {
-      program.node.body.unshift(
-        t.variableDeclaration(
+      programPath.unshiftContainer('body', [
+        b.variableDeclaration(
           'const',
           [
-            t.variableDeclarator(
-              t.identifier('exports'),
-              t.objectExpression([])
+            b.variableDeclarator(
+              b.identifier('exports'),
+              b.objectExpression([])
             )
           ]
         )
-      );
+      ]);
     }
 
-    program.node.body.push(
-      t.exportNamedDeclaration(
-        t.variableDeclaration(
+    programPath.pushContainer('body', [
+      b.exportNamedDeclaration(
+        b.variableDeclaration(
           'var',
           [
-            t.variableDeclarator(
-              t.identifier('__cjsExports'),
+            b.variableDeclarator(
+              b.identifier('__cjsExports'),
               usedModuleExports
-                ? t.memberExpression(t.identifier('module'), t.identifier('exports'))
-                : t.identifier('exports')
+                ? b.memberExpression(b.identifier('module'), b.identifier('exports'))
+                : b.identifier('exports')
             )
           ]
         )
       )
-    );
+    ]);
   }
 
-  if (modImports) program.node.body.unshift(...modImports);
+  if (modImports) programPath.unshiftContainer('body', modImports);
 
   if (usedImporter) {
     if (replacements) {
       replacements.forEach(([path, replacement, declarators]) => {
         if (declarators.length) {
-          path.insertAfter(t.variableDeclaration('const', declarators));
+          path.insertAfter([b.variableDeclaration('const', declarators)]);
         }
         path.replaceWith(replacement);
       });
     }
 
-    program.node.body.unshift(
-      t.importDeclaration([
-        t.importDefaultSpecifier(importerIdentifier)
-      ], t.stringLiteral('#/importer'))
-    );
+    programPath.unshiftContainer('body', [
+      b.importDeclaration([
+        b.importDefaultSpecifier(importerIdentifier)
+      ], b.literal('#/importer'))
+    ]);
   }
 }

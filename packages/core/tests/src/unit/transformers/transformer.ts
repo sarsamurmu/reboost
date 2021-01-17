@@ -1,12 +1,19 @@
-import { parse } from '@babel/parser';
-import generate from '@babel/generator';
+import { parseModule } from 'meriyah';
+import { generate } from 'escodegen';
+import { NodePath, types as t, traverse } from 'estree-toolkit';
 
-export const createTransformer = (transform: (ast: any) => void) => (code: string) => {
-  const ast = parse(code, {
-    sourceType: 'module'
+export const createTransformer = (
+  transform: (programPath: NodePath<t.Program>) => void
+) => (code: string) => {
+  let programPath: NodePath<t.Program>;
+  traverse(parseModule(code), {
+    $: { scope: true },
+    Program: (path) => programPath = path
   });
-  transform(ast);
-  return generate(ast, {
-    compact: false
-  }).code;
+  transform(programPath);
+  return generate(programPath.node, {
+    format: {
+      indent: { style: '  ' }
+    }
+  });
 }

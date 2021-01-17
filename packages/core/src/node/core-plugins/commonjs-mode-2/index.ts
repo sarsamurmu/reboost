@@ -18,9 +18,9 @@ export const CommonJSMode2Plugin = (instance: ReboostInstance): ReboostPlugin =>
       include: instance.config.commonJSInterop.include,
       exclude: instance.config.commonJSInterop.exclude
     }),
-    transformAST(ast, _, filePath) {
+    transformAST(programPath, _, filePath) {
       if (test(filePath)) {
-        transformCommonJSToES6(ast, uniqueID(6));
+        transformCommonJSToES6(programPath, uniqueID(6));
       }
     }
   }

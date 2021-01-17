@@ -3,13 +3,12 @@ import { IKoaProxiesOptions as ProxyOptions } from 'koa-proxies';
 import chalk from 'chalk';
 import portFinder from 'portfinder';
 import { Matcher } from 'anymatch';
-import babelTraverse from '@babel/traverse';
-import * as babelTypes from '@babel/types';
 import { WatchOptions } from 'chokidar';
 import { RawSourceMap } from 'source-map';
 import open from 'open';
 import MagicString from 'magic-string';
 import { ResolveOptions } from 'enhanced-resolve';
+import type * as estreeToolkitN from 'estree-toolkit';
 
 import fs from 'fs';
 import path from 'path';
@@ -26,8 +25,6 @@ import { createProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
 export { PluginOptions } from './plugins';
-
-export type { babelTypes, RawSourceMap }
 
 export interface LoadedData {
   code: string;
@@ -100,11 +97,8 @@ export interface ReboostPlugin {
   transformJSContent?: ReboostPlugin['transformContent'];
   transformAST?: (
     this: PluginContext,
-    ast: babelTypes.Node,
-    babel: {
-      traverse: typeof babelTraverse;
-      types: typeof babelTypes;
-    },
+    programPath: estreeToolkitN.NodePath<estreeToolkitN.types.Program>,
+    estreeToolkit: typeof estreeToolkitN,
     filePath: string
   ) => void | Promise<void>;
 }

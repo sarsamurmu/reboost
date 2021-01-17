@@ -48,7 +48,7 @@ module.exports = {
     'indent': ['error', 2],
     'quotes': ['error', 'single', { avoidEscape: true }],
     'linebreak-style': ['error', 'windows'],
-    'eqeqeq': 'error',
+    'eqeqeq': ['error', 'smart'],
     'arrow-parens': ['error', 'always'],
     'no-var': 'error',
     'no-unneeded-ternary': 'error',

@@ -1,10 +1,12 @@
-import * as t from '@babel/types';
-import traverse, { NodePath } from '@babel/traverse';
+import { NodePath, types as t, builders as b, utils as u, is } from 'estree-toolkit';
 
 import { ReboostPlugin, ReboostInstance } from '../index';
 
 const replaceStatement = (path: NodePath, replaceWith: NodePath) => {
-  if (replaceWith.isBlockStatement()) {
+  if (
+    is.program(path.parent) &&
+    is.blockStatement(replaceWith)
+  ) {
     path.replaceWithMultiple(replaceWith.node.body);
   } else {
     path.replaceWith(replaceWith.node);
@@ -13,41 +15,41 @@ const replaceStatement = (path: NodePath, replaceWith: NodePath) => {
 
 const evaluateParents = (parent: NodePath) => {
   if (
-    parent.isIfStatement() ||
-    parent.isConditionalExpression()
+    is.ifStatement(parent) ||
+    is.conditionalExpression(parent)
   ) {
-    const evaluated = (parent.get('test') as NodePath).evaluateTruthy();
-    if (typeof evaluated === 'undefined') return;
+    const evaluated = u.evaluateTruthy(parent.get('test'));
+    if (evaluated == null) return;
     if (evaluated) {
-      replaceStatement(parent, parent.get('consequent') as NodePath);
-    } else if (parent.node.alternate) {
-      replaceStatement(parent, parent.get('alternate') as NodePath);
+      replaceStatement(parent, parent.get('consequent'));
+    } else if (parent.has('alternate')) {
+      replaceStatement(parent, parent.get('alternate'));
     } else {
       parent.remove();
     }
   } else if (
-    parent.isLogicalExpression() ||
-    parent.isBinaryExpression() ||
-    parent.isUnaryExpression()
+    is.logicalExpression(parent) ||
+    is.binaryExpression(parent) ||
+    is.unaryExpression(parent)
   ) {
-    const evaluated = parent.evaluateTruthy();
-    if (typeof evaluated === 'undefined') return;
-    parent.replaceWith(t.booleanLiteral(evaluated));
+    const evaluated = u.evaluateTruthy(parent);
+    if (evaluated == null) return;
+    parent.replaceWith(b.literal(evaluated));
     evaluateParents(parent.parentPath);
   }
 }
 
-export const runTransformation = (ast: t.Node, mode: string) => {
-  traverse(ast, {
+export const runTransformation = (programPath: NodePath<t.Program>, mode: string) => {
+  programPath.traverse({
     MemberExpression(path) {
       if (
-        t.isIdentifier(path.node.object, { name: 'process' }) &&
-        t.isIdentifier(path.node.property, { name: 'env' }) &&
-        t.isMemberExpression(path.parentPath.node) &&
-        t.isIdentifier(path.parentPath.node.property, { name: 'NODE_ENV' })
+        is.identifier(path.node.object, { name: 'process' }) &&
+        is.identifier(path.node.property, { name: 'env' }) &&
+        is.memberExpression(path.parentPath.node) &&
+        is.identifier(path.parentPath.node.property, { name: 'NODE_ENV' })
       ) {
         const parent = path.parentPath;
-        parent.replaceWith(t.stringLiteral(mode));
+        parent.replaceWith(b.literal(mode));
         evaluateParents(parent.parentPath);
       }
     }
@@ -57,7 +59,7 @@ export const runTransformation = (ast: t.Node, mode: string) => {
 export const NodeEnvPlugin = (instance: ReboostInstance): ReboostPlugin => ({
   name: 'core-node-env-plugin',
   getCacheKey: () => instance.config.mode,
-  transformAST(ast) {
-    runTransformation(ast, instance.config.mode);
+  transformAST(programPath) {
+    runTransformation(programPath, instance.config.mode);
   }
 })
