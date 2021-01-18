@@ -2,6 +2,7 @@
 const {
   start,
   builtInPlugins: {
+    esbuildPlugin,
     FilePlugin,
     ReplacePlugin,
     UsePlugin
@@ -16,6 +17,7 @@ const PostCSSPlugin = require('@reboost/plugin-postcss');
 const MalinaJSPlugin = require('@reboost/plugin-malinajs');
 const LitCSSPlugin = require('@reboost/plugin-litcss');
 const TypeScriptPlugin = require('@reboost/plugin-typescript');
+const PrefreshPlugin = require('@reboost/plugin-prefresh');
 
 const startTime = process.hrtime();
 start({
@@ -27,6 +29,7 @@ start({
     ['./src/lit-element/index.js', './public/dist/lit-element.js'],
     ['./src/malina/index.js', './public/dist/malina.js'],
     ['./src/postcss/index.js', './public/dist/postcss.js'],
+    ['./src/preact/index.jsx', './public/dist/preact.js'],
     ['./src/react/index.jsx', './public/dist/react.js'],
     ['./src/sass/index.js', './public/dist/sass.js'],
     ['./src/svelte/index.js', './public/dist/svelte.js'],
@@ -76,6 +79,18 @@ start({
     }, {
       include: './src/react/**',
       use: ReactFastRefreshPlugin()
+    }),
+    UsePlugin({
+      include: './src/preact/**',
+      use: [
+        esbuildPlugin({
+          jsx: {
+            factory: 'h',
+            fragment: 'Fragment'
+          }
+        }),
+        PrefreshPlugin()
+      ]
     }),
     UsePlugin({
       include: './src/typescript/**',

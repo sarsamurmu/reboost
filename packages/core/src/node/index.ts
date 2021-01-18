@@ -71,6 +71,7 @@ export interface ReboostPlugin {
       contentServer?: Koa;
       resolve: PublicResolveFn;
       chalk: typeof chalk;
+      instance: ReboostInstance;
     }
   ) => void | Promise<void>;
   stop?: () => void | Promise<void>;
@@ -316,6 +317,10 @@ const createInstance = async (initialConfig: ReboostConfig) => {
         (it.config.resolve.modules as string[]).push(path.join(it.config.rootDir, modDirName));
       });
 
+      if (it.config.resolve.roots == null) {
+        it.config.resolve.roots = [it.config.rootDir];
+      }
+
       const resolveAlias = it.config.resolve.alias;
       if (resolveAlias) {
         if (Array.isArray(resolveAlias)) {
@@ -440,7 +445,8 @@ const createInstance = async (initialConfig: ReboostConfig) => {
         proxyServer,
         contentServer,
         resolve: (...args) => resolve(it, ...args),
-        chalk
+        chalk,
+        instance: it
       });
     }
   }
