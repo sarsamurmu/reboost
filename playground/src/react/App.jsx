@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { useCounter } from './useCounter';
 
-export const App = () => {
-  const [count, setCount] = React.useState(0);
+const Test = () => {
+  const [count, increment, decrement] = useCounter(0);
 
   console.log('Source map test');
 
@@ -9,9 +10,15 @@ export const App = () => {
     <div>
       <p>Count is {count}</p>
       {/* <p>New content</p> */}
-      <button onClick={() => setCount(count + 10)}>Increase</button>
+      <button onClick={increment}>Increase</button>
       <span style={{ width: 10, display: 'inline-block' }}></span>
-      <button onClick={() => setCount(count - 10)}>Decrease</button>
+      <button onClick={decrement}>Decrease</button>
     </div>
   )
 }
+
+export const App = () => (
+  <div>
+    <Test />
+  </div>
+)

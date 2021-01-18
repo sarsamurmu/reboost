@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@reboost/plugin-{{ name }}",
+  "name": "@reboost/plugin-{{ lowerCase name }}",
   "version": "{{ version }}",
   "description": "{{ description }}",
   "main": "./dist/index.js",
@@ -18,14 +18,14 @@
   "keywords": [
     "reboost",
     "plugin",
-    "{{ name }}"
+    "{{ lowerCase name }}"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/sarsamurmu/reboost.git",
-    "directory": "packages/plugin-{{ name }}"
+    "directory": "packages/plugin-{{ lowerCase name }}"
   },
-  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-{{ name }}",
+  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-{{ lowerCase name }}",
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT",
   "devDependencies": {

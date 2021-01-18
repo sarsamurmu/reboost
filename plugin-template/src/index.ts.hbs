@@ -1,15 +1,15 @@
 import { ReboostPlugin } from 'reboost';
 
-declare namespace {{ pascalCase name }}Plugin {
+declare namespace {{ name }}Plugin {
   export interface Options {
 
   }
 }
 
-function {{ pascalCase name }}Plugin(options: {{ pascalCase name }}Plugin.Options = {}): ReboostPlugin {
+function {{ name }}Plugin(options: {{ name }}Plugin.Options = {}): ReboostPlugin {
   return {
-    name: '{{ name }}-plugin'
+    name: '{{ lowerCase name }}-plugin'
   }
 }
 
-export = {{ pascalCase name }}Plugin;
+export = {{ name }}Plugin;

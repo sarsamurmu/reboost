@@ -2,28 +2,27 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports = (
-  /** @type {import('plop').NodePlopAPI} */
-  plop
-) => {
+/** @param plop {import('plop').NodePlopAPI} */
+module.exports = (plop) => {
   plop.setGenerator('plugin', {
     description: 'Create a plugin',
     prompts: [
       {
         type: 'input',
         name: 'name',
-        message: 'Name of the plugin (excluding starting "plugin-")'
+        message: 'Name of the plugin (ex. Vue, PostCSS)'
       },
       {
         type: 'input',
         name: 'description',
-        message: 'Description of the plugin'
+        message: 'Description of the plugin',
+        default: ({ name }) => `${name} plugin for Reboost`,
       }
     ],
     actions: [
       {
         type: 'addMany',
-        destination: './packages/plugin-{{ name }}',
+        destination: './packages/plugin-{{ lowerCase name }}',
         templateFiles: './plugin-template/**/*',
         globOptions: { dot: true },
         data: {
