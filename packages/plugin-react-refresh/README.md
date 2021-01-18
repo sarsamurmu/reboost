@@ -75,7 +75,7 @@ export const App = () => {
 ```
 
 ## Example
-### Improving performance by excluding non-related files
+### Improving performance by excluding unrelated files
 By default, it runs the transformation on all files. You can run the transformation
 only on the files which need it by using `UsePlugin`.
 ```js
