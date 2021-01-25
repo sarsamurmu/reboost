@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-sass",
-  "version": "0.19.2",
+  "version": "0.20.0",
   "description": "Sass/SCSS plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

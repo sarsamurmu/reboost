@@ -1,3 +1,8 @@
+## 0.20.0
+- 2x-3x faster than before
+- Updated dependencies
+- Added [PrefreshPlugin](/packages/plugin-prefresh/README.md)
+
 ## 0.19.2
 - Updated dependencies
 

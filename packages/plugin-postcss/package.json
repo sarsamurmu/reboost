@@ -1,6 +1,6 @@
 {
   "name": "@reboost/plugin-postcss",
-  "version": "0.19.2",
+  "version": "0.20.0",
   "description": "PostCSS plugin for Reboost",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

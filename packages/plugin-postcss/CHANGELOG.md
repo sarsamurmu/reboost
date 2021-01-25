@@ -1,3 +1,6 @@
+## 0.20.0
+- Target PostCSS `v8.2.4`
+
 ## 0.19.2
 - Target PostCSS `v8.2.2`
 

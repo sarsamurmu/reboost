@@ -1,3 +1,6 @@
+## 0.20.0
+- Target Svelte HMR `v0.12.3`
+
 ## 0.19.2
 - Target Svelte `v3.31.2`
 - Use Svelte HMR `v0.12.2`

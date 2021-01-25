@@ -1,3 +1,7 @@
+## 0.20.0
+- Use `PrefreshPlugin` in Preact template
+- Minor fixes
+
 ## 0.19.2
 - Updated template dependencies
 
