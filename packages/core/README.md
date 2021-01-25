@@ -15,7 +15,7 @@
   <a href="https://lerna.js.org">
     <img alt="maintained with lerna" src="https://img.shields.io/badge/maintained%20with-lerna-cc00ff?style=flat-square">
   </a>
-  <a href="https://github.com/sarsamurmu/reboost/blob/primary/LICENSE">
+  <a href="https://github.com/sarsamurmu/reboost/blob/main/LICENSE">
     <img alt="license" src="https://img.shields.io/npm/l/reboost?style=flat-square">
   </a>
 </p>
@@ -80,7 +80,7 @@ If you don't want to use the CLI, you can [manually create an app](/docs/manuall
 - [Lit element](/docs/recipes.md#lit-element)
 - [Malina.js](/docs/recipes.md#malinajs)
 - [PostCSS](/docs/recipes.md#postcss)
-- [Preact](/docs/recipes.md#preact)
+- [Preact (with Fast Refresh)](/docs/recipes.md#preact-with-fast-refresh)
 - [React (with Fast Refresh)](/docs/recipes.md#react-with-fast-refresh)
 - [Sass/SCSS](/docs/recipes.md#sass-or-scss)
 - [Solid](/docs/recipes.md#solid)

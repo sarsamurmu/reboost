@@ -11,7 +11,7 @@ Available recipes -
 - [Lit element](#lit-element)
 - [Malina.js](#malinajs)
 - [PostCSS](#postcss)
-- [Preact](#preact)
+- [Preact with Fast Refresh](#preact-with-fast-refresh)
 - [React](#react)
 - [React with Fast Refresh](#react-with-fast-refresh)
 - [Sass or SCSS](#sass-or-scss)
@@ -197,10 +197,12 @@ start({
 })
 ```
 
-## Preact
+## Preact with Fast Refresh
 Change configuration to match this
 ```js
 const { start, builtInPlugins: { esbuildPlugin } } = require('reboost');
+// NOTE: You have to install @reboost/plugin-prefresh from npm
+const PrefreshPlugin = require('@reboost/plugin-prefresh');
 
 start({
   // Other options
@@ -211,12 +213,23 @@ start({
         factory: 'h',
         fragment: 'Fragment'
       }
-    })
+    }),
+    // If you want to enable fast refresh with preact
+    PrefreshPlugin()
   ]
   // ...
 })
 ```
 **NOTE:** For now you have to manually import `h` and `Fragment` from `preact`.
+```js
+import { h, Fragment } from 'preact';
+
+const CompFrag = () => (
+  <>
+    <p>Some text</p>
+  </>
+)
+```
 
 ## React
 Works out of the box.

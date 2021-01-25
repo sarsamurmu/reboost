@@ -22,6 +22,7 @@ You have to manually install them when necessary.
 - [LitCSSPlugin](/packages/plugin-litcss/README.md)
 - [MalinaJSPlugin](/packages/plugin-malinajs/README.md)
 - [PostCSSPlugin](/packages/plugin-postcss/README.md)
+- [PrefreshPlugin](/packages/plugin-prefresh/README.md)
 - [ReactRefreshPlugin](/packages/plugin-react-refresh/README.md)
 - [SassPlugin](/packages/plugin-sass/README.md)
 - [SveltePlugin](/packages/plugin-svelte/README.md)

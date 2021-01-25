@@ -47,8 +47,9 @@ The first parameter of this function is an object with the following properties 
 - `config` - The configuration object passed when starting Reboost.
 - `proxyServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's proxy server.
 - `contentServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's content server.
-- `resolve` - Same as plugin context's [`resolve`](#resolve-func) function
-- `chalk` - The [`chalk`](https://www.npmjs.com/package/chalk) module
+- `resolve` - Same as plugin context's [`resolve`](#resolve-func) function.
+- `chalk` - The [`chalk`](https://www.npmjs.com/package/chalk) module.
+- `instance` - Internal Reboost instance object.
 
 #### `stop`
 Type: `() => void`
@@ -108,7 +109,7 @@ The first parameter is a object that contains utility function. The utility func
 
         serializeObject(object, ['b', 'nest.f'])
         // => A string of the serialized object,
-        // without including property 'b' and 'f' property of 'nested'
+        // without including property 'b' and 'f' property of 'nest'
       }
     }
   }
@@ -196,16 +197,33 @@ Same as [`transformContent`](#transformcontent), but this hook is only executed 
 `type` is JavaScript, if the `type` is not JavaScript, this hook will not get called.
 
 #### `transformAST`
-Type: `(ast: ASTNode, babel: { traverse: BabelTraverse; types: BabelTypes; }, filePath: string) => void`
+Type: `(programPath: NodePath<Program>, estreeToolkit: object, filePath: string) => void`
 
 Used to transform the JavaScript AST.
 
-The first parameter is the babel generated AST of the code.
-The second parameter is an object which includes two properties -
-- `traverse` - Babel's [`traverse` function](https://babeljs.io/docs/en/babel-traverse)
-- `types` - Babel's [`types`](https://babeljs.io/docs/en/babel-types)
+The first parameter is the generated AST of the code wrapped in a [NodePath](https://github.com/sarsamurmu/estree-toolkit/blob/main/src/nodepath.ts).
+The AST used is [ESTree AST](https://github.com/estree/estree).
+
+The second parameter is an object which includes all exports of [`estree-toolkit`](https://github.com/sarsamurmu/estree-toolkit).
 
 The third parameter is the absolute path to the file from which the AST is generated.
+
+Example plugin which reverses all strings in a JavaScript file.
+```js
+function Plugin() {
+  return {
+    transformProgram(programPath) {
+      programPath.traverse({
+        Literal(path) {
+          if (typeof path.node.value === 'string') {
+            path.node.value = path.node.value.split('').reverse().join('');
+          }
+        }
+      })
+    }
+  }
+}
+```
 
 ### Plugin Context
 The plugin context holds some useful data/functions, which can help you in different hooks.
