@@ -25,6 +25,7 @@ import { createProxyServer } from './proxy-server';
 
 export * as builtInPlugins from './plugins';
 export { PluginOptions } from './plugins';
+export type { RawSourceMap }
 
 export interface LoadedData {
   code: string;
