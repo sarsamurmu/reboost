@@ -16,10 +16,10 @@ start({
   },
   plugins: [
     UsePlugin({
-      // The following regex enables fast refresh for files
-      // with .js, .ts, .jsx or .tsx extensions
-      // Feel free to use any regex for your files
-      include: /\.[jt]sx?$/i,
+      // The following glob enables fast refresh for files
+      // with .js, .ts, .jsx or .tsx extensions which are inside "src" directory
+      // Feel free to use any glob or regex for your files
+      include: './src/**/*.{js,jsx,ts,tsx}',
       use: ReactRefreshPlugin()
     })
   ]

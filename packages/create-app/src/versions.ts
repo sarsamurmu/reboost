@@ -16,6 +16,7 @@ export const versions: Record<string, string> = {
   'reboost-plugin-malinajs': reboostPackageVersions['plugin-malinajs'],
 
   'preact': '10.5.9',
+  'reboost-plugin-prefresh': reboostPackageVersions['plugin-prefresh'],
 
   'react': '17.0.1',
   'react-dom': '17.0.1',
