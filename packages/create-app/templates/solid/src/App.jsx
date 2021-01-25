@@ -4,7 +4,7 @@ export const App = () => {
   return (
     <div class="main">
       <p>
-        Get started by editing <code>src/App.js</code>
+        Get started by editing <code>src/App.jsx</code>
       </p>
     </div>
   )
