@@ -546,7 +546,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
         `Content server [${serverName}] is running on:`,
         '  Local    - ' + chalk.blue(address.local),
         ...(
-          it.exports.contentServer[i].external
+          address.external
             ? ['  External - ' + chalk.blue(address.external)]
             : []
         )
