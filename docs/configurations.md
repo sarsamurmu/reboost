@@ -164,10 +164,45 @@ Same as `commonJSInterop.include`, but for excluding files. In mode `2` it defau
 `() => false`, meaning that no file will be excluded which are included.
 
 #### `contentServer`
-Type: `object`
+Type: `object | object[]`
 
 Options for the content server. The content server serves your static
-files like HTML, CSS, JS, images, etc.
+files like HTML, CSS, JS, images, etc. It also accepts an array of objects
+if you want to launch multiple content servers.
+
+Example - Single content server
+```js
+const { start } = require('reboost');
+
+start({
+  contentServer: {
+    root: './public'
+  }
+})
+```
+Example - Multiple content servers
+```js
+const { start } = require('reboost');
+
+start({
+  contentServer: [
+    {
+      name: 'Server one'
+      root: './dir-1'
+    },
+    {
+      name: 'Server two',
+      root: './dir-2'
+    }
+  ]
+})
+```
+
+##### `contentServer.name`
+Type `string`\
+
+Sets the name of the content server. Useful when you are launching multiple
+content servers.
 
 ##### `contentServer.basePath`
 Type: `string`\

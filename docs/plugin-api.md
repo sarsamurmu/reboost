@@ -46,7 +46,7 @@ add server functionality, or do the initial setup in this function.
 The first parameter of this function is an object with the following properties -
 - `config` - The configuration object passed when starting Reboost.
 - `proxyServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's proxy server.
-- `contentServer` - The [`Koa`](https://koajs.com/) app instance used by the Reboost's content server.
+- `contentServers` - The [`Koa`](https://koajs.com/) app instances used by the Reboost's content servers.
 - `resolve` - Same as plugin context's [`resolve`](#resolve-func) function.
 - `chalk` - The [`chalk`](https://www.npmjs.com/package/chalk) module.
 - `instance` - Internal Reboost instance object.
