@@ -39,11 +39,23 @@ start({
   commonJSInterop: {
     mode: 2
   },
-  contentServer: {
-    root: './public',
-    index: false,
-    // basePath: '/custom-path',
-  },
+  contentServer: [
+    {
+      name: 'main',
+      root: './public',
+      index: false,
+      // basePath: '/custom-path',
+    },
+    {
+      name: 'index',
+      root: './public',
+      index: 'index.html'
+    },
+    {
+      root: './public',
+      index: './index2.html'
+    }
+  ],
   hotReload: true,
   plugins: [
     UsePlugin({
