@@ -9,10 +9,10 @@ import { parse as parseHTML } from 'node-html-parser';
 import fs from 'fs';
 import path from 'path';
 
-import { ReboostInstance } from './index';
+import { ReboostConfig, ReboostInstance } from './index';
 import { isDirectory, uniqueID, getTimestamp, onServerCreated } from './utils';
 
-const createDirectoryServer = ({ config }: ReboostInstance) => {
+const createDirectoryServer = (options: Exclude<ReboostConfig['contentServer'], any[]>) => {
   const styles = /* css */`
     * {
       font-family: monospace;
@@ -80,7 +80,7 @@ const createDirectoryServer = ({ config }: ReboostInstance) => {
     }
   `;
 
-  const basePathLength = config.contentServer.basePath.length;
+  const basePathLength = options.basePath.length;
   return (ctx: Koa.Context, root: string) => {
     const requestedPath = ctx.path.substring(basePathLength);
     const dirPath = path.join(root, requestedPath);
@@ -132,15 +132,19 @@ const createDirectoryServer = ({ config }: ReboostInstance) => {
   }
 }
 
-const attachFileServer = (instance: ReboostInstance, app: Koa) => {
-  const sendDirectory = createDirectoryServer(instance);
-  const { contentServer, debugMode } = instance.config;
-  const { root } = contentServer;
+const attachFileServer = (
+  instance: ReboostInstance,
+  app: Koa,
+  options: Exclude<ReboostConfig['contentServer'], any[]>
+) => {
+  const sendDirectory = createDirectoryServer(options);
+  const { debugMode } = instance.config;
+  const { root } = options;
   const sendOptions: SendOptions & { root: string } = {
     root,
-    extensions: contentServer.extensions,
-    hidden: contentServer.hidden,
-    index: contentServer.index
+    extensions: options.extensions,
+    hidden: options.hidden,
+    index: options.index
   }
 
   const loadInitCode = () => fs.readFileSync(path.join(__dirname, '../browser/content-server.js'), 'utf8');
@@ -189,9 +193,9 @@ const attachFileServer = (instance: ReboostInstance, app: Koa) => {
       return next();
     }
 
-    if (!ctx.path.startsWith(contentServer.basePath)) return next();
+    if (!ctx.path.startsWith(options.basePath)) return next();
 
-    const requestedPath = ctx.path.substring(contentServer.basePath.length);
+    const requestedPath = ctx.path.substring(options.basePath.length);
     if (!requestedPath && !ctx.path.endsWith('/')) {
       ctx.redirect(ctx.path + '/');
       return;
@@ -209,7 +213,7 @@ const attachFileServer = (instance: ReboostInstance, app: Koa) => {
         watchedFiles.add(sentFilePath);
       }
 
-      if (contentServer.etag) {
+      if (options.etag) {
         const etag = etagKey + Math.floor(fs.statSync(sentFilePath).mtimeMs);
         if (ctx.get('If-None-Match') === etag) {
           ctx.status = 304;
@@ -253,22 +257,24 @@ const attachFileServer = (instance: ReboostInstance, app: Koa) => {
       return next();
     }
 
-    if (contentServer.serveIndex) sendDirectory(ctx, root);
+    if (options.serveIndex) sendDirectory(ctx, root);
 
     return next();
   });
 }
 
-export const createContentServer = (instance: ReboostInstance) => {
+export const createContentServer = (
+  instance: ReboostInstance,
+  options: Exclude<ReboostConfig['contentServer'], any[]>
+) => {
   const contentServer = new Koa();
-  const config = instance.config;
 
-  const { middleware } = config.contentServer;
+  const { middleware } = options;
   if (middleware) {
     [].concat(middleware).forEach((fn) => contentServer.use(fn));
   }
 
-  const proxyObject = config.contentServer.proxy;
+  const proxyObject = options.proxy;
   if (proxyObject) {
     for (const key in proxyObject) {
       const proxyOptions: ProxyOptions = typeof proxyObject[key] === 'string'
@@ -279,7 +285,7 @@ export const createContentServer = (instance: ReboostInstance) => {
     }
   }
 
-  attachFileServer(instance, contentServer);
+  attachFileServer(instance, contentServer, options);
 
   return contentServer;
 }

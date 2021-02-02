@@ -69,7 +69,7 @@ export interface ReboostPlugin {
     data: {
       config: ReboostConfig;
       proxyServer: Koa;
-      contentServer?: Koa;
+      contentServers?: Koa[];
       resolve: PublicResolveFn;
       chalk: typeof chalk;
       instance: ReboostInstance;
@@ -105,6 +105,8 @@ export interface ReboostPlugin {
   ) => void | Promise<void>;
 }
 
+type OrArray<T> = T | T[];
+
 export interface ReboostConfig {
   /** Directory to use for storing cached files */
   cacheDir?: string;
@@ -116,8 +118,10 @@ export interface ReboostConfig {
     include?: Matcher;
     exclude?: Matcher;
   };
-  /** Options for content server */
-  contentServer?: {
+  /** Options for content server. Pass an array of options object for multiple content servers. */
+  contentServer?: OrArray<{
+    /** Name of this content server */
+    name?: string;
     /** All content files will be available under this path */
     basePath?: string;
     /** Enable ETag */
@@ -140,7 +144,7 @@ export interface ReboostConfig {
     root: string;
     /** Serves directory listing for directories that don't have an index file */
     serveIndex?: boolean;
-  };
+  }>;
   /** Entries of files */
   entries: ([string, string] | [string, string, string])[];
   /** Enable/disable external host. Set a string of IPv4 address to set the external host */
@@ -248,6 +252,7 @@ export const DefaultConfig: DeepFrozen<DeepRequire<ReboostConfig>> = {
 };
 
 export const DefaultContentServerOptions: DeepFrozen<DeepRequire<ReboostConfig['contentServer']>> = {
+  name: undefined,
   basePath: '/',
   etag: true,
   extensions: ['.html'],
@@ -273,6 +278,10 @@ export interface ReboostService {
   contentServer?: {
     local: string;
     external?: string;
+    [index: number]: {
+      local: string;
+      external?: string;
+    }
   }
 }
 
@@ -285,6 +294,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     proxyAddress: '',
     config: {} as ReboostConfig,
     plugins: [] as ReboostPlugin[],
+    contentServersOpt: [] as Exclude<ReboostConfig['contentServer'], any[]>[],
     cache: {} as ReturnType<typeof initCache>,
 
     /** Returns false if no entry found. If it returns false, close the app without further execution */
@@ -300,14 +310,18 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       if (!path.isAbsolute(it.config.cacheDir)) it.config.cacheDir = path.join(it.config.rootDir, it.config.cacheDir);
       if (!it.config.watchOptions.include) it.config.watchOptions.include = /.*/;
       if (it.config.contentServer) {
-        it.config.contentServer = merge(
-          clone(DefaultContentServerOptions as ReboostConfig['contentServer']),
-          it.config.contentServer
-        );
+        it.contentServersOpt = [].concat(it.config.contentServer)
 
-        if (!path.isAbsolute(it.config.contentServer.root)) {
-          it.config.contentServer.root = path.join(it.config.rootDir, it.config.contentServer.root);
-        }
+        it.contentServersOpt.forEach((contentServer, index) => {
+          it.contentServersOpt[index] = merge(
+            clone(DefaultContentServerOptions as Exclude<ReboostConfig['contentServer'], any[]>),
+            contentServer
+          );
+
+          if (!path.isAbsolute(contentServer.root)) {
+            contentServer.root = path.join(it.config.rootDir, contentServer.root);
+          }
+        });
       }
 
       it.config.resolve.modules = [].concat(it.config.resolve.modules);
@@ -436,7 +450,9 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   it.log('info', chalk.green('Starting proxy server...'));
 
   const proxyServer = createProxyServer(it);
-  const contentServer = it.config.contentServer ? createContentServer(it) : undefined;
+  const contentServers = it.config.contentServer
+    ? it.contentServersOpt.map((opt) => createContentServer(it, opt))
+    : undefined;
   const externalHost = await getExternalHost(it);
 
   for (const { setup } of it.plugins) {
@@ -444,7 +460,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       await setup({
         config: it.config,
         proxyServer,
-        contentServer,
+        contentServers,
         resolve: (...args) => resolve(it, ...args),
         chalk,
         instance: it
@@ -482,63 +498,59 @@ const createInstance = async (initialConfig: ReboostConfig) => {
   await startServer('Proxy server', proxyServer, proxyServerPort, proxyServerHost);
   it.log('info', chalk.green('Proxy server started'));
 
-  if (contentServer) {
-    const contentServerPath = (host: string, port: string | number) => (
-      `http://${host}:${port}${it.config.contentServer.basePath}`.replace(/\/$/, '')
-    );
+  it.exports = {
+    stop,
+    proxyServer: fullAddress
+  }
 
-    const localPort = await portFinder.getPortPromise({
-      port: it.config.contentServer.port
-    });
-    const contentServerLocal = contentServerPath('localhost', localPort);
-
-    await startServer('Local content server', contentServer, localPort);
-
-    const openOptions = it.config.contentServer.open;
-    if (openOptions) {
-      open(contentServerLocal, typeof openOptions === 'object' ? openOptions : undefined);
-    }
-
-    if (externalHost) {
-      const externalPort = await portFinder.getPortPromise({
-        host: externalHost,
-        port: it.config.contentServer.port
-      });
-      const contentServerExternal = contentServerPath(externalHost, externalPort);
-
-      await startServer('External content server', contentServer, externalPort, externalHost);
-
-      it.exports = {
-        stop,
-        proxyServer: fullAddress,
-        contentServer: {
-          local: contentServerLocal,
-          external: contentServerExternal
-        }
+  if (contentServers.length) {
+    for (let i = 0; i < contentServers.length; i++) {
+      const address = {
+        local: undefined as string,
+        external: undefined as string
       }
-    } else {
-      it.exports = {
-        stop,
-        proxyServer: fullAddress,
-        contentServer: {
-          local: contentServerLocal
-        }
-      }
-    }
+      const contentServer = contentServers[i];
+      const contentServerOpt = it.contentServersOpt[i];
+      const serverName = contentServerOpt.name || i + 1;
+      const contentServerPath = (host: string, port: string | number) => (
+        `http://${host}:${port}${contentServerOpt.basePath}`.replace(/\/$/, '')
+      );
 
-    it.log('info', chalk.green([
-      'Content server is running on:',
-      '  Local    - ' + chalk.blue(it.exports.contentServer.local),
-      ...(
-        it.exports.contentServer.external
-          ? ['  External - ' + chalk.blue(it.exports.contentServer.external)]
-          : []
-      )
-    ].join('\n')))
-  } else {
-    it.exports = {
-      stop,
-      proxyServer: fullAddress
+      const localPort = await portFinder.getPortPromise({ port: contentServerOpt.port });
+      address.local = contentServerPath('localhost', localPort);
+
+      await startServer('Local content server', contentServer, localPort);
+
+      const openOptions = contentServerOpt.open;
+      if (openOptions) {
+        open(address.local, typeof openOptions === 'object' ? openOptions : undefined);
+      }
+
+      if (externalHost) {
+        const externalPort = await portFinder.getPortPromise({
+          host: externalHost,
+          port: contentServerOpt.port
+        });
+        address.external = contentServerPath(externalHost, externalPort);
+
+        await startServer('External content server', contentServer, externalPort, externalHost);
+      }
+
+      if (i === 0) {
+        it.exports.contentServer = Object.assign({}, address);
+      }
+
+      it.exports.contentServer[i] = address;
+
+      it.log('info', chalk.green([
+        `Content server [${serverName}] is running on:`,
+        '  Local    - ' + chalk.blue(address.local),
+        ...(
+          it.exports.contentServer[i].external
+            ? ['  External - ' + chalk.blue(address.external)]
+            : []
+        )
+      ].join('\n')))
     }
   }
 
