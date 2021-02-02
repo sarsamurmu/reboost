@@ -312,15 +312,17 @@ const createInstance = async (initialConfig: ReboostConfig) => {
       if (it.config.contentServer) {
         it.contentServersOpt = [].concat(it.config.contentServer)
 
-        it.contentServersOpt.forEach((contentServer, index) => {
-          it.contentServersOpt[index] = merge(
+        it.contentServersOpt = it.contentServersOpt.map((contentServerOpt) => {
+          contentServerOpt = merge(
             clone(DefaultContentServerOptions as Exclude<ReboostConfig['contentServer'], any[]>),
-            contentServer
+            contentServerOpt
           );
 
-          if (!path.isAbsolute(contentServer.root)) {
-            contentServer.root = path.join(it.config.rootDir, contentServer.root);
+          if (!path.isAbsolute(contentServerOpt.root)) {
+            contentServerOpt.root = path.join(it.config.rootDir, contentServerOpt.root);
           }
+
+          return contentServerOpt
         });
       }
 
@@ -503,7 +505,8 @@ const createInstance = async (initialConfig: ReboostConfig) => {
     proxyServer: fullAddress
   }
 
-  if (contentServers.length) {
+  if (contentServers && contentServers.length) {
+    it.exports.contentServer = {} as any;
     for (let i = 0; i < contentServers.length; i++) {
       const address = {
         local: undefined as string,
@@ -536,11 +539,7 @@ const createInstance = async (initialConfig: ReboostConfig) => {
         await startServer('External content server', contentServer, externalPort, externalHost);
       }
 
-      if (i === 0) {
-        it.exports.contentServer = Object.assign({}, address);
-      }
-
-      it.exports.contentServer[i] = address;
+      Object.assign(it.exports.contentServer, address, { [i]: address });
 
       it.log('info', chalk.green([
         `Content server [${serverName}] is running on:`,
