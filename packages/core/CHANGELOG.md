@@ -1,3 +1,6 @@
+## 0.20.1
+- Support for launching multiple content servers
+
 ## 0.20.0
 - 2x-3x faster than before
 - Updated dependencies
