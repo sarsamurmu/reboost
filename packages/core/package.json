@@ -1,6 +1,6 @@
 {
   "name": "reboost",
-  "version": "0.20.1",
+  "version": "0.21.0",
   "description": "A super fast dev server for rapid web development",
   "main": "./dist/node/index.js",
   "types": "./dist/node/index.d.ts",
@@ -76,8 +76,8 @@
     "@types/babel__code-frame": "^7.0.3",
     "@types/escodegen": "^0.0.7",
     "@types/jest": "^27.0.2",
-    "@types/koa__cors": "^3.0.3",
     "@types/koa-send": "^4.1.3",
+    "@types/koa__cors": "^3.0.3",
     "@types/node": "^16.10.1",
     "@types/puppeteer": "^5.4.4",
     "@types/ws": "^7.4.7",
