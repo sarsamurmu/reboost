@@ -17,7 +17,7 @@ function MalinaJSPlugin(options: MalinaJSPlugin.Options = {}): ReboostPlugin {
   const compatibleTypes = ['html', 'ma', 'xht'];
   const warningsStack: Warning[][] = [];
   let compiler: {
-    compile: (code: string, compilerOptions: MalinaJSPlugin.Options['compilerOptions']) => Promise<string>;
+    compile: (code: string, compilerOptions: MalinaJSPlugin.Options['compilerOptions']) => Promise<{ result: string }>;
     version: string;
   };
 
@@ -65,7 +65,7 @@ function MalinaJSPlugin(options: MalinaJSPlugin.Options = {}): ReboostPlugin {
           });
 
           return {
-            code: code,
+            code: code.result,
             map: undefined,
             type: 'js'
           }

@@ -1,5 +1,5 @@
-import { LitElement, customElement, css, html } from 'lit-element';
-import { queryAsync } from 'lit-element/lib/decorators';
+import { LitElement, css, html } from 'lit';
+import { customElement, queryAsync } from 'lit/decorators.js';
 
 import style from './styles.lit.css';
 
@@ -14,7 +14,7 @@ export class MyElement extends LitElement {
 
   render() {
     return html`
-      <span class="main">Lit Element</span>
+      <span class="main">Lit is here!</span>
     `
   }
 }

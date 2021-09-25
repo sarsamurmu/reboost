@@ -33,7 +33,7 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
 
   const eTagKey = uniqueID(10) + '-';
   routedPaths['/raw'] = async (ctx) => {
-    const filePath = ctx.query.q;
+    const filePath = ctx.query.q as string;
     try {
       const stat = await fs.promises.stat(filePath);
       const etag = eTagKey + Math.floor(stat.mtimeMs);
@@ -71,8 +71,8 @@ export const createRouter = (instance: ReboostInstance): Koa.Middleware => {
   }
 
   routedPaths['/resolve'] = async (ctx) => {
-    const relativeTo: string = ctx.query.from;
-    const pathToResolve: string = ctx.query.to;
+    const relativeTo = ctx.query.from as string;
+    const pathToResolve = ctx.query.to as string;
     const finalPath = await resolveDependency(instance, pathToResolve, relativeTo);
 
     if (finalPath) {

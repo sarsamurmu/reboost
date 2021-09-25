@@ -1,6 +1,6 @@
 import type { default as PostCSS, ProcessOptions, CssSyntaxError } from 'postcss';
 import { codeFrameColumns } from '@babel/code-frame';
-import { loadConfig, LoadConfigResult } from './load-config';
+import loadConfig from 'postcss-load-config';
 
 import fs from 'fs';
 import path from 'path';
@@ -37,7 +37,7 @@ declare namespace PostCSSPlugin {
 }
 
 function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
-  const cacheMap = new Map<string, LoadConfigResult>();
+  const cacheMap = new Map<string, loadConfig.Result>();
   let postcss: typeof PostCSS;
   let postcssVersion: string;
 
@@ -101,7 +101,7 @@ function PostCSSPlugin(options: PostCSSPlugin.Options = {}): ReboostPlugin {
         return new Promise((resolve) => {
           checkOptions(this.config, (err) => resolve(err));
 
-          const runProcess = ({ plugins, options }: LoadConfigResult) => {
+          const runProcess = ({ plugins, options }: loadConfig.Result) => {
             const onError = (err: any) => resolve(makeError(err, this.config));
             type OptT = ProcessOptions;
 

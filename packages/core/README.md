@@ -77,7 +77,7 @@ If you don't want to use the CLI, you can [manually create an app](/docs/manuall
 - [CSS and CSS Modules (with Hot Reloading)](/docs/recipes.md#css-and-css-modules)
 - [CommonJS Modules](/docs/recipes.md#commonjs-modules)
 - [JSX](/docs/recipes.md#jsx)
-- [Lit element](/docs/recipes.md#lit-element)
+- [Lit](/docs/recipes.md#lit)
 - [Malina.js](/docs/recipes.md#malinajs)
 - [PostCSS](/docs/recipes.md#postcss)
 - [Preact (with Fast Refresh)](/docs/recipes.md#preact-with-fast-refresh)

@@ -1,40 +1,40 @@
 {
-  "name": "@reboost/plugin-sass",
-  "version": "0.20.1",
-  "description": "Sass/SCSS plugin for Reboost",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "prepublishOnly": "npm run clean && npm run build",
-    "clean": "node ../../prepare rm-dist",
-    "version": "node ../../prepare update-changelog",
-    "build": "tsc -p build.tsconfig.json",
-    "watch": "tsc -p build.tsconfig.json -w"
-  },
-  "keywords": [
-    "reboost",
-    "plugin",
-    "sass",
-    "scss"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sarsamurmu/reboost.git",
-    "directory": "packages/plugin-sass"
-  },
-  "homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-sass",
-  "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
-  "license": "MIT",
-  "peerDependencies": {
-    "node-sass": "^5.0.0"
-  },
-  "dependencies": {
-    "@types/node-sass": "^4.11.1"
-  },
-  "devDependencies": {
-    "typescript": "^4.1.3"
-  }
+	"name": "@reboost/plugin-sass",
+	"version": "0.20.1",
+	"description": "Sass/SCSS plugin for Reboost",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"prepublishOnly": "npm run clean && npm run build",
+		"clean": "node ../../prepare rm-dist",
+		"version": "node ../../prepare update-changelog",
+		"build": "tsc -p build.tsconfig.json",
+		"watch": "tsc -p build.tsconfig.json -w"
+	},
+	"keywords": [
+		"reboost",
+		"plugin",
+		"sass",
+		"scss"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/sarsamurmu/reboost.git",
+		"directory": "packages/plugin-sass"
+	},
+	"homepage": "https://github.com/sarsamurmu/reboost/tree/primary/packages/plugin-sass",
+	"author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
+	"license": "MIT",
+	"peerDependencies": {
+		"node-sass": "^6.0.1"
+	},
+	"dependencies": {
+		"@types/node-sass": "^4.11.2"
+	},
+	"devDependencies": {
+		"typescript": "^4.4.3"
+	}
 }

@@ -1,3 +1,6 @@
+## 0.21.0
+- Target Compiler `v3.2.18`
+
 ## 0.19.2
 - Target Compiler `v3.0.5`
 

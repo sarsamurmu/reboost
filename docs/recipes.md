@@ -8,7 +8,7 @@ Available recipes -
 - [CSS and CSS Modules](#css-and-css-modules)
 - [CSS modules with Sass](#css-modules-with-sass)
 - [JSX](#jsx)
-- [Lit element](#lit-element)
+- [Lit](#lit)
 - [Malina.js](#malinajs)
 - [PostCSS](#postcss)
 - [Preact with Fast Refresh](#preact-with-fast-refresh)
@@ -158,7 +158,7 @@ start({
 })
 ```
 
-## Lit element
+## Lit
 Works out of the box.
 
 ## Malina.js

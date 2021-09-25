@@ -26,7 +26,7 @@ start({
     ['./src/basic/index.js', './public/dist/basic.js', 'coolLib'],
     ['./src/css-and-assets/index.js', './public/dist/css-and-assets.js'],
     ['./src/hot-reload-test/index.js', './public/dist/hot-reload-test.js'],
-    ['./src/lit-element/index.js', './public/dist/lit-element.js'],
+    ['./src/lit/index.js', './public/dist/lit.js'],
     ['./src/malina/index.js', './public/dist/malina.js'],
     ['./src/postcss/index.js', './public/dist/postcss.js'],
     ['./src/preact/index.jsx', './public/dist/preact.js'],

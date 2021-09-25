@@ -11,7 +11,7 @@ npm init @reboost/app
 
 ## Available templates
 - Electron
-- Lit Element
+- Lit
 - Malina.js
 - Preact
 - React

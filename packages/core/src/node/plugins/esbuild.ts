@@ -35,8 +35,6 @@ declare namespace esbuildPlugin {
      * @example { 'process.env.NODE_ENV': '"development"' }
      */
     define?: Record<string, string>;
-    /** Pre-started service to use with esbuild */
-    service?: esbuild.Service;
   }
 }
 
@@ -60,28 +58,14 @@ function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
     target: 'es2020',
     minify: true,
     define: undefined,
-    service: undefined,
   };
   let compatibleTypes: string[];
-  let esbuildService: esbuild.Service;
   let minifyOptions: Exclude<esbuildPlugin.Options['minify'], boolean>;
-  const loadService = async () => {
-    if (!esbuildService) {
-      if (options.service) {
-        esbuildService = options.service;
-      } else {
-        esbuildService = await esbuild.startService();
-      }
-    }
-    return esbuildService;
-  }
 
   return {
     name: PluginName,
     getCacheKey: ({ serializeObject }) => serializeObject(options),
     setup({ config, chalk }) {
-      loadService();
-
       defaultOptions.minify = !config.debugMode;
       options = merge(defaultOptions, options);
       compatibleTypes = Object.keys(options.loaders);
@@ -110,15 +94,10 @@ function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
         aOpts.jsx.fragment = aOpts.jsxFragment;
       }
     },
-    stop() {
-      if (options.service) return;
-      esbuildService.stop();
-      esbuildService = undefined;
-    },
     async transformContent(data, filePath) {
       if (compatibleTypes.includes(data.type)) {
         try {
-          const { code, map, warnings } = await (await loadService()).transform(data.code, {
+          const { code, map, warnings } = await esbuild.transform(data.code, {
             sourcemap: 'external',
             sourcefile: this.rootRelative(filePath),
             loader: options.loaders[data.type],
@@ -150,12 +129,17 @@ function esbuildPlugin(options: esbuildPlugin.Options = {}): ReboostPlugin {
             type: 'js'
           }
         } catch (e) {
-          const error = e.errors[0] as esbuild.Message;
-          let msg = `esbuildPlugin: Error when processing "${error.location.file}"\n`;
-          msg += `${error.text} on line ${error.location.line} at column ${error.location.column}\n\n`;
-          msg += `| ${error.location.lineText}`;
+          if (e.errors != null) {
+            const error = e.errors[0] as esbuild.Message;
+            let msg = `esbuildPlugin: Error when processing "${error.location.file}"\n`;
+            msg += `${error.text} on line ${error.location.line} at column ${error.location.column}\n\n`;
+            msg += `| ${error.location.lineText}`;
 
-          return new Error(msg);
+            return new Error(msg);
+          } else {
+            console.error(e);
+            return null;
+          }
         }
       }
 

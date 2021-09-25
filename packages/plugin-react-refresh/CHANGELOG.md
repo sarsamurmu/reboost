@@ -1,3 +1,6 @@
+## 0.21.0
+- Updated `react-refresh` to `v0.10.0`
+
 ## 0.19.0
 - Updated dependencies
 

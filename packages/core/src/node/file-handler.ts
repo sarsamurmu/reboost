@@ -70,7 +70,7 @@ export const createFileHandler = (instance: ReboostInstance) => {
       initialized = true;
     }
 
-    const filePath = ctx.query.q;
+    const filePath = ctx.query.q as string;
     let startTime: [number, number];
     let transformedCode: string;
 

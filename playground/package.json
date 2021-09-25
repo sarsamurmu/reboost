@@ -5,8 +5,8 @@
     "start": "node reboost"
   },
   "dependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/plugin-proposal-pipeline-operator": "^7.12.1",
+    "@babel/core": "^7.15.5",
+    "@babel/plugin-proposal-pipeline-operator": "^7.15.0",
     "@reboost/plugin-babel": "file:../packages/plugin-babel",
     "@reboost/plugin-litcss": "file:../packages/plugin-litcss",
     "@reboost/plugin-malinajs": "file:../packages/plugin-malinajs",
@@ -17,17 +17,17 @@
     "@reboost/plugin-svelte": "file:../packages/plugin-svelte",
     "@reboost/plugin-typescript": "file:../packages/plugin-typescript",
     "@reboost/plugin-vue": "file:../packages/plugin-vue",
-    "lit-element": "^2.4.0",
-    "malinajs": "^0.6.10",
-    "node-sass": "^5.0.0",
-    "postcss-nesting": "^7.0.1",
-    "preact": "^10.5.10",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
+    "lit": "^2.0.0",
+    "malinajs": "^0.6.43",
+    "node-sass": "^6.0.1",
+    "postcss-nesting": "^8.0.1",
+    "preact": "^10.5.14",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "reboost": "file:../packages/core",
-    "svelte": "^3.31.2",
-    "tailwindcss": "^2.0.2",
-    "vue": "^3.0.0"
+    "svelte": "^3.43.0",
+    "tailwindcss": "^2.2.15",
+    "vue": "^3.2.18"
   },
   "author": "Sarsa Murmu <sarsamurmu05@gmail.com>",
   "license": "MIT"

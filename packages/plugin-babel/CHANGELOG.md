@@ -1,3 +1,6 @@
+## 0.21.0
+- Target Babel `v7.15.5`
+
 ## 0.19.0
 - Target Babel `v7.12.10`
 

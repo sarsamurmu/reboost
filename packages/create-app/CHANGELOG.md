@@ -1,3 +1,7 @@
+## 0.21.0
+- Updated dependencies
+- `lit-element` is now `lit`
+
 ## 0.20.0
 - Use `PrefreshPlugin` in Preact template
 - Minor fixes

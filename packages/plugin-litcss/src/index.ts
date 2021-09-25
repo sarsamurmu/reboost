@@ -1,12 +1,6 @@
 import { ReboostPlugin } from 'reboost';
 
-// declare namespace LitCSSPlugin {
-//   export interface Options {
-
-//   }
-// }
-
-function LitCSSPlugin(/* options: LitCSSPlugin.Options = {} */): ReboostPlugin {
+function LitCSSPlugin(): ReboostPlugin {
   return {
     name: 'litcss-plugin',
     getCacheKey: () => 1,
@@ -14,7 +8,7 @@ function LitCSSPlugin(/* options: LitCSSPlugin.Options = {} */): ReboostPlugin {
       if (type === 'css') {
         return {
           code: /* js */`
-            import { css } from 'lit-element';
+            import { css } from 'lit';
             const cssString = ${JSON.stringify(code)};
             export default css(Object.assign([cssString], { raw: [cssString] }));
             export { cssString as css }

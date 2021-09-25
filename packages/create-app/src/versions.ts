@@ -10,26 +10,26 @@ export const versions: Record<string, string> = {
   
   'electron': '11.1.1',
   
-  'lit-element': '2.4.0',
+  'lit': '2.0.0',
 
-  'malinajs': '0.6.10',
+  'malinajs': '0.6.43',
   'reboost-plugin-malinajs': reboostPackageVersions['plugin-malinajs'],
 
-  'preact': '10.5.9',
+  'preact': '10.5.14',
   'reboost-plugin-prefresh': reboostPackageVersions['plugin-prefresh'],
 
-  'react': '17.0.1',
-  'react-dom': '17.0.1',
-  '@types/react': '17.0.0',
-  '@types/react-dom': '17.0.0',
+  'react': '17.0.2',
+  'react-dom': '17.0.2',
+  '@types/react': '17.0.24',
+  '@types/react-dom': '17.0.9',
   'reboost-plugin-react-refresh': reboostPackageVersions['plugin-react-refresh'],
 
-  'solid-js': '0.23.8',
-  '@babel/core': '7.12.10',
-  'babel-preset-solid': '0.23.8',
+  'solid-js': '1.1.5',
+  '@babel/core': '7.15.5',
+  'babel-preset-solid': '1.1.5',
   'reboost-plugin-babel': reboostPackageVersions['plugin-babel'],
 
-  'svelte': '3.31.2',
+  'svelte': '3.43.0',
   'reboost-plugin-svelte': reboostPackageVersions['plugin-svelte'],
 
   'vue': '3.0.0',

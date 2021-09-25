@@ -10,9 +10,9 @@ Install it using `npm`
 ```shell
 npm i -D @reboost/plugin-litcss
 ```
-Install `lit-element` package, if not already installed
+Install `lit` package, if not already installed
 ```shell
-npm i lit-element
+npm i lit
 ```
 Import it from the package, also import built-in `UsePlugin`
 ```js
@@ -39,7 +39,7 @@ import style from './file.lit.css';
 ```
 
 ## Example
-### Basic usage with `lit-element`
+### Basic usage with `lit`
 `reboost.js`
 ```js
 const { start, builtInPlugins: { UsePlugin } } = require('reboost');
@@ -68,7 +68,7 @@ start({
 ```
 `index.js`
 ```js
-import { LitElement, customElement, html } from 'lit-element';
+import { LitElement, customElement, html } from 'lit';
 
 import style from './styles.lit.css';
 
@@ -80,7 +80,7 @@ export class MyElement extends LitElement {
 
   render() {
     return html`
-      <span class="main">Lit Element</span>
+      <span class="main">Lit is here!</span>
     `
   }
 }

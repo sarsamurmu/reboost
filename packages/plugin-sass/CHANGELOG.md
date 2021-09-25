@@ -1,3 +1,6 @@
+## 0.21.0
+- Updated `node-sass` to `v6.0.1`
+
 ## 0.19.0
 - Minor fix
 

@@ -1,3 +1,6 @@
+## 0.21.0
+- Updated dependencies
+
 ## 0.20.1
 - Support for launching multiple content servers
 
